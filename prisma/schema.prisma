@@ -6,9 +6,6 @@ generator client {
 datasource db {
   provider          = "postgresql"
   url               = env("DATABASE_URL")
-  // Optional: direct connection (bypasses poolers like PgBouncer) for migrations
-  directUrl         = env("DIRECT_DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
