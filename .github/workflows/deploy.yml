@@ -9,7 +9,7 @@ env:
   GCP_PROJECT: consensus-engine
   REGION: europe-west1
   AR_HOST: europe-west1-docker.pkg.dev
-  REPO: app-images
+  REPO: consensusengine-repo
   WEB_SERVICE: consensusengine
   MIGRATE_JOB: db-migrate
 

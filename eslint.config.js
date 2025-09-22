@@ -11,6 +11,8 @@ export default [
       "dist",
       "build",
       "prisma/migrations",
+      ".prisma",                // prisma client cache
+      "src/generated/**",
     ],
   },
   {
