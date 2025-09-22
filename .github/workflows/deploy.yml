@@ -1,0 +1,87 @@
+name: Lint & Deploy
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+env:
+  GCP_PROJECT: consensus-engine
+  REGION: europe-west1
+  AR_HOST: europe-west1-docker.pkg.dev
+  REPO: app-images
+  WEB_SERVICE: consensusengine
+  MIGRATE_JOB: db-migrate
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint  # e.g. "eslint . --ext .ts,.tsx --max-warnings=0"
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: lint
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Auth to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT }}
+          export_default_credentials: true
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.AR_HOST }} --quiet
+
+      - name: Build & push image
+        run: |
+          WEB_IMG=${{ env.AR_HOST }}/${{ env.GCP_PROJECT }}/${{ env.REPO }}/web:${{ github.sha }}
+          docker build -t "$WEB_IMG" .
+          docker push "$WEB_IMG"
+          echo "WEB_IMG=$WEB_IMG" >> $GITHUB_ENV
+
+      # Prisma migrations via Cloud Run Job (uses same image)
+      - name: Create/Update migration job
+        run: |
+          if gcloud run jobs describe "${{ env.MIGRATE_JOB }}" --region "${{ env.REGION }}" >/dev/null 2>&1; then
+            gcloud run jobs update "${{ env.MIGRATE_JOB }}" \
+              --image "${{ env.WEB_IMG }}" \
+              --region "${{ env.REGION }}" \
+              --set-secrets=DATABASE_URL=DATABASE_URL:latest \
+              --command=npx --args=prisma,migrate,deploy
+          else
+            gcloud run jobs create "${{ env.MIGRATE_JOB }}" \
+              --image "${{ env.WEB_IMG }}" \
+              --region "${{ env.REGION }}" \
+              --set-secrets=DATABASE_URL=DATABASE_URL:latest \
+              --command=npx --args=prisma,migrate,deploy
+          fi
+
+      - name: Execute migrations
+        run: gcloud run jobs execute "${{ env.MIGRATE_JOB }}" --region "${{ env.REGION }}" --wait
+
+      - name: Deploy Next.js service
+        run: |
+          gcloud run deploy "${{ env.WEB_SERVICE }}" \
+            --image "${{ env.WEB_IMG }}" \
+            --region "${{ env.REGION }}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-secrets=DATABASE_URL=DATABASE_URL:latest
