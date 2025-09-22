@@ -1,12 +1,13 @@
 {
   "name": "consensus-engine",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint . --ext .ts,.tsx --max-warnings=0"
+    "lint": "eslint 'src/app/**/*.{js,ts,tsx}'"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
@@ -16,6 +17,8 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@eslint/js": "^9.36.0",
+    "@next/eslint-plugin-next": "^15.5.3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -27,6 +30,7 @@
     "prettier": "^3.6.2",
     "prisma": "^6.16.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "typescript-eslint": "^8.44.1"
   }
 }
