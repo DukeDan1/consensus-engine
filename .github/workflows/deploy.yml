@@ -83,4 +83,5 @@ jobs:
             --region "${{ env.REGION }}" \
             --platform managed \
             --allow-unauthenticated \
-            --set-secrets=DATABASE_URL=DATABASE_URL:latest
+            --set-env-vars NODE_ENV=production \
+            --set-secrets=DATABASE_URL=DATABASE_URL:latest,AUTH_SECRET=AUTH_SECRET:latest,AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING=AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING:latest
