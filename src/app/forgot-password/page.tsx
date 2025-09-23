@@ -21,19 +21,9 @@ export default function ForgotPasswordPage() {
             if (res.ok) setSuccess(true);
             else setErr((await res.json()).error ?? "Request failed");
         } catch (err) {
+            console.error(err);
+            setErr("An error occurred");
             setLoading(false);
-            if (err instanceof Response) {
-                try {
-                    const errJson = await err.json();
-                    setErr(errJson.error ?? "Request failed");
-                } catch {
-                    setErr("Request failed");
-                }
-            } else if (err instanceof Error) {
-                setErr(err.message);
-            } else {
-                setErr("Request failed");
-            }
         }
     }
 

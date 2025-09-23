@@ -23,15 +23,9 @@ export default function RegisterPage() {
         if (resJson.success) window.location.href = "/app";
         else setErr(resJson.error ?? "Registration failed");
     } catch (err) {
+        console.error(err);
+        setErr("An error occurred");
         setLoading(false);
-        if (err instanceof Response) {
-            const errJson = await err.json();
-            setErr(errJson.error ?? "Registration failed");
-        } else if (err instanceof Error) {
-            setErr(err.message ?? "Registration failed");
-        } else {
-            setErr("Registration failed");
-        }
     }
   }
 

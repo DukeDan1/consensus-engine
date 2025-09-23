@@ -24,23 +24,13 @@ export default function ResetPasswordPage() {
                 body: JSON.stringify({ token, newPassword: password }),
             });
             setLoading(false);
-            var resJson = await res.json();
+            const resJson = await res.json();
             if (resJson.success) window.location.href = "/login?reset=success";
             else setErr(resJson.error ?? "Password reset failed");
         } catch (err) {
+            console.error(err);
+            setErr("An error occurred");
             setLoading(false);
-            if (err instanceof Response) {
-                try {
-                    const errJson = await err.json();
-                    setErr(errJson.error ?? "Password reset failed");
-                } catch {
-                    setErr("Password reset failed");
-                }
-            } else if (err instanceof Error) {
-                setErr(err.message ?? "Password reset failed");
-            } else {
-                setErr("Password reset failed");
-            }
         }
     }
 
