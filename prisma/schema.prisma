@@ -4,13 +4,29 @@ generator client {
 }
 
 datasource db {
-  provider          = "postgresql"
-  url               = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model test {
-  id Int?
+model User {
+  id                 String                  @id @default(uuid())
+  email              String                  @unique
+  password           String
+  name               String
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  passwordResetCodes UserPasswordResetCode[]
+}
 
-  @@ignore
+model UserPasswordResetCode {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code      String   @unique
+  isUsed    Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
