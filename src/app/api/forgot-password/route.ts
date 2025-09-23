@@ -18,7 +18,7 @@ export async function POST(req: Request) {
             }
         });
 
-        const serverUrl = req.url ? new URL(req.url).origin : "https://ce.dukedan.uk";
+        const serverUrl = process.env.REACT_APP_BASE_URL || "https://ce.dukedan.uk";
         const resetLink = `${serverUrl}/reset-password?token=${code.code}`;
 
         const message: EmailMessage = {
