@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
@@ -18,8 +19,11 @@ export default function ForgotPasswordPage() {
                 body: JSON.stringify({ email }),
             });
             setLoading(false);
-            if (res.ok) setSuccess(true);
-            else setErr((await res.json()).error ?? "Request failed");
+            const resJson = await res.json();
+            if (resJson.success) {
+                setSuccess(true);
+                toast.success("An email has been sent with a reset link.", { autoClose: 10000 });
+            } else setErr(resJson.error ?? "Request failed");
         } catch (err) {
             console.error(err);
             setErr("An error occurred");
@@ -29,22 +33,26 @@ export default function ForgotPasswordPage() {
 
     if (success) {
         return (
-            <div className="container mt-5">
-                <div className="card" style={{ maxWidth: 500, margin: "0 auto", padding: 24 }}>
-                    <h1 className="mb-4 text-center">Check your email</h1>
-                    <p className="text-center">You will receive an email with instructions to reset your password.</p>
-                    <p className="text-center mt-3"><a href="/login">Back to login</a></p>
+            <>
+                <div className="container mt-5">
+                    <div className="card" style={{ maxWidth: 500, margin: "0 auto", padding: 24 }}>
+                        <h1 className="mb-4 text-center">Check your email</h1>
+                        <p className="text-center">You will receive an email with instructions to reset your password.</p>
+                        <p className="text-center mt-3"><a href="/login">Back to login</a></p>
+                    </div>
                 </div>
-            </div>
+                <ToastContainer />
+            </>
         );
     }
 
     return (
-        <div className="container mt-5">
-            <div className="card" style={{ maxWidth: 500, margin: "0 auto", padding: 24 }}>
-                <h1 className="mb-4 text-center">Forgot Password</h1>
-                <form onSubmit={onSubmit} style={{ display: "grid", gap: 12, maxWidth: 480 }}>
-                    <div className="form-floating">
+        <>
+            <div className="container mt-5">
+                <div className="card" style={{ maxWidth: 500, margin: "0 auto", padding: 24 }}>
+                    <h1 className="mb-4 text-center">Forgot Password</h1>
+                    <form onSubmit={onSubmit} style={{ display: "grid", gap: 12, maxWidth: 480 }}>
+                        <div className="form-floating">
                         <input
                             type="email"
                             className="form-control"
@@ -56,14 +64,16 @@ export default function ForgotPasswordPage() {
                             required
                         />
                         <label htmlFor="forgotEmail">Email</label>
-                    </div>
-                    <button disabled={loading} type="submit" className="btn btn-primary mt-2">
-                        {loading ? <i className="fas fa-spinner fa-spin"></i> : "Send reset link"}
-                    </button>
-                </form>
-                {err && <div className="alert alert-danger mt-5 text-center" role="alert">{err}</div>}
-                <p className="text-center mt-3"><a href="/login">Back to login</a></p>
+                        </div>
+                        <button disabled={loading} type="submit" className="btn btn-primary mt-2">
+                            {loading ? <i className="fas fa-spinner fa-spin"></i> : "Send reset link"}
+                        </button>
+                    </form>
+                    {err && <div className="alert alert-danger mt-5 text-center" role="alert">{err}</div>}
+                    <p className="text-center mt-3"><a href="/login">Back to login</a></p>
+                </div>
             </div>
-        </div>
+        <ToastContainer />
+        </>
     );
 }
