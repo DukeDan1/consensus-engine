@@ -83,5 +83,5 @@ jobs:
             --region "${{ env.REGION }}" \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars NODE_ENV=production,REACT_APP_BASE_URL="https://ce.dukedan.uk" \
+            --set-env-vars NODE_ENV=production,REACT_APP_BASE_URL="https://ce.dukedan.uk",NODE_OPTIONS="--dns-result-order=ipv4first" \
             --set-secrets=DATABASE_URL=DATABASE_URL:latest,AUTH_SECRET=AUTH_SECRET:latest,AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING=AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING:latest
