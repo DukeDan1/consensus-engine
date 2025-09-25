@@ -63,12 +63,14 @@ jobs:
             gcloud run jobs update "${{ env.MIGRATE_JOB }}" \
               --image "${{ env.WEB_IMG }}" \
               --region "${{ env.REGION }}" \
+              --set-env-vars NODE_OPTIONS="--dns-result-order=ipv4first" \
               --set-secrets=DATABASE_URL=DATABASE_URL:latest \
               --command=npx --args=prisma,migrate,deploy
           else
             gcloud run jobs create "${{ env.MIGRATE_JOB }}" \
               --image "${{ env.WEB_IMG }}" \
               --region "${{ env.REGION }}" \
+              --set-env-vars NODE_OPTIONS="--dns-result-order=ipv4first" \
               --set-secrets=DATABASE_URL=DATABASE_URL:latest \
               --command=npx --args=prisma,migrate,deploy
           fi
