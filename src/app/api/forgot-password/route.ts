@@ -18,11 +18,11 @@ export async function POST(req: Request) {
             }
         });
 
-        const serverUrl = process.env.REACT_APP_BASE_URL || "https://ce.dukedan.uk";
+        const serverUrl = process.env.NEXTJS_APP_BASE_URL || "https://ce.dukedan.uk";
         const resetLink = `${serverUrl}/reset-password?token=${code.code}`;
 
         const message: EmailMessage = {
-            senderAddress: "DoNotReply@m.dukedan.uk",
+            senderAddress: "Consensus Engine <DoNotReply@m.dukedan.uk>",
             content: {
             subject: "Password reset",
             plainText: `Hi ${user.name || "User"}, here's your password reset link: ${resetLink}\n\nIf you did not request this, please ignore this email.`,

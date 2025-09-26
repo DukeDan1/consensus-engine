@@ -7,7 +7,7 @@ import { EmailClient, EmailMessage } from "@azure/communication-email";
 
 async function sendWelcomeEmail(emailAddress: string, name: string): Promise<void> {
     const message: EmailMessage = {
-        senderAddress: "DoNotReply@m.dukedan.uk",
+        senderAddress: "Consensus Engine <DoNotReply@m.dukedan.uk>",
         content: {
             subject: "Welcome!",
             plainText: `Thank you for signing up, ${name}!`,
