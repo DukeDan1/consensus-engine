@@ -1,5 +1,5 @@
 import { Roboto_Flex } from "next/font/google";
-import "bootstrap/dist/css/bootstrap.min.css";
+import 'bootswatch/dist/litera/bootstrap.min.css';
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./globals.css";
 import type { Metadata } from "next";
