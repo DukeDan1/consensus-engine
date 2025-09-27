@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "eslint 'src/app/**/*.{js,ts,tsx}'",
     "test": "vitest",
-    "test:ci": "vitest --run",
+    "test:ci": "vitest --run --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
     "test:cov": "vitest --coverage"
