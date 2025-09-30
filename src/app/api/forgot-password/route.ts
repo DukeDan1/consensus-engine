@@ -22,19 +22,19 @@ export async function POST(req: Request) {
         const resetLink = `${serverUrl}/reset-password?token=${code.code}`;
 
         const message: EmailMessage = {
-            senderAddress: "Consensus Engine <DoNotReply@m.dukedan.uk>",
+            senderAddress: "DoNotReply@m.dukedan.uk",
             content: {
             subject: "Password reset",
             plainText: `Hi ${user.name || "User"}, here's your password reset link: ${resetLink}\n\nIf you did not request this, please ignore this email.`,
             html: `<html><body><p>Hi ${user.name || "User"},</p><p>Here's your password reset link:</p><p><a href="${resetLink}">Reset password</a></p><p>If you did not request this, please ignore this email.</p></body></html>`,
             },
             recipients: {
-                to: [
-                    {
-                        address: user.email,
-                        displayName: user.name || "User" 
-                    }
-                ]
+            to: [
+                {
+                address: user.email,
+                displayName: user.name || "User" 
+                }
+            ]
             }
         };
 
