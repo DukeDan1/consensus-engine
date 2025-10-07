@@ -53,7 +53,7 @@ export default function ResetPasswordPage() {
                         <label htmlFor="resetPassword">New Password</label>
                     </div>
                     <button disabled={loading} type="submit" className="btn btn-primary mt-2">
-                        {loading ? "Resetting..." : "Reset Password"}
+                        {loading ? <i className="fas fa-spinner fa-spin"></i> : "Reset Password"}
                     </button>
                     {err && <div className="alert alert-danger mt-2" role="alert">{err}</div>}
                 </form>

@@ -1,41 +1,20 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/server/prisma";
 import bcrypt from "bcryptjs";
-import { createSession } from "@/lib/auth";
+import User from "@/app/models/user";
 import { validate } from "email-validator";
-import { EmailClient, EmailMessage } from "@azure/communication-email";
+import { signIn } from "next-auth/react";
+import { sendEmail } from "@/app/services/emailService";
+import { hashPassword } from "@/app/services/passwordService";
+import { dbConnect } from "@/app/lib/mongoose";
 
 async function sendWelcomeEmail(emailAddress: string, name: string): Promise<void> {
-    const message: EmailMessage = {
-        senderAddress: "DoNotReply@m.dukedan.uk",
-        content: {
-            subject: "Welcome!",
-            plainText: `Thank you for signing up, ${name}!`,
-            html: `<html><body><p>Thank you for signing up, ${name}!</p></body></html>`,
-        },
-        recipients: {
-            to: [
-                {
-                    address: emailAddress,
-                    displayName: name
-                }
-            ]
-        }
-    };
-
-    const connectionString = process.env.AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING;
-    if (!connectionString) {
-        console.error("AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING is not set");
-        return;
-    }
-    
-    const client = new EmailClient(connectionString);
-    const poller = await client.beginSend(message);
-    const response = await poller.pollUntilDone();
-    if (response.status !== "Succeeded") {
-        console.error("Email sending failed:", response);
-        return;
-    }
+    sendEmail(emailAddress, 
+      "Welcome!", 
+      `<p>Thank you for signing up, ${name}!</p>`, 
+      `Thank you for signing up, ${name}!`
+    ).catch((err: any) => {
+        console.error("Failed to send welcome email:", err);
+    });
 }
 
 export async function POST(req: Request) {
@@ -44,17 +23,16 @@ export async function POST(req: Request) {
     if (!email || !password) return NextResponse.json({ error: "You must enter an email and password." }, { status: 400 });
     if (!validate(email)) return NextResponse.json({ error: "Invalid email address." }, { status: 400 });
 
-    const existing = await prisma.user.findUnique({ where: { email } });
+    await dbConnect();
+    const existing = await User.findOne({ email });
     if (existing) return NextResponse.json({ error: "This email address is already in use. Please log in or choose another one." }, { status: 409 });
+    
+    const hash = await hashPassword(password);
+    const user = await User.create({ email, passwordHash: hash, name });
 
-    const hash = await bcrypt.hash(password, 12);
-    const user = await prisma.user.create({ data: { email, password: hash, name } });
-
-    const token = await createSession({ userId: user.id, email: user.email });
-    const res = NextResponse.json({ success: true, token });
-    res.cookies.set("session", token, { httpOnly: true, secure: true, sameSite: "lax", path: "/" });
     sendWelcomeEmail(user.email, user.name || "User");
-    return res;
+    signIn("email", { email, callbackUrl: "/profile" });
+    return NextResponse.json({ success: true });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

@@ -56,28 +56,6 @@ jobs:
           docker push "$WEB_IMG"
           echo "WEB_IMG=$WEB_IMG" >> $GITHUB_ENV
 
-      # Prisma migrations via Cloud Run Job (uses same image)
-      - name: Create/Update migration job
-        run: |
-          if gcloud run jobs describe "${{ env.MIGRATE_JOB }}" --region "${{ env.REGION }}" >/dev/null 2>&1; then
-            gcloud run jobs update "${{ env.MIGRATE_JOB }}" \
-              --image "${{ env.WEB_IMG }}" \
-              --region "${{ env.REGION }}" \
-              --set-env-vars NODE_OPTIONS="--dns-result-order=ipv4first" \
-              --set-secrets=DATABASE_URL=DATABASE_URL:latest \
-              --command=npx --args=prisma,migrate,deploy
-          else
-            gcloud run jobs create "${{ env.MIGRATE_JOB }}" \
-              --image "${{ env.WEB_IMG }}" \
-              --region "${{ env.REGION }}" \
-              --set-env-vars NODE_OPTIONS="--dns-result-order=ipv4first" \
-              --set-secrets=DATABASE_URL=DATABASE_URL:latest \
-              --command=npx --args=prisma,migrate,deploy
-          fi
-
-      - name: Execute migrations
-        run: gcloud run jobs execute "${{ env.MIGRATE_JOB }}" --region "${{ env.REGION }}" --wait
-
       - name: Deploy Next.js service
         run: |
           gcloud run deploy "${{ env.WEB_SERVICE }}" \
@@ -86,4 +64,4 @@ jobs:
             --platform managed \
             --allow-unauthenticated \
             --set-env-vars NODE_ENV=production,REACT_APP_BASE_URL="https://ce.dukedan.uk",NODE_OPTIONS="--dns-result-order=ipv4first" \
-            --set-secrets=DATABASE_URL=DATABASE_URL:latest,AUTH_SECRET=AUTH_SECRET:latest,AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING=AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING:latest
+            --set-secrets=MONGODB_URI=DATABASE_URL:latest,AUTH_SECRET=AUTH_SECRET:latest,AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING=AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING:latest
