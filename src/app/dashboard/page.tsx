@@ -21,7 +21,7 @@ export default async function Page() {
   return (
     <main>
       <h1 className={`${lusitana.className} mb-4 text-xl md:text-4xl`}>
-        Joemon's Dashboard
+        My Dashboard
       </h1>
 
       <div className="flex items-center justify-center md:w-3/5 md:px-28 md:py-12 gap-12">

@@ -40,7 +40,7 @@ export default function SignInPage() {
       </div>
 
       <p>
-        Don't have an account?{" "}
+        Need an account?
         <Link href="/register" className="text-blue-600 underline">
           Sign Up
         </Link>

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import User from "@/app/models/user";
 import { validate } from "email-validator";
 import { signIn } from "next-auth/react";

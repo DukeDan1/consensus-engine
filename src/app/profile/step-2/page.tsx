@@ -36,6 +36,7 @@ export default function ProfileStep2Page() {
             setError("Unable to fetch user ID");
           }
         } catch (err) {
+          console.error(err);
           setError("Error fetching user ID");
         }
       }

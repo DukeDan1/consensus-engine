@@ -1,17 +1,15 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import { signOut } from "next-auth/react";
 
 export default function LogoutButton() {
-	const router = useRouter();
 	const [loading, setLoading] = useState(false);
 
 	const handleLogout = async () => {
 		setLoading(true);
 		try {
-			const res = await signOut({redirect: true, callbackUrl: "/login?logged_out=true" });
+			await signOut({redirect: true, callbackUrl: "/login?logged_out=true" });
         } catch(err) {
             console.error(err);
             toast.error("Logout failed");

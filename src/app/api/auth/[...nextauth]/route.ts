@@ -6,7 +6,6 @@ import mongoose from 'mongoose';
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 
 import clientPromise from '@/app/lib/mongodb';
-import User from '@/app/models/user';
 import { findUserByEmailOrPhone, createUser } from '@/app/services/authService';
 import { hashPassword, comparePassword } from '@/app/services/passwordService';
 

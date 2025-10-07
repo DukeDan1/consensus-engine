@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { inter } from '@/app/components/ui/fonts';
 import HeaderWrapper from '@/app/components/ui/header-wrapper';
 import SubHeader from '@/app/components/ui/SubHeader';
 import "bootstrap/dist/css/bootstrap.min.css";

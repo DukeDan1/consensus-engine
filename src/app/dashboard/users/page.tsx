@@ -27,6 +27,7 @@ export default function AdminDashboard() {
           setError(data.error || "Failed to load users");
         }
       } catch (err) {
+        console.log(err);
         setError("Network error");
       } finally {
         setLoading(false);
