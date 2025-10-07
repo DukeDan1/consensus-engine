@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/app/lib/mongodb';
+import { dbConnect } from "@/app/lib/mongoose";
 import mongoose from 'mongoose';
 
 const EntrySchema = new mongoose.Schema({

@@ -6,7 +6,6 @@ export async function POST(req: NextRequest) {
     // Get client IP address (works on Vercel and locally)
     const ip =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      req.ip ||
       "unknown";
 
     // Parse request body

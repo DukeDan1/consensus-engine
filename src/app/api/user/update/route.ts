@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../auth/[...nextauth]/route";
-import User from "@/models/UserSchema";
-import dbConnect from "@/lib/dbConnect"; // your mongoose connector
+import User from "@/app/models/user";
+import { dbConnect } from "@/app/lib/mongoose"; // your mongoose connector
 
 export async function POST(req: Request) {
   await dbConnect();
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -5,9 +5,22 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import mongoose from 'mongoose';
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 
+
 import clientPromise from '@/app/lib/mongodb';
 import { findUserByEmailOrPhone, createUser } from '@/app/services/authService';
 import { hashPassword, comparePassword } from '@/app/services/passwordService';
+
+// Extend the Session user type to include 'id'
+declare module 'next-auth' {
+  interface Session {
+    user?: {
+      id?: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
+  }
+}
 
 async function connectDB() {
   if (mongoose.connection.readyState === 0) {
@@ -43,7 +56,7 @@ const handler = NextAuth({
             email,
             passwordHash: hashed,
             authProvider: 'password',
-            gdprConsent: true,
+            gdprConsent: { accepted: true, acceptedAt: new Date() },
             profileCompleted: false,
           });
         } else {
@@ -65,7 +78,7 @@ const handler = NextAuth({
         if (!existing) {
           await createUser({
             email: user.email,
-            name: user.name,
+            name: user.name ?? undefined,
             authProvider: 'password',
           });
         }
@@ -80,7 +93,7 @@ const handler = NextAuth({
     },
 
     async session({ session, token }) {
-      if (token?.id) session.user.id = token.id;
+      if (token?.id && session.user) session.user.id = typeof token.id === 'string' ? token.id : String(token.id);
       return session;
     },
   },

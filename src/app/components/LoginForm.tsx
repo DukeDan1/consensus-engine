@@ -40,7 +40,6 @@ export default function LoginForm() {
             redirect: false,
             email,
             password,
-            gdprConsent: true,
             callbackUrl: "/profile",
             });
 

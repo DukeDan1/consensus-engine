@@ -7,6 +7,8 @@ import AcmeLogo from "@/app/components/ui/acme-logo";
 import LogoutButton from '../LogoutButton';
 
 interface HeaderProps {
+  isSignedIn?: boolean;
+  onSignOut?: () => void;
   title: string;
 }
 
