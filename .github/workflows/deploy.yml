@@ -50,9 +50,6 @@ jobs:
         run: gcloud auth configure-docker ${{ env.AR_HOST }} --quiet
 
       - name: Build & push image
-        env:
-          NODE_ENV: production
-          MONGODB_URI: "mongodb://dummyvalue:blabla@mongodb.net/consensusengine"
         run: |
           WEB_IMG=${{ env.AR_HOST }}/${{ env.GCP_PROJECT }}/${{ env.REPO }}/web:${{ github.sha }}
           docker build -t "$WEB_IMG" .
