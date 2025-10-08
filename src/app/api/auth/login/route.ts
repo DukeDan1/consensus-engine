@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import clientPromise from "@/app/lib/mongodb";
+import User from "@/app/models/user";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,22 +18,14 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Connect to MongoDB and get the database
-    const client = await clientPromise;
-    if (!client) {
-      return NextResponse.json(
-        { success: false, message: "Database connection failed" },
-        { status: 500 }
-      );
-    }
-    const db = client.db();
-
-    // Insert log entry
-    await db.collection("userLogs").insertOne({
-      email,
-      ip,
-      timestamp: new Date(),
+    
+    User.findOne({ email }).then(async (user) => {
+      if (user) {
+        // Update login history
+        user.loginHistory = user.loginHistory || [];
+        user.loginHistory.push({ ip, timestamp: new Date() });
+        await user.save();
+      }
     });
 
     return NextResponse.json({ success: true });

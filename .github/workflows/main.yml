@@ -1,9 +1,13 @@
-name: Lint & Deploy
+name: Lint & Deploy (Main Branch)
 
 on:
   pull_request:
   push:
     branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   GCP_PROJECT: consensus-engine
@@ -11,7 +15,6 @@ env:
   AR_HOST: europe-west1-docker.pkg.dev
   REPO: consensusengine-repo
   WEB_SERVICE: consensusengine
-  MIGRATE_JOB: db-migrate
 
 jobs:
   lint:

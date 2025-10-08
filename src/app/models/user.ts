@@ -37,6 +37,11 @@ export interface IUser extends Document {
   preferences?: UserPreferences;
   createdAt?: Date;
   updatedAt?: Date;
+  loginHistory?: Array<{
+    ip?: string;
+    timestamp: Date;
+    userAgent?: string;
+  }> | undefined;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -77,6 +82,13 @@ const UserSchema = new Schema<IUser>(
       language: { type: String, enum: ["en", "fr", "es", "de", "hi", "ml"], default: "en" },
       custom: { type: Map, of: Schema.Types.Mixed },
     },
+    loginHistory: [
+      {
+        ip: String,
+        timestamp: { type: Date, default: Date.now },
+        userAgent: String,
+      },
+    ],
   },
   { timestamps: true, strict: true }
 );

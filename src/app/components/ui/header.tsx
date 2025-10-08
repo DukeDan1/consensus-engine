@@ -1,76 +1,135 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import AcmeLogo from "@/app/components/ui/acme-logo";
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import LogoutButton from '../LogoutButton';
 
 interface HeaderProps {
-  isSignedIn?: boolean;
-  onSignOut?: () => void;
   title: string;
 }
 
 export default function Header({ title }: HeaderProps) {
   const { data: session } = useSession();
-  const router = useRouter();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+  const toggleNav = () => setNavOpen((s) => !s);
+  const closeNav = () => setNavOpen(false);
+  const toggleMenu = () => setMenuOpen((s) => !s);
+  const closeMenu = () => setMenuOpen(false);
 
-  const userInitials = session?.user?.name
-    ? session.user.name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-    : 'U';
+  const brandHref = session ? '/dashboard' : '/';
+
+  const userInitials = useMemo(() => {
+    const name = session?.user?.name || session?.user?.email || '';
+    if (!name) return 'U';
+    const parts = name.trim().split(/\s+/);
+    const first = parts[0]?.[0] ?? '';
+    const last = parts.length > 1 ? parts[parts.length - 1][0] ?? '' : '';
+    return (first + last || first).toUpperCase();
+  }, [session?.user?.name, session?.user?.email]);
 
   return (
-    <header className="flex justify-between items-center text-black p-4 bg-orange-700 relative">
+    <nav
+      className="navbar navbar-expand-md border-bottom"
+    >
+      <div className="container">
+        {/* Brand (left) */}
+        <Link href={brandHref} className="navbar-brand fw-semibold text-dark m-0">
+          {title}
+        </Link>
 
-      { /* Left spacer */}
-      <div className="w-1/3">
-      <AcmeLogo/>
-      </div>
-
-
-      {/* Centered title */}
-      <div className="w-1/3 flex justify-center">
-        <h1 className="text-xl font-bold">{title}</h1>
-      </div>
-
-      {/* Right controls */}
-      {session ? (
-        <div className="w-1/3 flex justify-end relative">
-          <button
-            onClick={toggleDropdown}
-            className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold"
-          >
-            {userInitials}
-          </button>
-
-          {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg z-10">
-              <button
-                onClick={() => router.push('/profile')}
-                className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-              >
-                Profile
-              </button>
-              <LogoutButton />
-            </div>
-          )}
-        </div>
-      ) : (
+        {/* Toggler (mobile) */}
         <button
-          onClick={() => router.push('/login')}
-          className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
+          type="button"
+          aria-label="Toggle navigation"
+          aria-expanded={navOpen}
+          onClick={toggleNav}
+          className="navbar-toggler"
+          style={{ border: 'none' }}
         >
-          Log In
+          <span className="navbar-toggler-icon" />
         </button>
-      )}
-    </header>
+
+        {/* Right side (no .collapse to avoid CSS conflicts) */}
+        <div
+          className={`navbar-collapse ${navOpen ? 'd-block' : 'd-none'} d-md-flex`}
+          style={{ width: '100%' }}
+        >
+          <ul className="navbar-nav ms-auto align-items-center gap-1">
+            {!session ? (
+              <>
+                <li className="nav-item">
+                  <Link
+                    className="btn btn-secondary btn-sm"
+                    href="/login"
+                    onClick={closeNav}
+                  >
+                    Log in
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    className="btn btn-outline-secondary btn-sm ms-md-2"
+                    href="/register"
+                    onClick={closeNav}
+                  >
+                    Register
+                  </Link>
+                </li>
+              </>
+            ) : (
+              <li className="nav-item dropdown">
+                <button
+                  className="btn p-0 border-0"
+                  onClick={toggleMenu}
+                  aria-expanded={menuOpen}
+                  aria-haspopup="true"
+                >
+                  {session.user?.image ? (
+                    <img
+                      src={session.user.image}
+                      alt="User avatar"
+                      width={40}
+                      height={40}
+                      className="rounded-circle"
+                      style={{ objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div
+                      className="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle"
+                      style={{ width: 40, height: 40, fontWeight: 700 }}
+                    >
+                      {userInitials}
+                    </div>
+                  )}
+                </button>
+                <ul
+                  className={`dropdown-menu dropdown-menu-end ${menuOpen ? 'show' : ''}`}
+                  style={{ marginTop: '0.5rem' }}
+                  onMouseLeave={closeMenu}
+                >
+                  <li>
+                    <Link className="dropdown-item" href="/dashboard" onClick={closeMenu}>
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item" href="/profile" onClick={closeMenu}>
+                      Profile
+                    </Link>
+                  </li>
+                  <li><hr className="dropdown-divider" /></li>
+                  <li className="px-3 py-1">
+                    <LogoutButton />
+                  </li>
+                </ul>
+              </li>
+            )}
+          </ul>
+        </div>
+      </div>
+    </nav>
   );
 }

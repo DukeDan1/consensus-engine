@@ -1,20 +1,18 @@
 import type { Metadata } from "next";
-import "./globals.css";
-import HeaderWrapper from '@/app/components/ui/header-wrapper';
-import SubHeader from '@/app/components/ui/SubHeader';
-import "bootstrap/dist/css/bootstrap.min.css";
+import "bootswatch/dist/litera/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import "./globals.css";
+import Header from "@/app/components/ui/header";
 import BootstrapClient from "@/app/components/BootstrapClient";
 import { Roboto_Flex } from "next/font/google";
-
 import Providers from "@/app/providers";
 import ErrorBoundary from "@/app/components/layout/ErrorBoundary";
 
 const roboto = Roboto_Flex({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "gLearn - Games & Learning",
-  description: "created by Joemon Jose",
+  title: "Consensus Engine",
+  // description: "Optional: add a short description for SEO"
 };
 
 export default function RootLayout({
@@ -22,17 +20,19 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-    <head>
-      <link rel="icon" href="/favicon.ico" />
-    </head>
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="stylesheet" href="/overrides.css" />
+      </head>
       <body className={roboto.className}>
+        {/* If BootstrapClient imports bootstrap.bundle JS, keep it. */}
         <BootstrapClient />
+        {/* Ensure Providers includes SessionProvider for Header/useSession */}
         <Providers>
-          <HeaderWrapper />
-          <SubHeader />
+          <Header title="Consensus Engine" />
           <ErrorBoundary>
-            <div className="flex min-h-screen flex-col md:flex-row">
-              <main className="flex-1 p-4 sm:p-6">{children}</main>
+            <div className="d-flex min-vh-100 flex-column flex-md-row">
+              <main className="flex-fill p-3 p-sm-4">{children}</main>
             </div>
           </ErrorBoundary>
         </Providers>
@@ -40,7 +40,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-// <aside className="hidden md:block md:w-64 bg-gray-100 p-4">
-//   <SideNav />
-// </aside>

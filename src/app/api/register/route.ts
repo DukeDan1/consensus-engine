@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     const user = await User.create({ email, passwordHash: hash, name });
 
     sendWelcomeEmail(user.email, user.name || "User");
-    signIn("email", { email, callbackUrl: "/profile" });
+    signIn("email", { email, redirect: false });
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error(e);

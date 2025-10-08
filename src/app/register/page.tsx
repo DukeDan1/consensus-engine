@@ -20,7 +20,7 @@ export default function RegisterPage() {
         });
         const resJson = await res.json();
         setLoading(false);
-        if (resJson.success) window.location.href = "/app";
+        if (resJson.success) window.location.href = "/dashboard";
         else setErr(resJson.error ?? "Registration failed");
     } catch (err) {
         console.error(err);

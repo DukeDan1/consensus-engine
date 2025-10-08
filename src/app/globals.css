@@ -1,26 +1,30 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+* {
+  font-family: "Roboto Flex", sans-serif !important;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+.btn-secondary {
+  --bs-btn-bg: #5c636a;
+  --bs-btn-border-color: #5c636a;
+  --bs-btn-hover-bg: #4d5358;
+  --bs-btn-hover-border-color: #4d5358;
+  --bs-btn-active-bg: #3e4347;
+  --bs-btn-active-border-color: #3e4347;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.btn-outline-secondary {
+  --bs-btn-color: #5c636a;
+  --bs-btn-border-color: #5c636a;
+  --bs-btn-hover-bg: #5c636a;
+  --bs-btn-hover-border-color: #5c636a;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: #4d5358;
+  --bs-btn-active-border-color: #4d5358;
+  --bs-btn-active-color: #fff;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
