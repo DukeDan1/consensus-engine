@@ -5,7 +5,6 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import mongoose from 'mongoose';
 import { MongoDBAdapter } from '@next-auth/mongodb-adapter';
 
-
 import clientPromise from '@/app/lib/mongodb';
 import { findUserByEmailOrPhone, createUser } from '@/app/services/authService';
 import { hashPassword, comparePassword } from '@/app/services/passwordService';
@@ -26,6 +25,10 @@ async function connectDB() {
   if (mongoose.connection.readyState === 0) {
     await mongoose.connect(process.env.MONGODB_URI!);
   }
+}
+
+if (!clientPromise) {
+  throw new Error("MONGODB_URI is not defined");
 }
 
 const handler = NextAuth({

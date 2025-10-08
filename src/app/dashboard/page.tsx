@@ -1,7 +1,5 @@
 import Image from "next/image";
 import { lusitana } from "@/app/components/ui/fonts";
-import { dbConnect } from "@/app/lib/mongoose";
-import Entry from "@/app/models/entry";
 
 // Define a local type to avoid shadowing the Mongoose model
 interface EntryData {
@@ -14,9 +12,25 @@ interface EntryData {
 
 // Async server component
 export default async function Page() {
-  await dbConnect();
+  // await dbConnect();
 
-  const entries: EntryData[] = await Entry.find().sort({ createdAt: -1 }).lean();
+  // const entries: EntryData[] = await Entry.find().sort({ createdAt: -1 }).lean();
+  // Retrieve from API insead
+  // For now just mock data
+  const entries: EntryData[] = [
+    {
+      userId: "user1",
+      title: "First Entry",
+      description: "This is the first entry.",
+      createdAt: new Date(),
+    },
+    {
+      userId: "user2",
+      title: "Second Entry",
+      description: "This is the second entry.",
+      createdAt: new Date(),
+    },
+  ];
 
   return (
     <main>

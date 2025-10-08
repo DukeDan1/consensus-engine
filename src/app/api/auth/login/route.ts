@@ -21,6 +21,12 @@ export async function POST(req: NextRequest) {
 
     // Connect to MongoDB and get the database
     const client = await clientPromise;
+    if (!client) {
+      return NextResponse.json(
+        { success: false, message: "Database connection failed" },
+        { status: 500 }
+      );
+    }
     const db = client.db();
 
     // Insert log entry
