@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import User from "@/app/models/user";
 import { validate } from "email-validator";
-import { signIn } from "next-auth/react";
 import { sendEmail } from "@/app/services/emailService";
 import { hashPassword } from "@/app/services/passwordService";
 import { dbConnect } from "@/app/lib/mongoose";
