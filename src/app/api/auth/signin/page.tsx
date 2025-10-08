@@ -9,7 +9,7 @@ export default function SignInPage() {
 
   const handleEmailSignIn = () => {
     if (!email) return;
-    signIn("email", { email, callbackUrl: "/profile" });
+    signIn("email", { email, callbackUrl: "/app" });
   };
 
   return (

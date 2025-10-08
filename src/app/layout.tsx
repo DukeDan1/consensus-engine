@@ -7,6 +7,7 @@ import BootstrapClient from "@/app/components/BootstrapClient";
 import { Roboto_Flex } from "next/font/google";
 import Providers from "@/app/providers";
 import ErrorBoundary from "@/app/components/layout/ErrorBoundary";
+import { ToastContainer } from "react-toastify";
 
 const roboto = Roboto_Flex({ subsets: ["latin"] });
 
@@ -36,6 +37,7 @@ export default function RootLayout({
             </div>
           </ErrorBoundary>
         </Providers>
+        <ToastContainer />
       </body>
     </html>
   );

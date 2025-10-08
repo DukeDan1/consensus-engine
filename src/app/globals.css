@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-* {
-  font-family: "Roboto Flex", sans-serif !important;
+body, p, button, input, a, .btn, .form-control, h1, h2, h3, h4, h5, h6, span, div {
+  font-family: "Roboto Flex", sans-serif;
 }
 
 .btn-secondary {

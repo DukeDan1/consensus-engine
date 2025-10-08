@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { signOut } from "next-auth/react";
 
 export default function LogoutButton() {
@@ -23,7 +23,6 @@ export default function LogoutButton() {
 			<button onClick={handleLogout} disabled={loading} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600">
 				{loading ? "Logging out..." : "Log out"}
 			</button>
-			<ToastContainer />
 		</>
 	);
 }

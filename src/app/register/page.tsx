@@ -1,4 +1,5 @@
 "use client";
+import { signIn } from "next-auth/react";
 import { useState } from "react";
 
 export default function RegisterPage() {
@@ -20,8 +21,16 @@ export default function RegisterPage() {
         });
         const resJson = await res.json();
         setLoading(false);
-        if (resJson.success) window.location.href = "/dashboard";
-        else setErr(resJson.error ?? "Registration failed");
+        if (resJson.success) {
+            await signIn("email-password", {
+            redirect: false,
+            email,
+            password,
+            callbackUrl: "/app",
+            });
+        } else {
+            setErr(resJson.error ?? "Registration failed");
+        }
     } catch (err) {
         console.error(err);
         setErr("An error occurred");

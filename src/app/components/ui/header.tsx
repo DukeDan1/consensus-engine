@@ -111,8 +111,8 @@ export default function Header({ title }: HeaderProps) {
                   onMouseLeave={closeMenu}
                 >
                   <li>
-                    <Link className="dropdown-item" href="/dashboard" onClick={closeMenu}>
-                      Dashboard
+                    <Link className="dropdown-item" href="/app" onClick={closeMenu}>
+                      Home
                     </Link>
                   </li>
                   <li>

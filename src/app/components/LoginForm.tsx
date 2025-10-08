@@ -1,7 +1,7 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { signIn } from "next-auth/react";
 
 const errorMessages: Record<string, string> = {
@@ -40,7 +40,7 @@ export default function LoginForm() {
             redirect: false,
             email,
             password,
-            callbackUrl: "/profile",
+            callbackUrl: "/app",
             });
 
             setLoading(false);
@@ -48,7 +48,7 @@ export default function LoginForm() {
             if (res?.error) {
                 setErr(errorMessages[res.error] || "Invalid email or password");
             } else {
-                router.push("/profile");
+                router.push("/app");
             }
         } catch(err) {
             console.error(err);
@@ -100,7 +100,6 @@ export default function LoginForm() {
                 </p>
             </div>
         </div>
-        <ToastContainer />
      </>
     );
 }

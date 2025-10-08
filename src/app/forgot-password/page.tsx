@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
@@ -41,7 +41,6 @@ export default function ForgotPasswordPage() {
                         <p className="text-center mt-3"><a href="/login">Back to login</a></p>
                     </div>
                 </div>
-                <ToastContainer />
             </>
         );
     }
@@ -73,7 +72,6 @@ export default function ForgotPasswordPage() {
                     <p className="text-center mt-3"><a href="/login">Back to login</a></p>
                 </div>
             </div>
-        <ToastContainer />
         </>
     );
 }
