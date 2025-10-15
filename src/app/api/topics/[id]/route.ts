@@ -6,7 +6,7 @@ import { Argument } from "@/app/models/argument";
 import { Comment } from "@/app/models/comment";
 import User from "@/app/models/user";
 
-// GET /api/topics?id=...&num_arguments=10&ordering=relevant|newest
+// GET /api/topics/:id=?num_arguments=10&ordering=relevant|newest
 // Returns topic details + ordered arguments + comments per argument (relevant ordering by score/upvotes)
 export async function GET(
   request: Request,
@@ -32,7 +32,7 @@ export async function GET(
   }
 
   const topic = await Topic.findById(id)
-    .populate({ path: "createdBy", select: "name email" })
+    .populate({ path: "createdBy", select: "name" })
     .lean();
 
   if (!topic) {
@@ -47,7 +47,7 @@ export async function GET(
   const argumentsList = await Argument.find({ topic: topic._id, isRemoved: false })
     .sort(argSort)
     .limit(numArguments)
-    .populate({ path: "createdBy", select: "name email" })
+    .populate({ path: "createdBy", select: "name" })
     .lean();
 
   // Fetch comments for each argument, ordering by relevancy (approx: newest first for now) or could extend with score if added later
@@ -56,8 +56,8 @@ export async function GET(
   if (argumentIds.length) {
     const comments = await Comment.find({ argument: { $in: argumentIds }, isRemoved: false })
       .sort({ createdAt: -1 })
-      .limit(500) // reasonable cap
-      .populate({ path: "createdBy", select: "name email" })
+      .limit(500)
+      .populate({ path: "createdBy", select: "name" })
       .lean();
     for (const c of comments) {
       const key = c.argument.toString();

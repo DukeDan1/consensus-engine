@@ -3,6 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 
 const errorMessages: Record<string, string> = {
   CredentialsSignin: "Invalid email or password. Please try again.",
@@ -95,8 +96,8 @@ export default function LoginForm() {
                 </form>
                 {err && <div className="alert alert-danger mt-5 text-center" role="alert">{err}</div>}
                 <p className="text-center mt-3">
-                    <span>Need an account? </span><a href="/register">Register</a>
-                    <br></br><a href="/forgot-password">Forgot password?</a>
+                    <span>Need an account? </span><Link href="/register">Register</Link>
+                    <br></br><Link href="/forgot-password">Forgot password?</Link>
                 </p>
             </div>
         </div>

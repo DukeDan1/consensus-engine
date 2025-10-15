@@ -17,7 +17,7 @@ async function getTopic(id: string) {
 
   return {
     id: String(res.data._id),
-    title: res.data.title as string,
+    title: res.data.topic.title as string,
     description: (res.data as any).description ?? "",
     creatorName:
       (res.data as any).createdBy?.name ?? "Unknown",
@@ -43,7 +43,7 @@ export default async function TopicPage({ params }: PageProps) {
             <Link href="/">Home</Link>
           </li>
           <li className="breadcrumb-item">
-            <Link href="/topics">Topics</Link>
+            <Link href="/app">Topics</Link>
           </li>
           <li className="breadcrumb-item active" aria-current="page">
             {topic.title}
@@ -75,7 +75,6 @@ export default async function TopicPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Placeholder for arguments list you’ll add later */}
       <div className="card">
         <div className="card-body">
           <p className="mb-0 text-muted">

@@ -1,5 +1,6 @@
 "use client";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function RegisterPage() {
@@ -91,7 +92,7 @@ export default function RegisterPage() {
             </button>
             </form>
         {err && <div className="alert alert-danger mt-5" role="alert">{err}</div>}
-        <p className="text-center mt-3">Already have an account? <a href="/login">Log in</a></p>
+        <p className="text-center mt-3">Already have an account? <Link href="/login">Log in</Link></p>
       </div>
     </div>
   );

@@ -48,6 +48,7 @@ const ArgumentSchema = new Schema(
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     upvotes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
     downvotes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
+    isRemoved: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -59,6 +60,7 @@ const CommentSchema = new Schema(
     argument: { type: Schema.Types.ObjectId, ref: "Argument", required: true, index: true },
     body: { type: String, required: true, maxlength: 5000 },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    isRemoved: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -122,12 +124,14 @@ const ARGUMENTS = {
       body:
         "Public opinion and economic data have shifted since 2016. A second vote would provide democratic legitimacy given new information and post-Brexit realities.",
       createdByKey: "diana",
+      isRemoved: false,
     },
     {
       side: "con",
       body:
         "Re-running a national vote undermines democratic finality and risks deepening polarisation. Focus should be on making existing arrangements work better.",
       createdByKey: "bob",
+      isRemoved: false,
     },
   ],
   "israel-gaza-ceasefire": [
@@ -136,12 +140,14 @@ const ARGUMENTS = {
       body:
         "An immediate ceasefire would reduce civilian casualties, enable humanitarian aid, and create space for negotiations, including the release of hostages.",
       createdByKey: "alice",
+      isRemoved: false,
     },
     {
       side: "con",
       body:
         "A durable ceasefire requires conditions—such as verifiable security guarantees and hostage releases—otherwise violence may simply resume.",
       createdByKey: "evan",
+      isRemoved: false,
     },
   ],
   "ai-licensing": [
@@ -150,12 +156,14 @@ const ARGUMENTS = {
       body:
         "Licensing large-scale training can set safety baselines, ensure compute disclosures, and mitigate catastrophic misuse while preserving research carve-outs.",
       createdByKey: "farah",
+      isRemoved: false,
     },
     {
       side: "con",
       body:
         "Licensing risks regulatory capture, burdens startups, and pushes development offshore. Better to enforce targeted, outcome-based rules.",
       createdByKey: "charlie",
+      isRemoved: false,
     },
   ],
   ubi: [
@@ -164,12 +172,14 @@ const ARGUMENTS = {
       body:
         "A UBI reduces poverty, simplifies welfare, and strengthens bargaining power for low-income workers without bureaucracy-heavy means testing.",
       createdByKey: "alice",
+      isRemoved: false,
     },
     {
       side: "con",
       body:
         "It’s fiscally heavy and may dampen labour participation. Targeted transfers and earned income supports are more cost-effective.",
       createdByKey: "evan",
+      isRemoved: false,
     },
   ],
   "nuclear-expansion": [
@@ -178,12 +188,14 @@ const ARGUMENTS = {
       body:
         "Nuclear provides firm, low-carbon power at scale, complementing renewables and enhancing grid reliability during the transition.",
       createdByKey: "bob",
+      isRemoved: false,
     },
     {
       side: "con",
       body:
         "High capital costs, long build times, and waste risks argue for faster-to-deploy options like wind, solar, storage, and efficiency.",
       createdByKey: "diana",
+      isRemoved: false,
     },
   ],
 };
@@ -195,36 +207,42 @@ const COMMENTS = [
     argIndex: 0, // pro
     body: "Agree that circumstances changed—supply chains and trade frictions are clearer now.",
     createdByKey: "charlie",
+    isRemoved: false,
   },
   {
     topicKey: "brexit2ndref",
     argIndex: 1, // con
     body: "Democratic trust matters; moving on could help restore stability.",
     createdByKey: "farah",
+    isRemoved: false,
   },
   {
     topicKey: "israel-gaza-ceasefire",
     argIndex: 0, // pro
     body: "Humanitarian access should be the priority while talks continue.",
     createdByKey: "diana",
+    isRemoved: false,
   },
   {
     topicKey: "israel-gaza-ceasefire",
     argIndex: 1, // con
     body: "Without clear enforcement, ceasefires can be fragile.",
     createdByKey: "alice",
+    isRemoved: false,
   },
   {
     topicKey: "ai-licensing",
     argIndex: 0,
     body: "Could small labs be exempted below a compute threshold?",
     createdByKey: "evan",
+    isRemoved: false,
   },
   {
     topicKey: "ubi",
     argIndex: 1,
     body: "Curious what tax changes would fund it sustainably.",
     createdByKey: "bob",
+    isRemoved: false,
   },
 ];
 
@@ -258,6 +276,11 @@ function pickIds(list, keys = []) {
 
   // Wipe previous (safe for dev)
   await Promise.all([Topic.deleteMany({}), Argument.deleteMany({}), Comment.deleteMany({})]);
+
+  const existingUsers = await User.find({ email: { $in: USERS.map((u) => u.email) } });
+  if (existingUsers.length > 0) {
+    await User.deleteMany({ email: { $in: USERS.map((u) => u.email) } });
+  }
 
   // 1) Users
   const userDocs = await User.insertMany(USERS.map(({ name, email }) => ({ name, email })));
@@ -296,6 +319,7 @@ function pickIds(list, keys = []) {
         side: arg.side,
         body: arg.body,
         createdBy: author?._id,
+        isRemoved: arg.isRemoved || false,
         // small, realistic vote patterns
         upvotes: pickIds(usersIndexed, ["alice", "bob", "charlie", "diana", "evan"].sort(() => 0.5 - Math.random()).slice(0, 3)),
         downvotes: pickIds(usersIndexed, ["farah", "evan", "bob", "alice"].sort(() => 0.5 - Math.random()).slice(0, 2)),
@@ -315,6 +339,7 @@ function pickIds(list, keys = []) {
       argument: targetArg._id,
       body: c.body,
       createdBy: author?._id,
+      isRemoved: c.isRemoved || false,
     };
   });
   await Comment.insertMany(commentsPayload);
