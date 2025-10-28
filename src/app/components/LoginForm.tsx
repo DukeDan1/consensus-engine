@@ -18,8 +18,6 @@ const errorMessages: Record<string, string> = {
   LoggedOutRedirect: "You have been logged out successfully.",
 };
 
-
-
 export default function LoginForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
