@@ -13,7 +13,11 @@ const errorMessages: Record<string, string> = {
   AccessDenied: "Access denied. You do not have permission to sign in.",
   Configuration: "Authentication configuration error. Contact support.",
   Verification: "Email verification failed. Please request a new link.",
+  NotSignedInRedirect: "You must be signed in to access that page.",
+  PasswordResetRedirect: "Password reset successful! You can now log in.",
+  LoggedOutRedirect: "You have been logged out successfully.",
 };
+
 
 
 export default function LoginForm() {
@@ -24,10 +28,11 @@ export default function LoginForm() {
     const searchParams = useSearchParams();
     useEffect(() => {
         if (searchParams.get("reset") === "success") {
-            toast.success("Password reset successful! You can now log in.", { autoClose: 10000 });
-        }
-        else if (searchParams.get("logged_out") === "true") {
-            toast.info("You have been logged out.", { autoClose: 10000 });
+            toast.success(errorMessages.PasswordResetRedirect, { autoClose: 10000 });
+        } else if (searchParams.get("logged_out") === "true") {
+            toast.info(errorMessages.LoggedOutRedirect, { autoClose: 10000 });
+        } else if (searchParams.get("unauthed") === "true") {
+            toast.error(errorMessages.NotSignedInRedirect, { autoClose: 10000 });
         }
     }, [searchParams]);
     const router = useRouter();

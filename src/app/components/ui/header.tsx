@@ -19,7 +19,7 @@ export default function Header({ title }: HeaderProps) {
   const toggleMenu = () => setMenuOpen((s) => !s);
   const closeMenu = () => setMenuOpen(false);
 
-  const brandHref = session ? '/dashboard' : '/';
+  const brandHref = session ? '/app' : '/';
 
   const userInitials = useMemo(() => {
     const name = session?.user?.name || session?.user?.email || '';

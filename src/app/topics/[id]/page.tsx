@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
+import { redirectIfLoggedOut } from "@/app/lib/commonFunctions";
 
 type PageProps = {
   params: { id: string };
@@ -44,10 +45,9 @@ async function fetchTopicBundle(id: string, ordering: "relevant" | "newest", num
 }
 
 export default async function TopicPage({ params, searchParams }: PageProps) {
+  await redirectIfLoggedOut();
   const { id } = params;
-  const resolvedSearchParams = typeof searchParams === "object" && searchParams !== null
-    ? searchParams
-    : await searchParams;
+  const resolvedSearchParams = await Promise.resolve(searchParams);
   const ordering = (resolvedSearchParams?.ordering === "newest" ? "newest" : "relevant") as "relevant" | "newest";
   const numArgs = Math.max(1, Math.min(50, parseInt(resolvedSearchParams?.num_arguments ?? "10", 10) || 10));
 

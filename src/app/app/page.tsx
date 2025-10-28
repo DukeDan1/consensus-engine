@@ -1,5 +1,7 @@
 import axios from "axios";
 import TopTopicCard from "../components/app/TopicCard";
+import { redirectIfLoggedOut } from "../lib/commonFunctions";
+
 
 export type TopTopic = {
   _id: string;
@@ -26,6 +28,8 @@ async function getTopTopics(): Promise<TopTopic[]> {
 
 export default async function AppPage() {
   const topics = await getTopTopics();
+
+  await redirectIfLoggedOut();
 
   return (
     <div className="container py-4">
