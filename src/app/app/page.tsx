@@ -1,6 +1,8 @@
-import axios from "axios";
 import TopTopicCard from "../components/app/TopicCard";
 import { redirectIfLoggedOut } from "../lib/commonFunctions";
+import { headers } from "next/headers";
+
+export const dynamic = "force-dynamic"; // don't prerender; fetch at request time
 
 
 export type TopTopic = {
@@ -13,23 +15,30 @@ export type TopTopic = {
 };
 
 async function getTopTopics(): Promise<TopTopic[]> {
-    const res = await axios.get(
-        `${process.env.NEXTJS_APP_BASE_URL ?? ""}/api/top-topics`,
-        { headers: { "Cache-Control": "no-store" } }
-    );
-    const data = res.data;
+  // Build an absolute base URL at runtime to call our API route
+  const h = await headers();
+  const host = h.get("host");
+  const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+  const base = process.env.NEXTJS_APP_BASE_URL && process.env.NEXTJS_APP_BASE_URL.length > 0
+    ? process.env.NEXTJS_APP_BASE_URL
+    : `${protocol}://${host}`;
 
-    if (!data) {
-        return [];
-    }
-
-    return data.topics ?? [];
+  try {
+    const res = await fetch(`${base}/api/top-topics`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.topics ?? [];
+  } catch {
+    // On connection errors, return empty to keep page rendering
+    return [];
+  }
 }
 
 export default async function AppPage() {
-  const topics = await getTopTopics();
-
+  // Redirect unauthenticated users before doing any fetches
   await redirectIfLoggedOut();
+
+  const topics = await getTopTopics();
 
   return (
     <div className="container py-4">

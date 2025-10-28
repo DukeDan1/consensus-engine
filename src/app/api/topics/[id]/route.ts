@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
 import { Topic } from "@/app/models/topic";
@@ -9,10 +9,11 @@ import User from "@/app/models/user";
 // GET /api/topics/:id=?num_arguments=10&ordering=relevant|newest
 // Returns topic details + ordered arguments + comments per argument (relevant ordering by score/upvotes)
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  ctx: any
 ) {
-  const { id } = await params;
+  const resolvedCtx = await Promise.resolve(ctx.params);
+  const id = resolvedCtx.id as string;
   const { searchParams } = new URL(request.url);
   const numArgsRaw = searchParams.get("num_arguments");
   const ordering = (searchParams.get("ordering") || "relevant").toLowerCase();

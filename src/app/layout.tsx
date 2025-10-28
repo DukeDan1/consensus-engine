@@ -23,7 +23,6 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href="/favicon.ico" />
-        <link rel="stylesheet" href="/overrides.css" />
       </head>
       <body className={roboto.className}>
         {/* If BootstrapClient imports bootstrap.bundle JS, keep it. */}

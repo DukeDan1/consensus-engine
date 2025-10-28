@@ -2,12 +2,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 import { redirectIfLoggedOut } from "@/app/lib/commonFunctions";
-
-type PageProps = {
-  params: { id: string };
-  searchParams?: { ordering?: string; num_arguments?: string };
-};
-
 export const dynamic = "force-dynamic"; // render server-side on each request
 
 type ApiResponse = {
@@ -44,9 +38,9 @@ async function fetchTopicBundle(id: string, ordering: "relevant" | "newest", num
   return res?.data ?? null;
 }
 
-export default async function TopicPage({ params, searchParams }: PageProps) {
+export default async function TopicPage({ params, searchParams }: any) {
   await redirectIfLoggedOut();
-  const { id } = params;
+  const { id } = await Promise.resolve(params);
   const resolvedSearchParams = await Promise.resolve(searchParams);
   const ordering = (resolvedSearchParams?.ordering === "newest" ? "newest" : "relevant") as "relevant" | "newest";
   const numArgs = Math.max(1, Math.min(50, parseInt(resolvedSearchParams?.num_arguments ?? "10", 10) || 10));
