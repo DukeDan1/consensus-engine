@@ -19,7 +19,7 @@ export default function Header({ title }: HeaderProps) {
   const toggleMenu = () => setMenuOpen((s) => !s);
   const closeMenu = () => setMenuOpen(false);
 
-  const brandHref = session ? '/dashboard' : '/';
+  const brandHref = session ? '/app' : '/';
 
   const userInitials = useMemo(() => {
     const name = session?.user?.name || session?.user?.email || '';
@@ -111,8 +111,8 @@ export default function Header({ title }: HeaderProps) {
                   onMouseLeave={closeMenu}
                 >
                   <li>
-                    <Link className="dropdown-item" href="/dashboard" onClick={closeMenu}>
-                      Dashboard
+                    <Link className="dropdown-item" href="/app" onClick={closeMenu}>
+                      Home
                     </Link>
                   </li>
                   <li>

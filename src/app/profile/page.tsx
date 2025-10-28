@@ -46,7 +46,7 @@ export default function ProfileSetupPage() {
           const user = data.user;
           if (res.ok && user) {
             if (user.onboardingStep && user.onboardingStep >= 2) {
-              router.push("/dashboard"); // already completed
+              router.push("/app"); // already completed
               return;
             }
 

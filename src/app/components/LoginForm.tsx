@@ -1,8 +1,9 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 
 const errorMessages: Record<string, string> = {
   CredentialsSignin: "Invalid email or password. Please try again.",
@@ -12,8 +13,10 @@ const errorMessages: Record<string, string> = {
   AccessDenied: "Access denied. You do not have permission to sign in.",
   Configuration: "Authentication configuration error. Contact support.",
   Verification: "Email verification failed. Please request a new link.",
+  NotSignedInRedirect: "You must be signed in to access that page.",
+  PasswordResetRedirect: "Password reset successful! You can now log in.",
+  LoggedOutRedirect: "You have been logged out successfully.",
 };
-
 
 export default function LoginForm() {
     const [email, setEmail] = useState("");
@@ -23,10 +26,11 @@ export default function LoginForm() {
     const searchParams = useSearchParams();
     useEffect(() => {
         if (searchParams.get("reset") === "success") {
-            toast.success("Password reset successful! You can now log in.", { autoClose: 10000 });
-        }
-        else if (searchParams.get("logged_out") === "true") {
-            toast.info("You have been logged out.", { autoClose: 10000 });
+            toast.success(errorMessages.PasswordResetRedirect, { autoClose: 10000 });
+        } else if (searchParams.get("logged_out") === "true") {
+            toast.info(errorMessages.LoggedOutRedirect, { autoClose: 10000 });
+        } else if (searchParams.get("unauthed") === "true") {
+            toast.error(errorMessages.NotSignedInRedirect, { autoClose: 10000 });
         }
     }, [searchParams]);
     const router = useRouter();
@@ -40,7 +44,7 @@ export default function LoginForm() {
             redirect: false,
             email,
             password,
-            callbackUrl: "/profile",
+            callbackUrl: "/app",
             });
 
             setLoading(false);
@@ -48,7 +52,7 @@ export default function LoginForm() {
             if (res?.error) {
                 setErr(errorMessages[res.error] || "Invalid email or password");
             } else {
-                router.push("/profile");
+                router.push("/app");
             }
         } catch(err) {
             console.error(err);
@@ -95,12 +99,11 @@ export default function LoginForm() {
                 </form>
                 {err && <div className="alert alert-danger mt-5 text-center" role="alert">{err}</div>}
                 <p className="text-center mt-3">
-                    <span>Need an account? </span><a href="/register">Register</a>
-                    <br></br><a href="/forgot-password">Forgot password?</a>
+                    <span>Need an account? </span><Link href="/register">Register</Link>
+                    <br></br><Link href="/forgot-password">Forgot password?</Link>
                 </p>
             </div>
         </div>
-        <ToastContainer />
      </>
     );
 }

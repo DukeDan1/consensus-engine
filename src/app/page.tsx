@@ -1,4 +1,7 @@
-export default function Home() {
+import { redirectIfLoggedIn } from "./lib/commonFunctions";
+
+export default async function Home() {
+  await redirectIfLoggedIn();
   return (
     <div className="container">
       <h1>Welcome</h1>

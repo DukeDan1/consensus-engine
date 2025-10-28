@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import User from "@/app/models/user";
 import { validate } from "email-validator";
-import { signIn } from "next-auth/react";
 import { sendEmail } from "@/app/services/emailService";
 import { hashPassword } from "@/app/services/passwordService";
 import { dbConnect } from "@/app/lib/mongoose";
@@ -30,7 +29,6 @@ export async function POST(req: Request) {
     const user = await User.create({ email, passwordHash: hash, name });
 
     sendWelcomeEmail(user.email, user.name || "User");
-    signIn("email", { email, redirect: false });
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error(e);
