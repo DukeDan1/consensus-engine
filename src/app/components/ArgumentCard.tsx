@@ -82,7 +82,7 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                                 </span>
                                 {ai ? (
                                     <>
-                                        {ai.isFact ? (
+                                        {ai.isFact && (
                                             <span
                                                 ref={setAiBadgeRef}
                                                 className="badge text-bg-purple"
@@ -93,7 +93,8 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                                             >
                                                 FACT
                                             </span>
-                                        ) : ai.isOpinion ? (
+                                        )}
+                                        {ai.isOpinion && (
                                             <span
                                                 ref={setAiBadgeRef}
                                                 className="badge text-bg-info"
@@ -104,7 +105,8 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                                             >
                                                 OPINION
                                             </span>
-                                        ) : (
+                                        )}
+                                        {!ai.isFact && !ai.isOpinion && (
                                             <span className="badge text-bg-light">UNCLASSIFIED</span>
                                         )}
                                     </>
