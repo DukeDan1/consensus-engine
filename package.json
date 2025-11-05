@@ -30,6 +30,7 @@
     "next": "^15.5.2",
     "next-auth": "^4.24.11",
     "nodemailer": "^6.10.1",
+    "openai": "^6.8.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-toastify": "^11.0.5",

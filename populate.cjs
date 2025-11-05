@@ -43,12 +43,17 @@ const Topic = mongoose.model("Topic", TopicSchema);
 const ArgumentSchema = new Schema(
   {
     topic: { type: Schema.Types.ObjectId, ref: "Topic", required: true, index: true },
-    side: { type: String, enum: ["pro", "con"], required: true, index: true },
+  side: { type: String, enum: ["for", "against"], required: true, index: true },
     body: { type: String, required: true, trim: true, maxlength: 10000 },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     upvotes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
     downvotes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
     isRemoved: { type: Boolean, default: false },
+    aiAnalysis: {
+      isFact: { type: Boolean, default: false },
+      isOpinion: { type: Boolean, default: true },
+      justification: { type: String, default: "" },
+    },
   },
   { timestamps: true }
 );
@@ -116,18 +121,18 @@ const TOPICS = [
   },
 ];
 
-// Arguments per topic (pro/con)
+// Arguments per topic (for/against)
 const ARGUMENTS = {
   brexit2ndref: [
     {
-      side: "pro",
+  side: "for",
       body:
         "Public opinion and economic data have shifted since 2016. A second vote would provide democratic legitimacy given new information and post-Brexit realities.",
       createdByKey: "diana",
       isRemoved: false,
     },
     {
-      side: "con",
+  side: "against",
       body:
         "Re-running a national vote undermines democratic finality and risks deepening polarisation. Focus should be on making existing arrangements work better.",
       createdByKey: "bob",
@@ -136,14 +141,14 @@ const ARGUMENTS = {
   ],
   "israel-gaza-ceasefire": [
     {
-      side: "pro",
+  side: "for",
       body:
         "An immediate ceasefire would reduce civilian casualties, enable humanitarian aid, and create space for negotiations, including the release of hostages.",
       createdByKey: "alice",
       isRemoved: false,
     },
     {
-      side: "con",
+  side: "against",
       body:
         "A durable ceasefire requires conditions—such as verifiable security guarantees and hostage releases—otherwise violence may simply resume.",
       createdByKey: "evan",
@@ -152,14 +157,14 @@ const ARGUMENTS = {
   ],
   "ai-licensing": [
     {
-      side: "pro",
+  side: "for",
       body:
         "Licensing large-scale training can set safety baselines, ensure compute disclosures, and mitigate catastrophic misuse while preserving research carve-outs.",
       createdByKey: "farah",
       isRemoved: false,
     },
     {
-      side: "con",
+  side: "against",
       body:
         "Licensing risks regulatory capture, burdens startups, and pushes development offshore. Better to enforce targeted, outcome-based rules.",
       createdByKey: "charlie",
@@ -168,14 +173,14 @@ const ARGUMENTS = {
   ],
   ubi: [
     {
-      side: "pro",
+  side: "for",
       body:
         "A UBI reduces poverty, simplifies welfare, and strengthens bargaining power for low-income workers without bureaucracy-heavy means testing.",
       createdByKey: "alice",
       isRemoved: false,
     },
     {
-      side: "con",
+  side: "against",
       body:
         "It’s fiscally heavy and may dampen labour participation. Targeted transfers and earned income supports are more cost-effective.",
       createdByKey: "evan",
@@ -184,14 +189,14 @@ const ARGUMENTS = {
   ],
   "nuclear-expansion": [
     {
-      side: "pro",
+  side: "for",
       body:
         "Nuclear provides firm, low-carbon power at scale, complementing renewables and enhancing grid reliability during the transition.",
       createdByKey: "bob",
       isRemoved: false,
     },
     {
-      side: "con",
+  side: "against",
       body:
         "High capital costs, long build times, and waste risks argue for faster-to-deploy options like wind, solar, storage, and efficiency.",
       createdByKey: "diana",
@@ -204,28 +209,28 @@ const ARGUMENTS = {
 const COMMENTS = [
   {
     topicKey: "brexit2ndref",
-    argIndex: 0, // pro
+  argIndex: 0, // for
     body: "Agree that circumstances changed—supply chains and trade frictions are clearer now.",
     createdByKey: "charlie",
     isRemoved: false,
   },
   {
     topicKey: "brexit2ndref",
-    argIndex: 1, // con
+  argIndex: 1, // against
     body: "Democratic trust matters; moving on could help restore stability.",
     createdByKey: "farah",
     isRemoved: false,
   },
   {
     topicKey: "israel-gaza-ceasefire",
-    argIndex: 0, // pro
+  argIndex: 0, // for
     body: "Humanitarian access should be the priority while talks continue.",
     createdByKey: "diana",
     isRemoved: false,
   },
   {
     topicKey: "israel-gaza-ceasefire",
-    argIndex: 1, // con
+  argIndex: 1, // against
     body: "Without clear enforcement, ceasefires can be fragile.",
     createdByKey: "alice",
     isRemoved: false,
@@ -266,6 +271,28 @@ function pickIds(list, keys = []) {
     }
   });
   return ids;
+}
+
+// Simple heuristic to produce an aiAnalysis object for each argument.
+// This is intentionally lightweight - it gives a plausible example for seeding.
+function analyzeTextForAi(body) {
+  const text = (body || "").toLowerCase();
+  const factualSignals = ["evidence", "data", "study", "observations", "measured", "measurable", "statistics", "parallax", "doppler", "physics"];
+  const matches = factualSignals.some((w) => text.includes(w));
+  if (matches) {
+    return {
+      isFact: true,
+      isOpinion: false,
+      justification:
+        "This claim contains references to verifiable evidence or measurable observations and can be supported by empirical data, so it is treated as fact-like in this seed.",
+    };
+  }
+  return {
+    isFact: false,
+    isOpinion: true,
+    justification:
+      "This claim primarily expresses a value judgement or policy preference that depends on normative considerations rather than purely empirical proof.",
+  };
 }
 
 // ---------- Main Seed ----------
@@ -323,6 +350,8 @@ function pickIds(list, keys = []) {
         // small, realistic vote patterns
         upvotes: pickIds(usersIndexed, ["alice", "bob", "charlie", "diana", "evan"].sort(() => 0.5 - Math.random()).slice(0, 3)),
         downvotes: pickIds(usersIndexed, ["farah", "evan", "bob", "alice"].sort(() => 0.5 - Math.random()).slice(0, 2)),
+        // AI analysis seed data
+        aiAnalysis: analyzeTextForAi(arg.body),
       });
     }
   }

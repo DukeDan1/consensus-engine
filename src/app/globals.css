@@ -28,3 +28,14 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+.text-bg-purple {
+  --bs-bg-opacity: 1;
+  background-color: #920fd4d1 !important;
+  color: #fff !important;
+}
+
+.tooltip .tooltip-inner {
+  font-size: 0.9rem;      /* or whatever you like (e.g. 1.2rem, 14px, etc.) */
+  padding: 0.5em 0.75em; /* optional: tweak spacing if larger text */
+}

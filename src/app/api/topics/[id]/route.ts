@@ -84,9 +84,12 @@ export async function GET(
       createdAt: topic.createdAt,
       updatedAt: topic.updatedAt,
     },
-    arguments: argumentsList.map(a => ({
+    arguments: argumentsList.map(a => {
+      const rawSide = (a as any).side as string;
+      const normalizedSide = rawSide === 'pro' ? 'for' : (rawSide === 'con' ? 'against' : rawSide);
+      return ({
       id: a._id,
-      side: a.side,
+      side: normalizedSide,
       body: a.body,
       createdBy: a.createdBy,
       upvoteCount: a.upvoteCount,
@@ -94,7 +97,8 @@ export async function GET(
       score: a.score,
       createdAt: a.createdAt,
       comments: commentsByArgument[a._id.toString()] || [],
-    })),
+      aiAnalysis: a.aiAnalysis,
+    })}),
     meta: {
       ordering: isRelevant ? "relevant" : "newest",
       returnedArguments: argumentsList.length,

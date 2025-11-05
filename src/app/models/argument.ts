@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-export type ArgumentSide = "pro" | "con";
+export type ArgumentSide = "for" | "against";
+
 
 export interface IArgument extends Document {
   topic: Types.ObjectId;
@@ -13,11 +14,16 @@ export interface IArgument extends Document {
   updatedAt: Date;
   editedAt?: Date;
   isRemoved: boolean;
+  aiAnalysis?: {
+    isFact: boolean;
+    isOpinion: boolean;
+    justification: string;
+  }
 }
 
 const ArgumentSchema = new Schema<IArgument>({
   topic: { type: Schema.Types.ObjectId, ref: "Topic", required: true, index: true },
-  side: { type: String, enum: ["pro", "con"], required: true, index: true },
+  side: { type: String, enum: ["for", "against"], required: true, index: true },
   body: { type: String, required: true, trim: true, maxlength: 10000 },
   createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
   upvoteCount: { type: Number, default: 0 },
@@ -25,6 +31,11 @@ const ArgumentSchema = new Schema<IArgument>({
   score: { type: Number, default: 0 },
   editedAt: { type: Date },
   isRemoved: { type: Boolean, default: false, index: true },
+  aiAnalysis: {
+    isFact: { type: Boolean },
+    isOpinion: { type: Boolean },
+    justification: { type: String }
+  }
 }, { timestamps: true });
 
 ArgumentSchema.index({ topic: 1, score: -1, createdAt: -1 });
