@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { dbConnect } from "@/app/lib/mongoose";
 import { Argument } from "@/app/models/argument";
-import { getAIAnlysisForArgument } from "@/app/services/openaiService";
+import { getAIAnalysisForArgument } from "@/app/services/openaiService";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
 
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
         });
         
         // Asynchronously get AI analysis and update the argument
-        getAIAnlysisForArgument(created.body).then(analysis => {
+        getAIAnalysisForArgument(created.body).then(analysis => {
             Argument.findByIdAndUpdate(created._id, { aiAnalysis: analysis }).exec().catch(err => {
                 console.error("Failed to update AI analysis for argument", created._id, err);
             });

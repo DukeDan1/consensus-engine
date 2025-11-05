@@ -6,33 +6,35 @@ import { timeAgo } from "@/app/lib/commonFunctions";
 
 
 export default function ArgumentCard({ argument }: { argument: TopicApiResponse["arguments"][number] }) {
-  const aiAnalysisJustificationRef = useRef<HTMLSpanElement | null>(null);
+  // Use a callback ref + instance holder so tooltips re-init reliably
+  const tooltipInstanceRef = useRef<any>(null);
 
 
-  useEffect(() => {
-    // Initialize Bootstrap tooltip for the AI badge (FACT or OPINION) if present
-    if (!aiAnalysisJustificationRef.current || !argument?.aiAnalysis) return;
-
-    let tooltipInstance: any;
-    // Import Tooltip from bootstrap's ESM module
+  // Callback ref: when the badge node mounts/changes, (re)initialize the tooltip
+  const setAiBadgeRef = (node: HTMLSpanElement | null) => {
+    // Dispose any existing instance first
+    if (tooltipInstanceRef.current) {
+      try { tooltipInstanceRef.current.dispose?.(); } catch {}
+      tooltipInstanceRef.current = null;
+    }
+    if (!node || !argument?.aiAnalysis) return;
     import("bootstrap/js/dist/tooltip")
       .then((mod) => {
         const Tooltip = (mod as any).default ?? (mod as any).Tooltip;
-        tooltipInstance = new Tooltip(aiAnalysisJustificationRef.current);
+        tooltipInstanceRef.current = new Tooltip(node);
       })
       .catch(() => {
         // ignore if bootstrap not available
       });
+  };
 
+  // Ensure disposal on unmount
+  useEffect(() => {
     return () => {
-      try {
-        tooltipInstance?.dispose?.();
-      } catch {
-        // ignore disposal errors
-      }
+      try { tooltipInstanceRef.current?.dispose?.(); } catch {}
+      tooltipInstanceRef.current = null;
     };
-
-  }, [argument?.aiAnalysis?.isFact, argument?.aiAnalysis?.isOpinion]);
+  }, []);
 
   const ai = argument.aiAnalysis;
   const [upvotes, setUpvotes] = useState<number>((argument as any).upvoteCount ?? 0);
@@ -70,11 +72,11 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
           <span className={`badge ${argument.side === "for" ? "text-bg-success" : "text-bg-danger"}`}>
             {argument.side.toUpperCase()}
                     </span>
-                    {ai ? (
+          {ai ? (
                         <>
                         {ai.isFact ? (
                             <span
-                            ref={aiAnalysisJustificationRef}
+              ref={setAiBadgeRef}
                             className="badge text-bg-purple"
                             data-bs-toggle="tooltip"
                             data-bs-placement="top"
@@ -85,7 +87,7 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                             </span>
                         ) : ai.isOpinion ? (
                             <span
-                                ref={aiAnalysisJustificationRef}
+                ref={setAiBadgeRef}
                                 className="badge text-bg-info"
                                 data-bs-toggle="tooltip"
                                 data-bs-placement="top"

@@ -4,7 +4,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function getAIAnlysisForArgument(argumentText: string) {
+export async function getAIAnalysisForArgument(argumentText: string) {
     const response = await openai.responses.create({
         prompt: {
             "id": "pmpt_68f0c016b1448190a6d11717cdd84e7c0142635054d01cbe",

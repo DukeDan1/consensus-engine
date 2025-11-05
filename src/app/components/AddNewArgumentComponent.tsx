@@ -45,7 +45,7 @@ export default function AddNewArgumentComponent({ topicId }: { topicId: string }
             {!showForm ? (
                 <button
                     type="button"
-                    className="btn btn btn-outline-success"
+                    className="btn btn-outline-success"
                     onClick={() => setShowForm(true)}
                     aria-label="Add argument"
                 >
