@@ -3,6 +3,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } 
 import TopTopicCard from "@/app/components/topics/TopicCard";
 import CreateNewTopic from "@/app/components/topics/CreateNewTopic";
 import TopicFilters, { TopicFiltersValue } from "@/app/components/topics/TopicFilters";
+import SearchLoading from "@/app/components/topics/SearchLoading";
 
 export type TopicsBrowserHandle = {
   refresh: () => void;
@@ -173,7 +174,7 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
         <TopicFilters value={filters} onChange={setFilters} onSearch={onSearch} />
       </div>
 
-      {loading && <div className="text-muted">Loading…</div>}
+      {loading && <SearchLoading />}
       {error && <div className="alert alert-danger py-2">{error}</div>}
 
       {!loading && topics.length === 0 && <p className="text-muted">No topics match your search.</p>}
