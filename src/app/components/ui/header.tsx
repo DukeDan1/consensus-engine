@@ -96,7 +96,6 @@ export default function Header({ title }: HeaderProps) {
                       height={40}
                       className="rounded-circle"
                       style={{ objectFit: 'cover' }}
-                      priority
                     />
                   ) : (
                     <div
