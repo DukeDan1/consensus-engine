@@ -28,8 +28,11 @@ export async function GET(request: NextRequest) {
 
   const match: Record<string, any> = { isActive: true };
 
+  // Build a case-insensitive OR filter across title and creator
+  const or: any[] = [];
+
   if (q) {
-    match.title = { $regex: q, $options: "i" };
+    or.push({ title: { $regex: q, $options: "i" } });
   }
 
   if (creator) {
@@ -40,8 +43,13 @@ export async function GET(request: NextRequest) {
       ],
     }).select({ _id: 1 });
     const ids = users.map((u) => u._id);
-    // If no users match, ensure no topics match
-    match.createdBy = ids.length ? { $in: ids } : { $in: [] };
+    if (ids.length) {
+      or.push({ createdBy: { $in: ids } });
+    }
+  }
+
+  if (or.length) {
+    match.$or = or;
   }
 
   // Count total for pagination

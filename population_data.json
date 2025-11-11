@@ -530,6 +530,1293 @@
       "key": "should_companies_adopt_a_four-day_workweek?",
       "title": "Should companies adopt a four-day workweek?",
       "description": "A debate about Should companies adopt a four-day workweek?.",
+      "createdByKey": "alice",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "A four-day workweek improves employee well-being by reducing burnout and stress, leading to better work–life balance.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Multiple large-scale pilots (e.g., in Iceland and the UK) reported lower burnout and higher well-being, though the extent and generalizability are debated."
+          },
+          "comments": [
+            {
+              "body": "My company tested this and sick days dropped noticeably.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Well-being is subjective, but our survey scores went up.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Productivity can increase because people focus on higher-value tasks and cut low-impact meetings when time is scarce.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Several pilots reported stable or higher output with reduced hours; mechanisms (fewer meetings, better prioritization) are plausible but context-dependent."
+          },
+          "comments": [
+            {
+              "body": "We cut two recurring meetings and got the same work done.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Depends on the team’s discipline; otherwise work spills into the fifth day anyway.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Fewer commuting days reduce carbon emissions and traffic congestion.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Commuting constitutes a measurable share of emissions; reducing commute frequency directly lowers associated emissions, all else equal."
+          },
+          "comments": [
+            {
+              "body": "Public transit load was lighter on Fridays during our trial.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Remote work already achieved this for many; marginal gains may be smaller.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "It helps attract and retain talent in competitive labor markets.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Recruiting data from trials show higher applicant interest and lower turnover, but effects vary by industry and compensation."
+          },
+          "comments": [
+            {
+              "body": "Our job postings got twice the usual applicants.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Retention improved, but mainly for mid-career staff.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Companies can save on facilities, utilities, and ancillary operating costs by closing one extra day.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Fewer open days reduce variable costs like utilities and on-site services; magnitude depends on the operation’s cost structure."
+          },
+          "comments": [
+            {
+              "body": "We saved on HVAC and cafeteria staffing.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Savings are minimal for fully remote teams.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "A shorter week incentivizes automation and process improvement to maintain output with fewer hours.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Constraint-driven optimization is a known effect; several pilots cite workflow redesign and automation as enablers of maintained output."
+          },
+          "comments": [
+            {
+              "body": "We finally automated reporting because we had to.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "This assumes upfront investment capacity, which not all teams have.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Customer service and 24/7 operations can suffer from reduced availability if coverage isn’t extended.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Reduced staffed hours objectively decrease availability unless shifts are staggered or headcount increases."
+          },
+          "comments": [
+            {
+              "body": "Our NPS dipped when Fridays were understaffed.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "Rotating schedules can mitigate this, but it gets complex.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Maintaining five-day coverage often requires hiring more people or paying overtime, increasing labor costs.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "To keep service hours constant with fewer hours per employee, total labor hours must be replaced, raising costs unless productivity offsets it."
+          },
+          "comments": [
+            {
+              "body": "Retail here can’t just close; we had to add weekend shifts.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Overtime erased any savings for us.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "It may widen inequities between desk-based workers who can adopt it and frontline roles that cannot.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Feasibility differs across roles; differential benefits can create perceived or real inequity within organizations."
+          },
+          "comments": [
+            {
+              "body": "Warehouse staff couldn’t switch, which felt unfair.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Offering other perks helped, but not fully.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Compressed schedules (e.g., 4×10 hours) can increase fatigue and safety risks, negating well-being gains.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Longer daily shifts are associated with higher fatigue; whether firms compress or truly reduce hours determines the risk."
+          },
+          "comments": [
+            {
+              "body": "Ten-hour shifts were brutal in summer for field techs.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "True four-day/32-hour pilots didn’t have this problem for us.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Cross-team coordination suffers when different teams pick different off-days, slowing decision cycles.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Asynchronous availability reduces overlapping working hours; organizations report scheduling friction when off-days are non-uniform."
+          },
+          "comments": [
+            {
+              "body": "We had Slack ping-pong over long weekends.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Standardizing Friday off helped, but clients disliked it.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Employers may use it to justify pay cuts or higher intensity per hour, leading to hidden overwork.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There are documented cases of workload compression or unchanged expectations, causing off-the-clock work or burnout."
+          },
+          "comments": [
+            {
+              "body": "We were told to hit the same KPIs with fewer hours; stress went up.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Clear workload scoping is crucial; otherwise it backfires.",
+              "createdByKey": "diana"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "should_cities_ban_private_cars_in_downtown_areas?",
+      "title": "Should cities ban private cars in downtown areas?",
+      "description": "A debate about Should cities ban private cars in downtown areas?.",
+      "createdByKey": "charlie",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Car restrictions in city centers reduce congestion and make remaining traffic (buses, emergency, delivery) flow more reliably.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Multiple cities that implemented low-traffic or car-free cores (e.g., Oslo, Madrid Central, London with access restrictions) reported lower inner-area traffic volumes and improved bus speeds. Effects vary by design, but congestion reduction within the restricted zone is documented."
+          },
+          "comments": [
+            {
+              "body": "Bus times dropped in my city after a new bus lane + car access rules.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Depends if they also tighten curbside delivery—double parking can kill the gains.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Air quality improves when private car traffic is restricted, leading to measurable health benefits.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Empirical studies link reductions in NO2/PM to traffic restrictions and low-emission zones; short-term drops in pollutants have been measured following car access limits, with associated reductions in asthma exacerbations."
+          },
+          "comments": [
+            {
+              "body": "During lockdown we saw cleaner air—this is a permanent way to capture some of that.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Bans encourage modal shift to public transit, walking, and cycling, creating a more efficient transport mix.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Evidence from pedestrianized areas and low-traffic neighborhoods shows increases in cycling and walking and higher transit ridership when infrastructure and service improvements accompany restrictions."
+          },
+          "comments": [
+            {
+              "body": "Only works if transit is frequent and safe at night.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Our bike counts doubled after a central street went car-free.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Reclaiming road space enables more parks, outdoor dining, and housing, improving urban livability.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that reducing lanes and parking frees land/curb space; whether this 'improves livability' is a value judgment, though supported by many resident satisfaction surveys."
+          },
+          "comments": [
+            {
+              "body": "We turned two parking lanes into a plaza and weekend markets—huge hit.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Fewer vehicles in dense areas reduce crash risk and severity, improving street safety.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Lower vehicle volumes and speeds correlate with fewer and less severe collisions. Cities implementing traffic calming and access restrictions often report reduced injuries."
+          },
+          "comments": [
+            {
+              "body": "As a parent, I feel safer letting kids walk to the library now.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Cutting downtown car trips helps cities meet climate targets by reducing tailpipe emissions and enabling more efficient transit.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Transportation is a major urban emissions source; restricting high-emission modes and shifting trips lowers operational emissions, especially when paired with electrified transit."
+          },
+          "comments": [
+            {
+              "body": "Scope 3 and induced demand elsewhere still matter, but it’s a start.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Bans can disproportionately burden people with disabilities or mobility impairments who rely on door-to-door vehicle access.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that some disabled people depend on private vehicles and paratransit; whether a given policy is burdensome depends on design (exemptions, accessible taxis, curb access). Equity impacts require careful mitigation."
+          },
+          "comments": [
+            {
+              "body": "Exemptions and blue-badge access lanes should be non-negotiable.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Paratransit wait times are already bad; a ban could make it worse without investment.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Downtown businesses may lose customers who prefer to drive, harming revenue.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Economic outcomes are mixed across cases: some areas see higher footfall and sales after pedestrianization, others see declines during transition. The claim is a prediction and context-dependent, not a universal fact."
+          },
+          "comments": [
+            {
+              "body": "Our shop saw fewer suburban customers for a few months, then tourists and locals made up the difference.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "If transit is inadequate—especially late nights—workers face longer, less safe commutes.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a plausible risk frequently reported anecdotally, but not universally true. It hinges on the local transit network, frequency, and safety; evidence varies widely."
+          },
+          "comments": [
+            {
+              "body": "Service-hour extensions must come first, not after the ban.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "Ride-hailing isn’t affordable for regular shifts.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Traffic may be displaced to surrounding neighborhoods, increasing pollution and noise at the edges of the zone.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Research shows both displacement and 'traffic evaporation' effects; outcomes depend on network design and complementary measures. Without mitigation, edge streets can see higher volumes."
+          },
+          "comments": [
+            {
+              "body": "Our ring road got slammed after the trial started.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "Later signal tweaks eased it—design matters.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Deliveries and logistics become more complex and costly, raising prices for consumers.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Some cities manage with timed freight windows, microhubs, and cargo bikes; others face higher costs. The direction and magnitude of cost impacts are uncertain and context-specific."
+          },
+          "comments": [
+            {
+              "body": "Microhubs worked for parcels, but food wholesalers struggled.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Quieter streets improve sleep and reduce stress for residents and visitors.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Measured sound levels decline with fewer motor vehicles; chronic noise exposure is linked to stress and health impacts. Noise reduction is a documented effect of traffic calming and restrictions."
+          },
+          "comments": [
+            {
+              "body": "Nighttime dB levels on my block dropped noticeably after the pilot.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Pedestrianized districts often see increased foot traffic and tourism, benefiting many retailers and cultural venues.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Many case studies (e.g., major European pedestrian zones) report higher footfall and retail sales, though results vary by sector and implementation quality."
+          },
+          "comments": [
+            {
+              "body": "Our museum attendance rose after the street outside closed to cars.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Extreme weather makes walking and cycling impractical for many, reducing accessibility without car access.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Weather can deter active travel, but infrastructure (shelters, snow clearance) and transit quality mediate impacts. The claim is a context-specific judgment rather than a universal fact."
+          },
+          "comments": [
+            {
+              "body": "Summer heat waves make a 15-minute walk rough without shade.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Implementation and enforcement are complex, risking confusion, fines, and unequal policing.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Complex schemes (permits, ANPR, time windows) can be hard to navigate. Evidence of disparate enforcement exists in some traffic contexts, but impacts depend on policy design and oversight."
+          },
+          "comments": [
+            {
+              "body": "Clear signage and a grace period helped in our rollout.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Transparency on citations by neighborhood is crucial.",
+              "createdByKey": "alice"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "should_countries_adopt_a_four-day_workweek?",
+      "title": "Should countries adopt a four-day workweek?",
+      "description": "A debate about Should countries adopt a four-day workweek?.",
+      "createdByKey": "charlie",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Pilot programs in multiple countries have shown that moving to a four-day (32–36 hour) workweek can maintain or even improve productivity while keeping output steady.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Multiple well-documented trials (e.g., in Iceland, the UK, and corporate pilots elsewhere) reported maintained or improved productivity with shorter weeks."
+          },
+          "comments": [
+            {
+              "body": "Our startup did this and revenue per head actually went up after a few months.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Curious whether those trials were mostly knowledge work; retail might differ.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "A shorter workweek improves work-life balance, which can reduce burnout and turnover.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a value and outcome prediction; while supported by surveys and some studies on stress, it’s not universally guaranteed across roles and organizations."
+          },
+          "comments": [
+            {
+              "body": "Burnout dropped on my team when we tried 4x8s; people used Fridays for errands.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Fewer commuting days lower transportation emissions and urban congestion.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "All else equal, reducing commute frequency reduces vehicle miles traveled and associated emissions."
+          },
+          "comments": [
+            {
+              "body": "Transit agencies might see lower fare revenue though—tradeoffs matter.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Offering a four-day week is a strong talent attraction and retention lever in competitive labor markets.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Recruiting data and employer surveys commonly report schedule flexibility as a top attractor; however, impact varies by industry and role."
+          },
+          "comments": [
+            {
+              "body": "We saw applicant volume double after advertising 4-day weeks for engineers.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "In hospitality, applicants ask about tips, not schedules.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "A four-day week can support caregivers (parents, eldercare), potentially improving gender equity in the workforce.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Care responsibilities are unevenly distributed; additional non-work time can ease constraints. Equity outcomes depend on implementation across sectors and pay structures."
+          },
+          "comments": [
+            {
+              "body": "As a single parent, an extra day makes school logistics manageable.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Shorter weeks nudge organizations toward output-based management, automation, and process improvement, reducing busywork.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a managerial hypothesis: time constraints can incentivize efficiency, but outcomes depend on leadership and tooling."
+          },
+          "comments": [
+            {
+              "body": "We cut recurring meetings by 40% when we switched—no one missed them.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Population-level rest and recovery could translate into better public health and potentially lower healthcare costs over time.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Plausible extrapolation from stress-health research, but long-run causal effects at population scale are uncertain."
+          },
+          "comments": [
+            {
+              "body": "Hard to prove causally, but absenteeism did drop in our pilot.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Many frontline and shift-based sectors (healthcare, retail, logistics) require constant coverage; moving to four days can raise labor costs or reduce service availability.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Coverage requirements are real; if hours of operation are unchanged, fewer days per worker implies either hiring more staff or paying overtime."
+          },
+          "comments": [
+            {
+              "body": "Nurses already work 3x12s; switching models can be complex and expensive.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Compressing five days of work into four can increase daily intensity and stress, undermining the intended well-being benefits.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a plausible risk based on workload realities; experiences vary by team and task structure."
+          },
+          "comments": [
+            {
+              "body": "Our support team reported more end-of-day spillover and weekend catch-up.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Small businesses operating on thin margins may struggle with scheduling complexity, training costs, and potential overtime.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Operational constraints and cost sensitivities for small firms are well-documented; impact magnitude varies."
+          },
+          "comments": [
+            {
+              "body": "As a cafe owner, I’d need to hire more part-timers—training alone is costly.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Benefits may concentrate in high-skill, salaried roles, widening inequality if hourly or gig workers cannot access the same schedule without pay loss.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Access to flexibility often skews toward salaried roles; without policy safeguards, disparities can widen."
+          },
+          "comments": [
+            {
+              "body": "Unions could negotiate protections, but coverage is uneven.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Customer expectations for five-day (or seven-day) availability could be unmet, hurting competitiveness, especially in client-facing industries.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Market response is context-dependent; some firms might differentiate positively, others could lose clients."
+          },
+          "comments": [
+            {
+              "body": "Our B2B clients demanded Friday coverage; we had to rotate teams.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Global teams spanning time zones may face coordination gaps if multiple regions compress schedules differently.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Time-zone coordination is a known challenge; disparate schedules can amplify handoff delays."
+          },
+          "comments": [
+            {
+              "body": "We solved this with staggered off-days, but handoffs still slipped.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Without explicit guarantees, employers may tie the four-day week to proportional pay cuts for hourly workers or reduce benefits, negating the gains.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Pay and benefits policies vary; there are real cases of hours reduced with proportional pay adjustments when schedules change."
+          },
+          "comments": [
+            {
+              "body": "Policy design matters: 32 hours at 40 hours pay vs. 32 hours pay is a big difference.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Longer weekends can boost local leisure and tourism spending, supporting small businesses in hospitality and recreation.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Economic spillovers are plausible but context-specific and sensitive to disposable income and seasonal patterns."
+          },
+          "comments": [
+            {
+              "body": "Our town’s Friday markets got noticeably busier during a municipal pilot.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Education and skill-building may increase as workers use the extra day for courses or certifications, enhancing human capital.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a behavioral assumption; some will rest, others will study. No guarantee of widespread uptake."
+          },
+          "comments": [
+            {
+              "body": "I finally finished a cybersecurity cert thanks to having Fridays free.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Transitioning policies are complex: collective bargaining, regulatory updates, payroll changes, and pilot evaluation require time and administrative capacity.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Implementation involves concrete administrative steps that impose real costs and coordination challenges."
+          },
+          "comments": [
+            {
+              "body": "Our HRIS didn’t support 32-hour benefits logic out of the box.",
+              "createdByKey": "farah"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "should_major_cities_implement_congestion_pricing_in_their_downtown_cores?",
+      "title": "Should major cities implement congestion pricing in their downtown cores?",
+      "description": "A debate about Should major cities implement congestion pricing in their downtown cores?.",
+      "createdByKey": "bob",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Congestion pricing has reduced traffic volumes by roughly 15–30% in cities like London, Stockholm, and Singapore, shortening travel times for remaining drivers and buses.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "This claim summarizes documented outcomes from multiple implemented schemes with measured traffic reductions and speed improvements."
+          },
+          "comments": [
+            {
+              "body": "Stockholm’s trial made my bus commute much faster—felt like night and day.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Do you have a source for the 30% figure? I’ve seen lower numbers for London post-expansion.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "By cutting vehicle miles traveled in dense cores, congestion pricing improves air quality and reduces asthma and cardiovascular risks.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Peer-reviewed studies associate reduced traffic and emissions with improved air quality and health outcomes in cities with pricing."
+          },
+          "comments": [
+            {
+              "body": "As a parent of an asthmatic child, cleaner air is a huge selling point.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Health benefits are real, but attribution can be complex—weather and fleet changes matter too.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Pricing raises predictable revenue that can be dedicated to public transit upgrades and street improvements, making the whole network more reliable and equitable.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that pricing generates revenue often earmarked for transit; the claim about reliability and equity reflects a value judgment on spending impacts."
+          },
+          "comments": [
+            {
+              "body": " earmarking the funds by law is crucial—otherwise it just becomes a general tax.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "NYC’s MTA could really use a stable funding source.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "It nudges some trips to off-peak times and to public transit, walking, and cycling, freeing scarce road space for essential trips and freight.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Mode and time-of-day shifts are empirically observed; the framing of what counts as 'essential' is normative."
+          },
+          "comments": [
+            {
+              "body": "Freight reliability is underrated—delivery delays raise prices for everyone.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Only works if transit has capacity; otherwise people just pay the fee.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Dynamic pricing uses price signals to allocate scarce road space efficiently, internalizing congestion externalities instead of rationing with queues.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is grounded in economic theory about efficiency and externalities; it is a normative efficiency argument rather than an empirical fact claim."
+          },
+          "comments": [
+            {
+              "body": "Economist here: this is textbook Pigouvian pricing.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Efficiency isn’t the only goal—equity matters too.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "A user-pays approach is fairer: drivers who impose congestion, noise, and pollution should pay rather than shifting those costs to everyone.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a normative fairness claim, even though it references real external costs."
+          },
+          "comments": [
+            {
+              "body": "Make it progressive with income-based discounts and I’m on board.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "Some drivers have no alternatives—fairness cuts both ways.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Tolls are regressive: lower-income drivers pay a larger share of income, and many service workers have inflexible hours and limited transit options.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that flat fees take a larger income share from low-income users; the policy implication and emphasis are normative."
+          },
+          "comments": [
+            {
+              "body": "Night-shift hospital staff often can’t rely on transit—exemptions should exist.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "If revenue funds better transit in low-income areas, isn’t that progressive overall?",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Small businesses inside the zone may lose spontaneous customers and face higher delivery costs, squeezing already thin margins.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a predictive economic impact claim; evidence is mixed across cities, so it is best classified as opinion."
+          },
+          "comments": [
+            {
+              "body": "Our cafe depends on lunchtime office workers—remote work already hurt us.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "London shops adapted fine after the charge; foot traffic rebounded.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "The required camera and plate-recognition infrastructure expands surveillance and creates data-privacy risks if breached or misused.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that ANPR/camera systems collect data; the assessment of privacy risk and misuse likelihood is partly normative and speculative."
+          },
+          "comments": [
+            {
+              "body": "Data retention limits and independent audits should be non-negotiable.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "I’m less worried about toll data than about ubiquitous private trackers on our phones.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Drivers may divert to boundary roads, shifting congestion and emissions to outer neighborhoods that already face environmental burdens.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Traffic diversion to perimeters has been observed in some cases; the framing as environmental injustice is a normative judgment."
+          },
+          "comments": [
+            {
+              "body": "Buffer investments—bus lanes and low-emission zones—can mitigate this.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "My street borders the zone; we already see more cut-through traffic.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Set-up and operating costs can be high; in smaller or more sprawled, car-dependent cities, the net benefits may be low or even negative.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "High capex/opex for gantries, IT, and enforcement are documented; concluding that net benefits are negative is a context-dependent judgment."
+          },
+          "comments": [
+            {
+              "body": "Cost-benefit analyses should be city-specific, not copy-pasted from London.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Tolling tech is cheaper now than a decade ago, which changes the math.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Similar goals could be achieved with better transit, employer-subsidized passes, flexible work hours, or staggered school times—without imposing new fees.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This proposes alternative policies and asserts comparable effectiveness; it is a policy opinion rather than a verifiable fact."
+          },
+          "comments": [
+            {
+              "body": "We should try transit-first for a few years before charging people.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Without pricing, free roads will still be overused at peak—capacity gets swamped.",
+              "createdByKey": "diana"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "random",
+      "title": "random",
+      "description": "A debate about random.",
+      "createdByKey": "alice",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Randomized controlled trials (RCTs) are considered the gold standard for establishing causal effects in medicine and social science.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "It is a widely accepted methodological fact in evidence-based fields that RCTs minimize bias and confounding, making them the gold standard for causal inference."
+          },
+          "comments": [
+            {
+              "body": "RCTs aren’t always feasible or ethical, though.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Blinding and allocation concealment matter as much as randomization.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Random sampling reduces selection bias and improves the generalizability of survey and poll results.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "In statistics, probability sampling methods are established to reduce bias and enable valid inference to a broader population."
+          },
+          "comments": [
+            {
+              "body": "Only if your sampling frame actually covers the target population.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Strong cryptography relies on high-entropy randomness to generate secure keys and nonces, protecting privacy and commerce.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Modern cryptographic schemes require unpredictable random numbers; weak randomness has repeatedly led to real-world breaches."
+          },
+          "comments": [
+            {
+              "body": "Hardware RNGs can fail, so monitoring entropy is critical.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Randomized algorithms can be more efficient or simpler than deterministic ones (e.g., randomized quicksort’s expected O(n log n), randomized hashing).",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "These properties are formal results in computer science, widely taught and published."
+          },
+          "comments": []
+        },
+        {
+          "side": "for",
+          "body": "Embracing randomness can encourage creativity and serendipitous discoveries by breaking habitual patterns.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a value-laden claim about human creativity. Evidence exists in anecdotes and some studies, but it remains primarily an opinion."
+          },
+          "comments": [
+            {
+              "body": "I brainstorm with dice rolls and it genuinely helps.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "When demand vastly exceeds supply and measurement is noisy, lotteries can be a fair tie-breaker (e.g., oversubscribed schools or visas).",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that lotteries are used in such contexts; whether this is ‘fair’ is a normative judgment."
+          },
+          "comments": [
+            {
+              "body": "Lotteries feel fair, but they’re cold comfort if you lose.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Exposure to controlled randomness in training (e.g., curriculum shuffling, data augmentation) can improve robustness in machine learning models and human skill-building.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "In ML, stochastic training and augmentation improve generalization; in pedagogy, varied practice is supported by research on interleaving and desirable difficulties."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "People generally prefer predictability; excessive randomness can increase stress and reduce perceived control.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "While some studies link uncertainty to stress, the strength and universality of the effect is debated; the claim is primarily normative and psychological."
+          },
+          "comments": [
+            {
+              "body": "Unpredictable work schedules wreck my sleep—this resonates.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Using randomness in high-stakes decisions (medical triage, sentencing) can be unethical because it sidesteps reasoned criteria and accountability.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a moral argument about ethics and accountability; it is not empirically falsifiable in a straightforward way."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Flawed random number generators have caused serious security failures (e.g., Debian OpenSSL 2008 bug, Dual_EC_DRBG concerns).",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "These incidents are documented cases where weak randomness compromised security."
+          },
+          "comments": [
+            {
+              "body": "Great examples—also recall the Android Bitcoin wallet RNG issue years ago.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Randomness in user interfaces (e.g., shuffling navigation, inconsistent placements) degrades usability and learnability.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Backed by UX principles and studies favoring consistency, but the claim is a generalization and thus opinionated."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Random selection can mask systemic bias if the sampling frame or eligibility criteria are skewed to begin with.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that biased frames lead to biased random samples; the implication about masking bias is a normative assessment."
+          },
+          "comments": [
+            {
+              "body": "Garbage in, garbage out—randomness won’t fix a biased pipeline.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Relying on expected-case performance of randomized methods can be risky when worst-case guarantees matter (e.g., real-time or safety-critical systems).",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that expected-case can differ from worst-case; the policy of avoiding randomized methods in safety-critical contexts is a normative stance."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Life outcomes heavily influenced by luck can exacerbate inequality; societies may need to counteract random shocks with insurance or redistribution.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Empirical research shows chance plays a role in wealth and career outcomes; whether to counteract this via policy is a normative claim."
+          },
+          "comments": [
+            {
+              "body": "This is why we have social insurance—bad luck shouldn’t ruin a life.",
+              "createdByKey": "bob"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "should_governments_ban_single-use_plastics?",
+      "title": "Should governments ban single-use plastics?",
+      "description": "A debate about Should governments ban single-use plastics?.",
       "createdByKey": "evan",
       "tags": [
         "generated",
@@ -538,127 +1825,1973 @@
       "arguments": [
         {
           "side": "for",
-          "body": "Trials of four-day workweeks in several organizations have shown that productivity can be maintained or even improved while working fewer hours, largely due to better focus and reduced burnout.",
+          "body": "Banning single-use plastics would reduce ocean pollution and protect wildlife. Roughly 11 million metric tons of plastic enter the oceans each year, much of it single-use packaging, and bans are shown to cut litter rates.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that large quantities of plastic (on the order of ~11 million metric tons per year) enter oceans and that single-use items are a significant share of identifiable litter. The claim that a ban would reduce pollution is a policy judgment supported by evidence from some jurisdictions but remains partly opinion."
+          },
+          "comments": [
+            {
+              "body": "I live near a beach and noticed fewer plastic bags after our city’s ban.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Source on the 11 million tons? I’ve seen different figures.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Microplastics are now found in human blood, lungs, and placentas. Applying the precautionary principle, banning unnecessary single-use plastics can lower exposure pathways.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Detection of microplastics in human tissues is supported by peer-reviewed studies. The recommendation to ban single-use plastics as a precaution is an opinion about appropriate policy response."
+          },
+          "comments": [
+            {
+              "body": "Even if health impacts aren’t fully known yet, I’d rather be safe than sorry.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Recycling has largely failed for many single-use plastics: globally only about 9% of all plastic ever produced has been recycled, and many items are not economically recyclable. A ban tackles the problem upstream.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The approximate global recycling rate (~9%) is widely reported. Concluding that a ban is the right upstream solution is an opinion, albeit one informed by data."
+          },
+          "comments": []
+        },
+        {
+          "side": "for",
+          "body": "Municipalities spend significant sums on litter cleanup and storm drain maintenance. Reducing single-use items can lower these public costs.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that cities incur cleanup and maintenance costs associated with plastic litter. The assertion that bans will lower costs is plausible but context-dependent, so it includes opinion."
+          },
+          "comments": [
+            {
+              "body": "Our town reported cheaper street sweeping after the bag ban—hard to attribute 100%, but it seemed related.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Bans spur innovation and investment in reusable systems (refill, returnable packaging) and in truly compostable materials, creating new business opportunities.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "While there are examples of innovation following bans, the magnitude and consistency are debated. The claim is primarily a forward-looking opinion about market effects."
+          },
+          "comments": []
+        },
+        {
+          "side": "for",
+          "body": "Single-use plastics are fossil-fuel based and have significant life-cycle greenhouse gas emissions. Cutting them helps climate goals alongside waste reduction.",
           "createdByKey": "alice",
           "aiAnalysis": {
             "isFact": true,
             "isOpinion": true,
-            "justification": "Cites empirical trials (fact) but generalizes outcomes to broader contexts and asserts causation (opinion)."
+            "justification": "It is factual that most plastics are petrochemical-derived and have life-cycle GHG emissions. The policy claim that cutting single-use plastics helps climate goals is a value-laden conclusion."
+          },
+          "comments": []
+        },
+        {
+          "side": "for",
+          "body": "Plastic production and waste burdens often fall on low-income and marginalized communities (e.g., near incinerators or petrochemical plants). Bans advance environmental justice by reducing those localized impacts.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Environmental justice literature documents disproportionate siting of polluting facilities. The assertion that bans meaningfully advance justice is a normative claim supported by this context."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Single-use plastics play a critical role in healthcare and sanitation (sterile syringes, IV bags, PPE). A blanket ban risks unintended harm unless complex exemptions are crafted.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that healthcare relies on many single-use plastic items for infection control. The argument about risks from blanket bans and the need for exemptions is policy opinion."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Bans can increase costs for small businesses and consumers, as alternatives (compostables, paper, reusable systems) are often pricier, potentially making the policy regressive.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is generally true that many alternatives cost more at present. The conclusion that this makes bans regressive is an economic/policy opinion that depends on implementation details."
           },
           "comments": [
             {
-              "body": "My team switched to 32 hours and our sprint velocity stayed the same.",
+              "body": "My café switched to compostable cups—our costs went up ~12% and we had to raise prices.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Reusable options can have higher environmental footprints unless used many times. For example, some LCAs find cotton totes must be reused hundreds of times to break even with plastic bags on certain impact metrics.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Multiple LCAs show break-even use counts for reusables vary widely, with cotton often needing many uses. Using this to argue against bans is interpretive opinion based on those facts."
+          },
+          "comments": [
+            {
+              "body": "Important nuance: if people forget reusables, the intended benefits won’t materialize.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Bans can trigger substitution effects: people buy thicker trash bags to replace free grocery bags, and paper alternatives may increase water and energy use.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Studies in some jurisdictions observed increased trash-bag sales post bag bans and note higher resource intensity of paper. The broader policy implication is a matter of opinion."
+          },
+          "comments": [
+            {
+              "body": "After our bag ban, store shelves ran out of small trash bags for weeks.",
               "createdByKey": "farah"
             },
             {
-              "body": "Our pilot showed fewer meetings made the biggest difference.",
-              "createdByKey": "bob"
-            },
-            {
-              "body": "It depends on the nature of work—deep-work roles seemed to benefit most.",
+              "body": "Paper isn’t automatically better—depends on sourcing and transport.",
               "createdByKey": "bob"
             }
           ]
         },
         {
-          "side": "for",
-          "body": "A four-day workweek can improve employee well-being and work-life balance, which in turn can lower turnover, reduce absenteeism, and enhance employer branding.",
-          "createdByKey": "charlie",
+          "side": "against",
+          "body": "Improving waste management—collection, sorting, deposit-return systems, and extended producer responsibility—may deliver bigger gains than outright bans while preserving consumer choice.",
+          "createdByKey": "diana",
           "aiAnalysis": {
-            "isFact": true,
+            "isFact": false,
             "isOpinion": true,
-            "justification": "The link between reduced hours and well-being/turnover has empirical support (fact), but predicting consistent outcomes across all firms is interpretive (opinion)."
+            "justification": "This is a policy preference; while such systems can be effective, the comparative claim that they are better than bans is opinion."
           },
-          "comments": [
-            {
-              "body": "Recruiting got easier for us—candidates mention it in interviews.",
-              "createdByKey": "charlie"
-            },
-            {
-              "body": "I finally have a weekday for errands and childcare without using PTO.",
-              "createdByKey": "bob"
-            }
-          ]
+          "comments": []
         },
         {
-          "side": "for",
-          "body": "Fewer commuting days can lower carbon emissions and reduce office energy usage, creating environmental and cost benefits.",
-          "createdByKey": "charlie",
+          "side": "against",
+          "body": "Enforcing bans can be costly and uneven, creating compliance challenges, black markets for cheap packaging, and confusion over what qualifies as “compostable.”",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "These are plausible risks supported by some case studies, but not universally documented; the argument is primarily opinion about implementation challenges."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "In many developing countries, low-cost single-use sachets and packaging improve affordability and reduce food waste by allowing small-portion purchases; banning them could increase spoilage and costs for the poor.",
+          "createdByKey": "farah",
           "aiAnalysis": {
             "isFact": true,
             "isOpinion": true,
-            "justification": "Reduced commuting and office usage logically reduce emissions/energy (fact), while the magnitude and net benefits vary by context (opinion)."
+            "justification": "It is factual that small-format packaging is used to manage affordability and spoilage. The claim that bans would worsen outcomes is a policy opinion that depends on alternatives provided."
           },
           "comments": [
             {
-              "body": "Our utility bill dropped about 12% during the pilot.",
+              "body": "In my city, bulk-buy options don’t exist—sachets are the only way I can afford shampoo.",
+              "createdByKey": "evan"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "should_social_media_platforms_be_legally_responsible_for_the_content_posted_by_their_users?",
+      "title": "Should social media platforms be legally responsible for the content posted by their users?",
+      "description": "A debate about Should social media platforms be legally responsible for the content posted by their users?.",
+      "createdByKey": "bob",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Platforms profit from user engagement and already deploy sophisticated moderation systems; making them legally responsible would better align incentives to act swiftly against illegal and harmful content.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that platforms monetize engagement and use moderation tools; the claim that legal responsibility would align incentives is a normative policy judgment."
+          },
+          "comments": [
+            {
+              "body": "If they can target ads with precision, they can find abuse faster. Legal risk might be the nudge they need.",
               "createdByKey": "alice"
             },
             {
-              "body": "Remote-heavy teams may see less impact, but facilities savings still add up.",
-              "createdByKey": "charlie"
+              "body": "Worried about small platforms though—maybe responsibility should scale with size.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Victims of defamation, harassment, and non‑consensual intimate imagery often struggle to get relief; holding platforms liable when they fail to act after notice would deter harm and provide a clearer remedy.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Documented harms exist and notice‑and‑action regimes are used in some areas; requiring liability after notice is a policy proposal (opinion)."
+          },
+          "comments": [
+            {
+              "body": "A friend spent months trying to remove doxxing posts. A legal deadline would have helped.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Other media distributors—like publishers and broadcasters—can face legal exposure for what they disseminate; platforms that algorithmically amplify content perform a comparable editorial function and should share responsibility.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Publishers/broadcasters can be liable (fact). Equating algorithmic amplification with editorial judgment and extending liability is a normative argument (opinion)."
+          },
+          "comments": []
+        },
+        {
+          "side": "for",
+          "body": "A due‑diligence model—clear standards, transparency, audits, and penalties for negligence—can impose responsibility without strict liability. The EU’s Digital Services Act exemplifies this approach.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The DSA establishes due‑diligence obligations (fact). Arguing this is the right model extends a policy opinion."
+          },
+          "comments": [
+            {
+              "body": "Due diligence sounds reasonable—punish negligence, not honest mistakes.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Without accountability, platforms externalize the social costs of misinformation, extremism, and coordinated abuse while privatizing profits; legal responsibility would internalize some of those costs.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "The externalities framing is an economic interpretation; the claim that legal responsibility will internalize costs is normative and contested."
+          },
+          "comments": [
+            {
+              "body": "Taxpayers and communities bear the fallout from online harms. Why should platforms get a free pass?",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Notice‑and‑takedown regimes already exist for copyright (e.g., the DMCA); adapting a targeted, due‑process‑respecting framework for other clearly unlawful content could be effective.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The DMCA provides a notice‑and‑takedown process (fact). Whether it should be adapted to other content types is a policy opinion."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Imposing liability will lead to over‑removal and chilled lawful speech, as platforms will censor aggressively to avoid lawsuits—an effect observed after laws like FOSTA‑SESTA.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There is evidence of increased removals following FOSTA‑SESTA (fact). Predicting widespread chilling effects and using it to oppose liability is an opinion."
+          },
+          "comments": [
+            {
+              "body": "After FOSTA, a lot of harm‑reduction forums vanished. I worry the same would happen broadly.",
+              "createdByKey": "bob"
             }
           ]
         },
         {
           "side": "against",
-          "body": "Many sectors require continuous coverage (e.g., healthcare, hospitality, customer support), making a four-day schedule impractical or more expensive due to added shifts.",
+          "body": "At internet scale—billions of posts per day—pre‑screening is infeasible; legal responsibility risks creating an expectation of impossible perfection and constant false positives.",
           "createdByKey": "evan",
           "aiAnalysis": {
             "isFact": true,
             "isOpinion": true,
-            "justification": "Operational coverage needs in certain industries are a matter of fact; concluding impracticality or higher costs is a generalization (opinion)."
+            "justification": "Platforms handle billions of pieces of content (fact). The claim that liability implies impossible standards and over‑filtering is an opinion."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Legal shields like Section 230 in the U.S. and EU safe‑harbor rules enabled the growth of user‑generated platforms; narrowing immunity would entrench incumbents that can absorb compliance costs and crush startups.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "These frameworks exist and are credited with facilitating platform growth (fact). Predicting market concentration effects is a policy/economic opinion."
           },
           "comments": [
             {
-              "body": "We had to hire more weekend staff to maintain SLAs—costs went up.",
+              "body": "Startups can’t afford 24/7 legal teams. Big tech would survive; everyone else wouldn’t.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Liability could be weaponized by governments or political actors to pressure platforms into removing dissenting or minority viewpoints, undermining democratic discourse and journalistic work.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a risk‑based, normative argument. While there are examples of politicized takedown pressures globally, the claim is predictive and value‑laden."
+          },
+          "comments": [
+            {
+              "body": "We’ve already seen officials complain until posts get pulled. Adding legal risk just ups the pressure.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Global platforms face conflicting national laws on speech; making them responsible for all user content worldwide creates an unworkable compliance patchwork and incentivizes geoblocking or withdrawal from markets.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that laws differ across jurisdictions. The claim that this makes compliance unworkable and leads to withdrawal is a policy prediction (opinion)."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Better alternatives exist: invest in user empowerment and media literacy, strengthen law enforcement against original offenders, and regulate algorithmic transparency and risk assessments without imposing direct content liability.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "These are policy prescriptions rather than verifiable facts; they are proposed alternatives to liability."
+          },
+          "comments": [
+            {
+              "body": "I’d support mandatory risk audits and appeals processes, but not blanket liability.",
               "createdByKey": "bob"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "should_artificial_intelligence_be_allowed_to_make_decisions_in_the_criminal_justice_system?",
+      "title": "Should artificial intelligence be allowed to make decisions in the criminal justice system?",
+      "description": "A debate about Should artificial intelligence be allowed to make decisions in the criminal justice system?.",
+      "createdByKey": "evan",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "AI can improve consistency in sentencing and bail decisions by applying structured criteria uniformly, reducing judge-to-judge variability that research has documented.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Empirical studies show significant inter-judge variability in sentencing and bail. The claim that AI would reduce this variability is a normative projection about system design and implementation."
+          },
+          "comments": [
+            {
+              "body": "As a public defender, I’ve seen two clients with nearly identical backgrounds get very different bail decisions. Consistency would help.",
+              "createdByKey": "diana"
             },
             {
-              "body": "24/7 operations can do it, but it becomes a staffing puzzle.",
+              "body": "Uniformity isn’t always fairness—people’s circumstances differ.",
               "createdByKey": "charlie"
             }
           ]
         },
         {
-          "side": "against",
-          "body": "Compressing work into fewer days can lead to longer hours, reduced recovery time, and hidden overtime, undermining the intended well-being benefits.",
-          "createdByKey": "evan",
+          "side": "for",
+          "body": "AI-driven risk assessments can help reduce unnecessary pretrial detention by identifying low-risk defendants more consistently than ad hoc human heuristics.",
+          "createdByKey": "farah",
           "aiAnalysis": {
             "isFact": true,
             "isOpinion": true,
-            "justification": "Reports of longer daily shifts in some implementations are factual; claiming it undermines benefits is a value-laden assessment (opinion)."
+            "justification": "Risk assessment tools are widely used with the stated aim of predicting failure-to-appear or re-offense. Whether they outperform human judgment consistently is debated, making this partly opinion."
           },
           "comments": [
             {
-              "body": "Our 10-hour days were exhausting; people started checking email on off-days anyway.",
+              "body": "Even if overall detention drops, who bears the risk when the model is wrong?",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Historical data used to train AI can encode systemic biases from policing and sentencing, leading to discriminatory outcomes against marginalized groups.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There is well-documented evidence of disparities in criminal justice data. The claim that models will reproduce these disparities reflects both factual risk and evaluative judgment."
+          },
+          "comments": [
+            {
+              "body": "This is why transparency and independent audits should be mandatory.",
               "createdByKey": "evan"
             },
             {
-              "body": "Policy without enforcement just shifted work into evenings.",
+              "body": "If the data is biased, the model will be biased—garbage in, garbage out.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Opaque or hard-to-explain models undermine due process because defendants cannot effectively challenge the basis of decisions affecting their liberty.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Many modern models (e.g., complex ensembles) are difficult to explain. Whether this violates due process is a legal and ethical argument rather than a settled fact."
+          },
+          "comments": []
+        },
+        {
+          "side": "for",
+          "body": "Properly designed AI systems can create auditable logs and model cards, offering a traceable decision trail that can be scrutinized more readily than unrecorded human reasoning.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Logging and documentation are technical capabilities. The claim that they are more scrutinizable than human judgment is partly normative and context-dependent."
+          },
+          "comments": [
+            {
+              "body": "Paper trails are only useful if courts actually allow discovery of the logs.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "AI introduces an accountability gap: when errors occur, it’s unclear whether responsibility lies with judges, agencies, or vendors, making redress difficult.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Jurisdictions are still developing frameworks for liability and accountability in algorithmic decisions. The normative concern about redress adds an opinion component."
+          },
+          "comments": []
+        },
+        {
+          "side": "for",
+          "body": "AI can increase efficiency by triaging cases and surfacing relevant information, helping overburdened courts reduce backlogs and letting humans focus on complex judgments.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Court backlogs are a documented issue. That AI triage will meaningfully reduce them is a projection that depends on implementation and governance."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Automation bias means human overseers may over-trust algorithmic recommendations, effectively rubber-stamping them and weakening meaningful review.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Automation bias is a well-documented cognitive tendency. The extent to which it will manifest in a given deployment is uncertain and thus partly opinion."
+          },
+          "comments": [
+            {
+              "body": "I’ve seen probation officers default to the score unless a supervisor pushes back.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Standardized risk tools can reduce some forms of implicit bias by excluding protected attributes and testing for disparate impact before deployment.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is possible to exclude protected attributes and conduct fairness testing. Whether this actually reduces bias in practice is contested and situational."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "AI-guided resource allocation can create feedback loops: increased surveillance or policing in flagged areas produces more recorded incidents, reinforcing biased predictions.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Feedback loops in predictive systems have been documented conceptually and in case studies. The severity and inevitability of the effect are debated."
+          },
+          "comments": [
+            {
+              "body": "This is the classic predictive policing trap. We need counterfactual evaluation, not just more data.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Unless there’s active de-biasing, the loop never breaks.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Cross-jurisdictional AI standards could promote more equal treatment by harmonizing decision criteria where appropriate, reducing geographic disparities.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "The harmonization claim is a policy proposal and normative assertion; it is not a verified fact."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Moral judgment, mercy, and individualized context are central to justice; delegating consequential decisions to machines risks dehumanizing the process.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This argument rests on ethical values and conceptions of justice rather than empirical facts."
+          },
+          "comments": [
+            {
+              "body": "As a victim advocate, I worry that nuance gets lost in scores and thresholds.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Carefully bounded pilot programs with human-in-the-loop review, public reporting, and sunset clauses can generate evidence about benefits and harms without fully delegating authority.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Pilots with safeguards are feasible. The claim that they will produce net benefits or adequate evidence is a policy judgment."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Aggregating sensitive data for AI increases privacy and security risks; breaches or secondary use could harm defendants, victims, and witnesses.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Data aggregation creates broader attack surfaces and risks of misuse; the ethical weight of those risks involves value judgments."
+          },
+          "comments": [
+            {
+              "body": "Leaky data ruins lives. You can’t unring that bell.",
+              "createdByKey": "alice"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "the_impact_of_social_media_on_mental_health",
+      "title": "The impact of social media on mental health",
+      "description": "A debate about The impact of social media on mental health.",
+      "createdByKey": "charlie",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Active, purposeful social media use can reduce loneliness by facilitating peer support and connection, especially for people with limited offline networks.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Multiple studies find associations between active/interactive use (e.g., messaging, groups) and increased perceived social support and reduced loneliness, but causality and effect sizes vary by population and platform."
+          },
+          "comments": [
+            {
+              "body": "I joined a caregiving group on Facebook during the pandemic and it genuinely helped me feel less alone.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "Depends on whether you have friends there to begin with. Lurking didn’t help me at all.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Social comparison on curated feeds can increase anxiety and depression by fostering unrealistic expectations and envy.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There is empirical evidence linking upward social comparison on platforms with higher depressive and anxiety symptoms; however, most evidence is correlational and effects differ across individuals."
+          },
+          "comments": [
+            {
+              "body": "Instagram wrecked my self-esteem in college until I unfollowed fitness accounts.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Counterpoint: I follow athletes and feel motivated, not sad. So it’s not universal.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Cyberbullying and online harassment on social media elevate risks of stress, self-harm, and suicidal ideation, particularly among adolescents.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Systematic reviews show consistent associations between cybervictimization and adverse mental health outcomes, with dose–response patterns observed."
+          },
+          "comments": [
+            {
+              "body": "Schools need better reporting tools; kids don’t tell parents until it’s too late.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Social media expands access to mental health resources, including psychoeducation, teletherapy referrals, and peer-led coping strategies.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There is documented growth of evidence-based accounts, clinician outreach, and digital mental health interventions using social platforms; the net impact depends on content quality and user engagement."
+          },
+          "comments": [
+            {
+              "body": "Found my first therapist through a TikTok creator’s directory.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "Caution: there’s also a lot of pseudoscience mixed in.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Late-night scrolling disrupts sleep, which undermines mood regulation and increases risk for anxiety and depression.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Well-established links between insufficient sleep and poorer mental health; social media use near bedtime is associated with later sleep onset and poorer sleep quality."
+          },
+          "comments": [
+            {
+              "body": "Blue light filters helped a bit, but I still stay up too late reading comments.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Platforms can reduce stigma by normalizing conversations about mental health through campaigns and personal narratives.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Public health campaigns and large-scale hashtags have been shown to increase help-seeking intentions and perceived norms, though effects may be short-lived and context-dependent."
+          },
+          "comments": [
+            {
+              "body": "#BellLetsTalk wasn’t perfect, but it got my workplace talking about therapy for the first time.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Design features such as infinite scroll, intermittent rewards, and push notifications encourage compulsive use that can worsen anxiety and distract from offline coping.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Persuasive design patterns are well-documented; problematic social media use correlates with worse mental health, but causality and individual susceptibility vary."
+          },
+          "comments": [
+            {
+              "body": "Turning off notifications cut my screen time in half.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "I think \"addictive\" is strong wording, but the design is definitely sticky.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Online communities provide belonging and resilience for marginalized users who may face stigma or isolation offline.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Qualitative and quantitative research shows identity-affirming communities can buffer stress and improve well-being, though exposure to discrimination online can offset benefits."
+          },
+          "comments": [
+            {
+              "body": "As a queer teen in a rural town, Tumblr was a lifeline.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Exposure to idealized bodies and beauty filters contributes to body dissatisfaction and disordered eating risks, especially among young users.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Meta-analyses report small-to-moderate associations between appearance-focused social media engagement and body image concerns and eating pathology."
+          },
+          "comments": [
+            {
+              "body": "Filters made me hate my real face until I did a 30-day no-filter challenge.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Social platforms enable rapid crisis intervention by spreading hotline information, safety resources, and community alerts during emergencies.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There are documented cases of rapid dissemination of crisis resources and successful bystander interventions; however, misinformation and resource overload are risks."
+          },
+          "comments": [
+            {
+              "body": "The 988 rollout awareness on Twitter absolutely helped my friend during a panic attack.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Constant notifications and multi-feed switching fragment attention, reducing mindfulness and increasing stress.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Experimental and observational studies link frequent task switching and notification interruption with increased stress and reduced attentional control; individual effects vary."
+          },
+          "comments": [
+            {
+              "body": "Focus mode on my phone made me less irritable by the end of the day.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "My job requires social media—hard to separate work stress from app design.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Humor, uplifting content, and creative expression on social media can improve mood and provide adaptive distraction.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Short-term mood improvements from positive content and expressive activities are supported by studies, but long-term effects depend on usage patterns and content balance."
+          },
+          "comments": [
+            {
+              "body": "Cat videos are therapy. Not joking.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "With consent and safeguards, digital markers from social media data could help detect early signs of distress and prompt support.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Research on linguistic and behavioral signals shows potential for screening, but ethical, privacy, and false-positive concerns are substantial."
+          },
+          "comments": [
+            {
+              "body": "Only if it’s opt-in and transparent. Otherwise it’s creepy.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "Clinicians could use this as a complement, not a diagnosis.",
+              "createdByKey": "charlie"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "should_artificial_intelligence_be_used_to_make_hiring_decisions?",
+      "title": "Should artificial intelligence be used to make hiring decisions?",
+      "description": "A debate about Should artificial intelligence be used to make hiring decisions?.",
+      "createdByKey": "farah",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Properly designed and audited AI can reduce human bias and increase consistency in hiring decisions by applying the same criteria to every applicant.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "It is plausible and supported by some case studies, but not universally true; effectiveness depends on design, data, and governance."
+          },
+          "comments": [
+            {
+              "body": "This only works if the training data aren’t biased. Big if.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Standardization helped our team cut down on subjective debates in panel reviews.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "AI systems can encode and amplify historical biases present in training data, leading to discriminatory outcomes even when protected attributes are excluded.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Widely documented in research and regulatory guidance; proxy variables (e.g., zip code, school) can reintroduce bias and cause disparate impact."
+          },
+          "comments": [
+            {
+              "body": "We found our model down-weighted applicants from certain schools until we retrained it with fairness constraints.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "AI can significantly speed up resume screening and scheduling, reducing time-to-hire and recruiter workload, especially for high-volume roles.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Many organizations report measurable reductions in processing time and cost when automating repetitive steps like screening and scheduling."
+          },
+          "comments": [
+            {
+              "body": "Time-to-hire at my company dropped from 42 to 23 days after automating initial screens.",
               "createdByKey": "farah"
             }
           ]
         },
         {
           "side": "against",
-          "body": "Reduced availability can hinder collaboration across time zones and partners, slow decision-making, and potentially reduce revenue if customers expect five-day support.",
+          "body": "Opacity of complex models (\"black boxes\") undermines transparency and candidates’ ability to contest or understand decisions.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "By design, many ML models are not readily interpretable; lack of explanations is a known issue impacting due process and candidate trust."
+          },
+          "comments": [
+            {
+              "body": "Even with explanations turned on, we got generic reasons like \"insufficient experience\" with no specifics.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Using job-relevant, validated features, AI can standardize evaluation on objective criteria and reduce reliance on gut feelings.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This reflects best practices in industrial-organizational psychology, but whether an implementation truly uses validated, job-relevant features varies."
+          },
+          "comments": [
+            {
+              "body": "We worked with I/O psychologists to validate competencies before training the model.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "AI-driven hiring can create legal and regulatory risks, including disparate impact claims under equal employment laws and compliance with the EU AI Act or NYC AEDT rules.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "These regulations exist and impose obligations such as bias audits, disclosures, and impact monitoring; noncompliance can lead to penalties."
+          },
+          "comments": [
+            {
+              "body": "Our legal team required annual bias audits and candidate notices to satisfy local laws.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Predictive models can improve job–candidate matching, potentially increasing retention and on-the-job performance by identifying patterns humans miss.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Some organizations report correlations, but causality and generalizability are context-dependent; results vary by role and data quality."
+          },
+          "comments": [
+            {
+              "body": "We saw lower first-year attrition in a pilot for customer support roles.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Over-reliance on AI can miss non-linear career paths, soft skills, and contextual factors that humans can appreciate during interviews.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a widely held perspective; while plausible, it's not universally measurable and depends on model design and process integration."
+          },
+          "comments": [
+            {
+              "body": "Our best engineer didn’t tick the usual boxes—an AI screen would’ve filtered her out.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "AI can help reduce favoritism, nepotism, or halo effects by blinding certain attributes and enforcing consistent scoring rubrics.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Blinding and consistency can mitigate some human biases, but success depends on preventing proxy leakage and maintaining process discipline."
+          },
+          "comments": [
+            {
+              "body": "We removed school names during initial screening and saw a more diverse shortlist.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Data privacy and surveillance concerns increase when AI tools ingest resumes, assessments, video interviews, and social data, raising consent and data minimization issues.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Collection and processing of personal data for automated decision-making triggers privacy obligations (e.g., GDPR, CCPA); misuse is a documented risk."
+          },
+          "comments": [
+            {
+              "body": "Vendors kept telemetry we didn’t realize they had—had to renegotiate our DPA.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "When combined with robust documentation and audit trails, AI-enabled processes can improve compliance monitoring and provide evidence for fair, job-related decisions.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Auditable systems can aid compliance, but this benefit depends on thorough logging, validation, and governance that are not guaranteed."
+          },
+          "comments": [
+            {
+              "body": "Audit logs helped us explain selection rates to our works council.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "AI-enabled hiring can be gamed (e.g., keyword stuffing, prompt engineering for chat assessments), encouraging performative behavior rather than authentic signals.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Manipulation of automated screens is widely reported; vendors introduce countermeasures, but the phenomenon is real and ongoing."
+          },
+          "comments": [
+            {
+              "body": "We had to add human spot checks after resume stuffing spiked.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Structured, AI-assisted assessments can expand access by offering asynchronous, remote-friendly evaluations and accommodations at scale.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Potential accessibility benefits exist, but depend on inclusive design; poorly built tools can disadvantage some candidates (e.g., speech or vision)."
+          },
+          "comments": [
+            {
+              "body": "Recorded interviews let shift workers apply outside business hours.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Models degrade over time (concept drift) and can fail under distribution shifts, causing silent errors that harm candidates and employers unless continuously monitored.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Concept drift is a known issue in ML; without monitoring, performance declines and fairness metrics can worsen."
+          },
+          "comments": [
+            {
+              "body": "Our model’s precision tanked after a recruiting market shift—caught it in a quarterly review.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "AI can triage large applicant pools to surface overlooked talent, especially for entry-level roles where many candidates meet minimum qualifications.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is plausible and observed anecdotally; outcomes depend on feature design and thresholds."
+          },
+          "comments": [
+            {
+              "body": "We found strong candidates from non-traditional bootcamps via AI-led triage.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Lack of meaningful candidate recourse—no clear appeal or remediation path—can erode trust and brand reputation when AI declines applicants.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Trust impacts are supported by surveys; policies vary widely, so this is context-dependent rather than universally factual."
+          },
+          "comments": [
+            {
+              "body": "I was rejected with a generic email—no way to ask what to improve.",
+              "createdByKey": "bob"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "should_social_media_platforms_be_allowed_to_ban_users_for_hate_speech?",
+      "title": "Should social media platforms be allowed to ban users for hate speech?",
+      "description": "A debate about Should social media platforms be allowed to ban users for hate speech?.",
+      "createdByKey": "diana",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Platforms have legal obligations in many jurisdictions to remove illegal hate speech; allowing bans helps them comply with laws and avoid liability.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Multiple countries (e.g., Germany’s NetzDG, EU’s DSA) impose duties on platforms to act on illegal hate speech; noncompliance can lead to fines."
+          },
+          "comments": [
+            {
+              "body": "As a German user, I’ve seen posts vanish fast under NetzDG—companies don’t really have a choice.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Laws differ, though. The global nature of platforms makes this messy.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Banning users who engage in hate speech protects targeted communities and reduces real‑world harm linked to online dehumanizing rhetoric.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Empirical research has linked exposure to online hate with increased harassment and discrimination offline; the claim that bans protect communities is a normative conclusion drawn from that evidence."
+          },
+          "comments": [
+            {
+              "body": "Speaking from experience, reporting and seeing bans happen made my LGBTQ+ group feel safer.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Users agree to Terms of Service that prohibit hate speech; enforcing those rules via bans honors the contractual agreement and platform autonomy.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It’s factual that platforms set ToS and users consent; the idea that this justifies bans reflects a normative stance about private governance rights."
+          },
+          "comments": []
+        },
+        {
+          "side": "for",
+          "body": "Strong enforcement, including bans, improves community health by reducing harassment and the chilling effect on marginalized voices.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "While some studies suggest moderation can improve participation by targets of abuse, the magnitude and generality are debated; the claim is primarily normative/predictive."
+          },
+          "comments": [
+            {
+              "body": "I started posting again only after the site cracked down on hate accounts.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Would like to see platform‑published metrics to back this up.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Advertiser and brand safety depend on minimizing hate content; bans help sustain the business model that keeps platforms free to use.",
           "createdByKey": "evan",
           "aiAnalysis": {
             "isFact": true,
             "isOpinion": true,
-            "justification": "Availability constraints and coordination delays are observable (fact); predicting revenue impact depends on context and assumptions (opinion)."
+            "justification": "Advertisers have paused campaigns over adjacency to harmful content in the past; asserting bans are the best way to protect revenue is partly opinion."
           },
           "comments": [
             {
-              "body": "We lost a deal because we couldn’t turn around a proposal on Friday.",
-              "createdByKey": "bob"
-            },
+              "body": "When ads show up next to hateful content, the brand gets blamed, not the poster.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Escalating penalties up to permanent bans deter repeat offenders and signal clear norms, saving moderation resources over time.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Deterrence effects in online communities are context‑dependent; evidence is mixed, so this is primarily an opinion about policy efficacy."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Banning for hate speech risks curtailing free expression in what function as modern public squares; private moderation can feel like censorship at scale.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "The classification of platforms as public squares is contested and not a legal fact in many jurisdictions; the argument is a normative free‑speech concern."
+          },
+          "comments": [
             {
-              "body": "Staggered schedules helped, but meeting windows got narrower.",
+              "body": "Even if it’s legal, it still chills debate when big platforms kick people off.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Definitions of “hate speech” are subjective and vary across cultures and legal systems, increasing the risk of overreach and mistakes.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It’s factual that definitions differ across jurisdictions and platforms; the conclusion that this leads to overreach is an opinion about consequences."
+          },
+          "comments": [
+            {
+              "body": "I had satire flagged as hate speech because an algorithm missed the context.",
               "createdByKey": "alice"
             }
           ]
+        },
+        {
+          "side": "against",
+          "body": "Enforcement is often inconsistent and may reflect cultural or political bias, undermining trust in the platform’s neutrality.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Audits and transparency reports have documented uneven enforcement across languages and regions; the claim of bias is partly interpretive."
+          },
+          "comments": [
+            {
+              "body": "I’ve seen slurs in non‑English posts stay up while milder English posts get taken down.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Bias or just fewer moderators for those languages?",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Permanent bans lack due process; platforms should provide clear standards, warnings, and meaningful appeals before removing users.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a normative governance argument about procedural fairness rather than a verifiable fact."
+          },
+          "comments": [
+            {
+              "body": "Appeals often feel like a black box. More transparency would help.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Banning users can drive communities into harder‑to‑monitor fringe platforms, potentially increasing radicalization out of sight.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Research shows deplatforming reduces reach but can lead to migration to alternative platforms; the radicalization impact is debated, making the claim partly opinion."
+          },
+          "comments": [
+            {
+              "body": "Deplatform a subreddit and it pops up on a smaller site within days.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Less restrictive alternatives—rate limits, de‑amplification, content labeling, keyword filters for users—can mitigate harm without outright bans.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "While these tools exist, their comparative effectiveness versus bans depends on context; the claim favors an alternative policy approach."
+          },
+          "comments": [
+            {
+              "body": "Give me better mute/filter tools and I won’t care if someone else is edgy.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Clear consequences for hate speech can educate communities about boundaries and encourage norms of respectful discourse.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a normative and predictive claim about norm‑setting rather than a verifiable fact."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Automated detection of hate speech is error‑prone, especially for dialects and reclaimed slurs, so bans risk disproportionately affecting marginalized speakers.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Studies show higher false‑positive rates for certain dialects and context‑dependent language; the implication about disproportionate impact is partly opinion."
+          },
+          "comments": [
+            {
+              "body": "AAVE posts get flagged more often—seen it happen to friends.",
+              "createdByKey": "farah"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "should_artificial_intelligence_be_allowed_to_make_medical_decisions_without_human_oversight?",
+      "title": "Should artificial intelligence be allowed to make medical decisions without human oversight?",
+      "description": "A debate about Should artificial intelligence be allowed to make medical decisions without human oversight?.",
+      "createdByKey": "alice",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "AI systems can process and analyze massive medical datasets (imaging, labs, genomics, EHRs) far faster than humans, potentially leading to earlier detection of patterns and timely interventions.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "It is empirically established that modern ML models can analyze large datasets and images rapidly and at scale compared to individual clinicians."
+          },
+          "comments": [
+            {
+              "body": "As a radiologist, I’ve seen AI flag subtle nodules I might have double-checked anyway—it’s fast. Not sure I’d want it making the final call alone, though.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Speed is great, but speed without context can be dangerous.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "AI is available 24/7 and scales across facilities, which could expand access in underserved or rural areas where specialists are scarce.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Software systems can run continuously and be deployed remotely, addressing coverage gaps where human specialists are limited."
+          },
+          "comments": [
+            {
+              "body": "In my rural clinic, telehealth plus AI triage would be a big help after hours.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Removing mandatory human oversight could reduce delays from clinician bottlenecks, shortening time-to-decision for routine, high-volume tasks like screening and triage.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "It is plausible but context-dependent; evidence varies by workflow and setting, so this is primarily an opinion about operational impact."
+          },
+          "comments": []
+        },
+        {
+          "side": "for",
+          "body": "AI can deliver consistent, guideline-concordant decisions without fatigue or shift variation, improving standardization of care.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "While AI can be trained on guidelines, whether this yields more consistent care in practice depends on model, data, and integration; it is a normative claim about outcomes."
+          },
+          "comments": [
+            {
+              "body": "Humans also vary for good reasons—patients differ. Consistency isn’t always good.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "For certain well-bounded tasks (e.g., narrow diagnostic classification), state-of-the-art AI has matched or exceeded average clinician performance in studies, suggesting some decisions could be automated safely.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Published evaluations show AI parity/superiority in specific tasks like image classification under controlled conditions."
+          },
+          "comments": []
+        },
+        {
+          "side": "for",
+          "body": "Automating decisions may reduce costs and increase throughput by lowering labor demands for repetitive tasks.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Cost effects depend on implementation, regulation, liability, and workflow redesign; this is a projection rather than established fact."
+          },
+          "comments": [
+            {
+              "body": "Hospitals often pass savings to administration, not patients—so I’m skeptical this helps affordability.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Without a responsible human, accountability becomes murky—who is liable for harm caused by an autonomous AI decision?",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Current legal and regulatory frameworks often lack clear liability assignment for autonomous AI errors, creating recognized accountability gaps."
+          },
+          "comments": [
+            {
+              "body": "As a patient, I want to know who answers my questions and stands behind the decision.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Algorithmic bias can amplify disparities if training data underrepresent certain groups, leading to systematically worse outcomes for them.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Numerous studies document demographic performance gaps in medical AI tied to data and design biases."
+          },
+          "comments": [
+            {
+              "body": "We already see unequal care; giving AI sole authority could lock in those inequities.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Bias audits should be mandatory before removing human oversight.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Many medical AI systems lack transparency or explainability, making it difficult to contest or understand decisions—especially critical when mistakes occur.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Black-box behavior and limited interpretability are well-documented challenges in contemporary ML models."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Out-of-distribution cases, rare diseases, or novel presentations can confuse models, raising the risk of confident but wrong decisions with no human safety net.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Robustness to distribution shifts and rare conditions is a recognized limitation in ML; failures on edge cases are documented."
+          },
+          "comments": [
+            {
+              "body": "Novel pathogens and drug interactions happen; I’d want a clinician to notice when something looks off.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Removing human oversight can erode patient trust and the therapeutic relationship, which itself influences adherence and outcomes.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Trust effects are measurable but context-specific; this is a normative claim about patient experience and ethics."
+          },
+          "comments": [
+            {
+              "body": "I’d refuse an AI-only diagnosis unless a human could explain it to me.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Regulatory and monitoring infrastructures are not yet mature for continuously learning autonomous systems, making safe deployment without oversight premature.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Regulators are developing frameworks, but fully autonomous, learning systems remain challenging to certify and monitor at present."
+          },
+          "comments": []
+        }
+      ]
+    },
+    {
+      "key": "generate_a_random_debate_topic",
+      "title": "Generate a random debate topic",
+      "description": "A debate about Generate a random debate topic.",
+      "createdByKey": "charlie",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Randomly generating debate topics cultivates adaptability and critical thinking by preventing over-reliance on rehearsed scripts.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a value claim about skill development. While plausible, it is not a verifiable causal fact across contexts."
+          },
+          "comments": [
+            {
+              "body": "As a coach, I’ve seen shy students open up on random-draw days because they can’t overthink.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Counterpoint: some students just freeze when the topic is totally new.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Random topics reduce echo chambers by exposing participants to unfamiliar subjects and viewpoints.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Exposure to variety can reduce insularity, but whether randomization reliably achieves this is context-dependent and not conclusively established."
+          },
+          "comments": [
+            {
+              "body": "This helped our team debate tech ethics when we usually pick politics.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Random topics can be irrelevant to participants’ goals, wasting limited preparation and practice time.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Relevance and value depend on user goals; the claim evaluates efficiency rather than stating a verifiable fact."
+          },
+          "comments": [
+            {
+              "body": "In corporate training we need targeted practice, not whatever a generator spits out.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Quality control suffers: random selection can surface trivial, misleading, or poorly framed topics that rest on false premises.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a risk-based judgment. It’s plausible but not a universally measurable outcome of randomness alone."
+          },
+          "comments": [
+            {
+              "body": "We got “Cats should run for office” as a topic—fun, but not great for skill transfer.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "In education, impromptu speaking and debate formats already use random draws to practice rapid reasoning and evidence triage.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that some formats (e.g., impromptu speaking, extemporaneous draw) use random or semi-random prompts; the usefulness claim is evaluative."
+          },
+          "comments": [
+            {
+              "body": "Extemp draws are random-ish but curated—there’s a list vetted by coaches.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Random topics risk surfacing sensitive or harmful issues without content warnings, moderation, or appropriate framing.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a prudential judgment about risk. Specific harms are situational and not guaranteed."
+          },
+          "comments": [
+            {
+              "body": "We accidentally drew a topic about a recent local tragedy—really not appropriate.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Randomization can counter organizer bias and agenda-setting, promoting fairness and a broader spread of issues.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Whether it increases fairness depends on implementation; the claim is normative and context-dependent."
+          },
+          "comments": [
+            {
+              "body": "I like that no one can stack the deck for their pet issues.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Novices experience cognitive overload when forced to argue unfamiliar subjects without scaffolding, which can hinder learning.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Educational theory supports scaffolding for novices, but the effect of random topics varies with support structures; thus it remains an evaluative claim."
+          },
+          "comments": [
+            {
+              "body": "Our first-years shut down unless we narrow the scope or give starter packets.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Random prompts are effective for creativity and brainstorming, helping speakers overcome the blank-page problem.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Widely reported in creative practice but not a universally verified causal fact for all users."
+          },
+          "comments": [
+            {
+              "body": "We use a random topic wheel as a warm-up; it gets the room talking.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Pseudo-random generators may not be transparent or truly random, enabling manipulation and eroding trust in topic selection.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that pseudo-randomness differs from true randomness and can be biased if poorly implemented; the impact on trust is evaluative."
+          },
+          "comments": [
+            {
+              "body": "Would prefer an open-source seed and published draw logs to keep it fair.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Exposure to a wide array of topics can encourage transfer of learning, helping debaters connect ideas across domains.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Research on far transfer is mixed; the claim is plausible but not universally established."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Depth suffers when topics are randomized; rotating shallowly across issues discourages sustained inquiry and rigorous evidence gathering.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a trade-off claim about breadth vs. depth; not a directly verifiable fact and depends on program design."
+          },
+          "comments": [
+            {
+              "body": "Our best rounds come after a week on one resolution, not a new random topic every session.",
+              "createdByKey": "farah"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "is_social_media_doing_more_harm_than_good?",
+      "title": "Is social media doing more harm than good?",
+      "description": "A debate about Is social media doing more harm than good?.",
+      "createdByKey": "evan",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Heavy social media use is linked to increased anxiety, depression, and sleep disruption among adolescents, which suggests the overall impact skews negative for youth well-being.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There is empirical research showing correlations between heavy social media use and poorer mental health outcomes; concluding this means net harm is an evaluative opinion."
+          },
+          "comments": [
+            {
+              "body": "As a high school teacher, I’ve seen grades and mood dip when students get hooked on TikTok late at night.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Source? Correlation isn’t causation. Lots of teens who struggle may turn to social media, not the other way around.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Taking a 30-day break helped my sleep a ton, fwiw.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Platforms amplify misinformation and conspiracy theories faster than corrections can catch up, undermining public health responses and trust in institutions.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is documented that misinformation has spread widely on social platforms; the claim that this undermines trust and yields net harm is partly evaluative."
+          },
+          "comments": [
+            {
+              "body": "I watched relatives share bogus health cures that got thousands of likes before any warnings appeared.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "Some platforms add fact-check labels, but they’re easy to ignore.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Designs optimized for engagement (infinite scroll, push notifications, variable rewards) are addictive, diverting attention from work, study, and offline relationships.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that many platforms use engagement-optimizing UX patterns; describing them as addictive and net harmful involves opinion and interpretation."
+          },
+          "comments": [
+            {
+              "body": "I had to disable all notifications because my screen time was out of control.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Isn’t this like TV or games though? Personal responsibility matters.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Cyberbullying and harassment are widespread on social media, exposing users—especially teens and marginalized groups—to sustained abuse with real mental health consequences.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Widespread cyberbullying and harassment are well-documented phenomena; the evaluation of net harm is opinion."
+          },
+          "comments": [
+            {
+              "body": "Report tools help, but bullies just make new accounts.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Algorithmic feeds can create echo chambers and increase polarization by prioritizing emotionally charged, tribal content over nuanced discussion.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Platforms do algorithmically rank content; evidence suggests polarizing content can be amplified. The claim that this increases polarization overall is partly interpretive."
+          },
+          "comments": [
+            {
+              "body": "My feed is basically outrage bait now unless I constantly prune it.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Counterpoint: I follow diverse accounts and see plenty of debate.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Extensive data collection and opaque ad-targeting erode privacy and enable manipulation, from invasive profiling to microtargeted political ads.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that platforms collect detailed user data and sell targeted ads; the assertion that this constitutes manipulation and net harm is an opinionated assessment."
+          },
+          "comments": [
+            {
+              "body": "I got a data breach letter last year tied to a social app. Not fun.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "Most people just click “accept all” without reading anything.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Social media enables people to build and maintain relationships across distance, offering community and support—especially for marginalized groups that may lack offline networks.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There is ample evidence of online communities providing social support; the claim that this benefit outweighs harms is an opinion."
+          },
+          "comments": [
+            {
+              "body": "I found a chronic-illness support group that genuinely changed my day-to-day life.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "During crises and natural disasters, social platforms provide real-time information, mutual aid coordination, and faster on-the-ground updates than traditional channels.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "There are many documented cases of social media being used for crisis communication and mutual aid; the statement is descriptive rather than evaluative."
+          },
+          "comments": [
+            {
+              "body": "Neighborhood groups were vital for organizing supplies during last year’s floods.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Creators and small businesses rely on social media for affordable marketing, audience building, and new income streams that didn’t exist before.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that many businesses and creators use social platforms for reach and revenue; calling this a net positive involves value judgment."
+          },
+          "comments": [
+            {
+              "body": "My café survived lockdown thanks to Instagram preorders and community shoutouts.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Educational content—tutorials, expert threads, study groups—makes learning more accessible and often free, expanding opportunities globally.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There is abundant educational content on major platforms; whether this produces more good than harm is an opinion."
+          },
+          "comments": [
+            {
+              "body": "I learned basic coding through free creator content before taking formal courses.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Social media can increase transparency and accountability by documenting abuses, mobilizing social movements, and giving voice to people who might otherwise be ignored.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that social media has been used to document events and organize movements; the net-positive assessment is opinion."
+          },
+          "comments": [
+            {
+              "body": "Citizen-shot videos have exposed issues that would have been buried.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Harms can be mitigated with design and policy: age-appropriate experiences, time limits, content labeling, better moderation, and user controls that reduce addictive loops.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Platforms have implemented or are piloting many of these measures; the claim that they effectively mitigate harms is partly opinion and context-dependent."
+          },
+          "comments": []
         }
       ]
     }
