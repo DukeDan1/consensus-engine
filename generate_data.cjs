@@ -93,7 +93,7 @@ const generate_topic = async () => {
     while (isDuplicate) {
         topicName = await generate_topic_name();
         topicNameKey = topicName.toLowerCase().replace(/\s+/g, "_");
-        if (topicNameKey == "" || populationData.topics.find((t) => t.key === topicNameKey)) {
+        if (topicNameKey === "" || populationData.topics.find((t) => t.key === topicNameKey)) {
             console.log(`Skipping duplicate or empty topic name: "${topicName}"`);
         } else {
             isDuplicate = false;
