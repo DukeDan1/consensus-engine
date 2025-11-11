@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     }).select({ _id: 1 });
     const ids = users.map((u) => u._id);
     // If no users match, ensure no topics match
-    match.createdBy = ids.length ? { $in: ids } : new mongoose.Types.ObjectId("000000000000000000000000");
+    match.createdBy = ids.length ? { $in: ids } : { $in: [] };
   }
 
   // Count total for pagination
