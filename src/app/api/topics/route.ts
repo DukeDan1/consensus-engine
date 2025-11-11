@@ -160,10 +160,15 @@ export async function POST(request: NextRequest) {
   return NextResponse.json(
     {
       id: doc._id,
+      _id: doc._id,
       title: doc.title,
       description: doc.description,
       tags: doc.tags,
       createdAt: doc.createdAt,
+      upvoteCount: 0,
+      downvoteCount: 0,
+      totalVotes: 0,
+      creatorName: creator.name || "Unknown",
     },
     { status: 201 }
   );

@@ -1,7 +1,17 @@
 "use client";
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 
-export default function CreateNewTopic({ onCreated }: { onCreated?: () => void }) {
+type CreatedTopic = {
+  _id: string;
+  title: string;
+  upvoteCount: number;
+  downvoteCount: number;
+  totalVotes: number;
+  creatorName: string;
+};
+
+export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: CreatedTopic) => void }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -27,11 +37,21 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: () => void }
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.error || "Failed to create topic");
       }
+      const data = await res.json();
+      const created: CreatedTopic = {
+        _id: data._id || data.id,
+        title: data.title,
+        upvoteCount: data.upvoteCount ?? 0,
+        downvoteCount: data.downvoteCount ?? 0,
+        totalVotes: data.totalVotes ?? 0,
+        creatorName: data.creatorName || "You",
+      };
       setTitle("");
       setDescription("");
       setTagsInput("");
       setOpen(false);
-      onCreated?.();
+      toast.success("Topic created successfully!");
+      onCreated?.(created);
     } catch (err: any) {
       setError(err?.message || "Failed to create topic");
     } finally {
@@ -42,7 +62,8 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: () => void }
   return (
     <div>
       {!open ? (
-        <button className="btn btn-primary btn-sm" onClick={() => setOpen(true)}>
+        <button className="btn btn-outline-success" onClick={() => setOpen(true)} aria-label="Add topic">
+          <i className="fa-solid fa-plus me-1"></i>
           New Topic
         </button>
       ) : (

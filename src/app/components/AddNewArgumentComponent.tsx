@@ -32,12 +32,17 @@ export default function AddNewArgumentComponent({ topicId }: { topicId: string }
 
         setText("");
         setShowForm(false);
+        // Switch to newest ordering so the freshly added argument appears first
+        router.replace(`/topics/${topicId}?ordering=newest`);
         router.refresh();
+        if (typeof window !== "undefined") {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
 
-        // Update the page again after 15 seconds to reflect AI analysis updates
+        // Update the page again after 5 seconds to reflect AI analysis updates
         setTimeout(() => {
             router.refresh();
-        }, 15000);
+        }, 5000);
     }
 
     return (

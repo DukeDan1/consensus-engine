@@ -68,9 +68,9 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
 
   const fetchFn = useMemo(() => {
     return async () => {
-  // Use a single term for both title and creator filters on the server
-  const term = filters.q;
-  const qs = buildQuery({ q: term, creator: term, page, pageSize });
+      // Use a single term for both title and creator filters on the server
+      const term = filters.q;
+      const qs = buildQuery({ q: term, creator: term, page, pageSize });
       const res = await fetch(`/api/topics?${qs}`, { cache: "no-store" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -81,7 +81,7 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
     };
   }, [filters.q, page, refreshCounter]);
 
-  const { data, loading, error } = useAsync<ApiResponse>(fetchFn, [fetchFn]);
+  const { data, loading, error, setData } = useAsync<ApiResponse>(fetchFn, [fetchFn]);
 
   // Expose a refresh method
   useImperativeHandle(ref, () => ({
@@ -140,23 +140,34 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
     items.push(makeBtn(Math.min(totalPages, page + 1), "Next", page >= totalPages));
 
     return (
-      <nav aria-label="Topics pages" className="mt-3">
-        <ul className="pagination pagination-sm mb-0">
-          {items}
-        </ul>
-      </nav>
+      <div className="d-flex justify-content-center mt-4">
+        <nav aria-label="Topics pages">
+          <ul className="pagination pagination-sm mb-0">
+            {items}
+          </ul>
+        </nav>
+      </div>
     );
   }
 
   return (
     <div>
-      <div className="d-flex align-items-center justify-content-between mb-2">
-        <h2 className="h5 mb-0">Browse</h2>
-        <CreateNewTopic onCreated={() => {
-          // After creation, reset to first page and refresh
+      <div className="mb-3">
+        <CreateNewTopic onCreated={(created) => {
+          // Go to first page
           setPage(1);
+          // Optimistically prepend the new topic
+          setData((prev) => {
+            if (!prev) return prev;
+            const dedup = prev.topics.filter((t) => t._id !== created._id);
+            const nextTopics = [created as any as TopicItem, ...dedup];
+            return { ...prev, topics: nextTopics.slice(0, prev.pageSize) };
+          });
+          // Scroll to top to reveal the new card
+          if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
         }} />
       </div>
+
 
       <div className="mb-3">
         <TopicFilters value={filters} onChange={setFilters} onSearch={onSearch} />
