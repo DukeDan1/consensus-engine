@@ -15,9 +15,6 @@ env:
   AR_HOST: europe-west1-docker.pkg.dev
   REPO: consensusengine-repo
   WEB_SERVICE: consensusengine
-  NODE_ENV: production
-  MONGODB_URI: "mongodb://dummyvalue:blabla@mongodb.net/consensusengine"
-  OPENAI_API_KEY: "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 jobs:
   lint:
@@ -50,6 +47,10 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          NODE_ENV: production
+          MONGODB_URI: "mongodb://dummyvalue:blabla@mongodb.net/consensusengine"
+          OPENAI_API_KEY: "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
   deploy:
     name: Deploy Application
