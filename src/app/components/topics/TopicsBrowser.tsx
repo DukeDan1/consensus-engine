@@ -63,6 +63,7 @@ function useAsync<T>(fn: () => Promise<T>, deps: any[]) {
 const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser(_props, ref) {
   const [filters, setFilters] = useState<TopicFiltersValue>({ q: "" });
   const [page, setPage] = useState(1);
+  const [refreshCounter, setRefreshCounter] = useState(0);
   const pageSize = 15;
 
   const fetchFn = useMemo(() => {
@@ -78,18 +79,15 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
       const data: ApiResponse = await res.json();
       return data;
     };
-  }, [filters.q, page]);
+  }, [filters.q, page, refreshCounter]);
 
-  const { data, loading, error, setData } = useAsync<ApiResponse>(fetchFn, [fetchFn]);
+  const { data, loading, error } = useAsync<ApiResponse>(fetchFn, [fetchFn]);
 
   // Expose a refresh method
   useImperativeHandle(ref, () => ({
     refresh: () => {
-      // re-run by triggering dependency change
-      setData(null as any);
-      // maintain current page and filters
-      // By updating page to same value, we can force re-fetch by changing state
-      setPage((p) => p);
+      // Trigger re-fetch by incrementing refresh counter
+      setRefreshCounter((c) => c + 1);
     },
   }));
 
