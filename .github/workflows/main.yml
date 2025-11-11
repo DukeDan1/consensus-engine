@@ -15,22 +15,46 @@ env:
   AR_HOST: europe-west1-docker.pkg.dev
   REPO: consensusengine-repo
   WEB_SERVICE: consensusengine
+  NODE_ENV: production
+  MONGODB_URI: "mongodb://dummyvalue:blabla@mongodb.net/consensusengine"
+  OPENAI_API_KEY: "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 jobs:
   lint:
+    name: Lint Code
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run lint  # e.g. "eslint . --ext .ts,.tsx --max-warnings=0"
 
-  deploy:
-    if: github.ref == 'refs/heads/main'
+  build:
+    name: Build Application
     needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  deploy:
+    name: Deploy Application
+    if: github.ref == 'refs/heads/main'
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       id-token: write
