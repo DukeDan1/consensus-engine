@@ -72,7 +72,7 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
 
     return (
         <>
-            <div className="col-12" key={argument.id}>
+            <div id={`argument-${argument.id}`} className="col-12" key={argument.id}>
                 <div className="card h-100 shadow-sm">
                     <div className="card-body">
                         <div className="d-flex align-items-center justify-content-between mb-2">

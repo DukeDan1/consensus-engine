@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { dbConnect } from "@/app/lib/mongoose";
 import { Argument } from "@/app/models/argument";
-import { getAIAnalysisForArgument } from "@/app/services/openaiService";
+import { Topic } from "@/app/models/topic";
+import { getAIAnalysisForArgument, extractFactualInformationFromComment } from "@/app/services/openaiService";
+import { Fact } from "@/app/models/facts";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
 
@@ -54,15 +56,37 @@ export async function POST(req: Request) {
             downvoteCount: 0,
             score: 0,
         });
+
+        const topic = await Topic.findById(topicObjId).select({ title: 1 }).lean().exec();
         
-        // Asynchronously get AI analysis and update the argument
-        getAIAnalysisForArgument(created.body).then(analysis => {
-            Argument.findByIdAndUpdate(created._id, { aiAnalysis: analysis }).exec().catch(err => {
-                console.error("Failed to update AI analysis for argument", created._id, err);
-            });
-        }).catch(err => {
-            console.error("Failed to get AI analysis for argument", created._id, err);
-        });
+
+
+        (async () => {
+            try {
+                const analysis = await getAIAnalysisForArgument(created.body, topic?.title || "");
+                let factual = {} as {factualPart?: string, justification?: string};
+                if (analysis.isFact) {
+                    factual = await extractFactualInformationFromComment(created.body, topic?.title || "");
+                };
+
+                await Argument.findByIdAndUpdate(created._id, { aiAnalysis: analysis }).exec();
+
+                if (analysis?.isFact && factual?.factualPart) {
+                    // Ensure we don't duplicate a fact for the same source argument
+                    const existing = await Fact.findOne({ sourceArgument: created._id }).lean();
+                    if (!existing) {
+                        await Fact.create({
+                            linkedArguments: [created._id],
+                            topic: topicObjId,
+                            text: factual.factualPart,
+                            sourceArgument: created._id,
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Background AI processing failed for argument", created._id, err);
+            }
+        })();
 
         return NextResponse.json({
             id: (created._id as mongoose.Types.ObjectId).toString(),

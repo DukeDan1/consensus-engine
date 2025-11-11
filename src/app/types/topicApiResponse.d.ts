@@ -27,5 +27,11 @@ export type TopicApiResponse = {
       justification: string;
     };
   }>;
+  facts?: Array<{
+    id: string;
+    text: string;
+    sourceArgument: string; // argument id fact was derived from
+    createdAt?: string;
+  }>;
   meta: { ordering: "relevant" | "newest"; returnedArguments: number; requestedArguments: number };
 };

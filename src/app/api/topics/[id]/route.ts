@@ -4,6 +4,7 @@ import { dbConnect } from "@/app/lib/mongoose";
 import { Topic } from "@/app/models/topic";
 import { Argument } from "@/app/models/argument";
 import { Comment } from "@/app/models/comment";
+import { Fact } from "@/app/models/facts";
 import User from "@/app/models/user";
 
 // GET /api/topics/:id=?num_arguments=10&ordering=relevant|newest
@@ -71,6 +72,13 @@ export async function GET(
     }
   }
 
+  // Fetch derived facts for this topic (limit reasonable number)
+  const facts = await Fact.find({ topic: topic._id })
+    .sort({ createdAt: -1 })
+    .limit(100)
+    .select({ text: 1, sourceArgument: 1, createdAt: 1 })
+    .lean();
+
   const response = {
     topic: {
       id: topic._id,
@@ -99,6 +107,12 @@ export async function GET(
       comments: commentsByArgument[a._id.toString()] || [],
       aiAnalysis: a.aiAnalysis,
     })}),
+    facts: facts.map(f => ({
+      id: f._id,
+      text: f.text,
+      sourceArgument: f.sourceArgument?.toString?.() || "",
+      createdAt: f.createdAt,
+    })),
     meta: {
       ordering: isRelevant ? "relevant" : "newest",
       returnedArguments: argumentsList.length,
