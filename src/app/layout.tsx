@@ -8,6 +8,8 @@ import { Roboto_Flex } from "next/font/google";
 import Providers from "@/app/providers";
 import ErrorBoundary from "@/app/components/layout/ErrorBoundary";
 import { ToastContainer } from "react-toastify";
+import { Suspense } from "react";
+import Loading from "./loading";
 
 const roboto = Roboto_Flex({ subsets: ["latin"] });
 
@@ -32,7 +34,11 @@ export default function RootLayout({
           <Header title="Consensus Engine" />
           <ErrorBoundary>
             <div className="d-flex min-vh-100 flex-column flex-md-row">
-              <main className="flex-fill p-3 p-sm-4">{children}</main>
+              <main className="flex-fill p-3 p-sm-4">
+                <Suspense fallback={<Loading />}>
+                  {children}
+                </Suspense>
+              </main>
             </div>
           </ErrorBoundary>
         </Providers>
