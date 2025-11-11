@@ -64,7 +64,7 @@ const topicTool = {
             },
         },
     },
-}
+};
 
 const generate_topic_name = async () => {
     const input = [
