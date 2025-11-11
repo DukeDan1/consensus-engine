@@ -11,7 +11,7 @@ type CreatedTopic = {
   creatorName: string;
 };
 
-export default function CreateNewTopic({ onCreated }: { onCreated?: (t: CreatedTopic) => void }) {
+export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: CreatedTopic) => void }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

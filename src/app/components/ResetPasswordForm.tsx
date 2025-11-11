@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
-const { useRouter } = await import('next/navigation');
-const router = useRouter();
+import { useRouter } from "next/navigation";
 
 export default function ResetPasswordForm() {
+    const router = useRouter();
     const [password, setPassword] = useState("");
     const [err, setErr] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);

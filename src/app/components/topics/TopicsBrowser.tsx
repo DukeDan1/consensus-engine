@@ -58,7 +58,6 @@ function useAsync<T>(fn: () => Promise<T>, deps: any[]) {
   }, deps);
 
   return { data, loading, error, setData } as const;
-  return { data, loading, error, setData } as const;
 }
 
 const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser(_props, ref) {
