@@ -2,6 +2,7 @@
 
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+const populationData = require("./population_data.json");
 
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -73,183 +74,8 @@ const Comment = mongoose.model("Comment", CommentSchema);
 
 // ---------- Hard-coded Data ----------
 
-const USERS = [
-  { key: "alice",   name: "Alice Johnson",  email: "alice@example.com" },
-  { key: "bob",     name: "Bob Smith",      email: "bob@example.com" },
-  { key: "charlie", name: "Charlie Patel",  email: "charlie@example.com" },
-  { key: "diana",   name: "Diana Evans",    email: "diana@example.com" },
-  { key: "evan",    name: "Evan Li",        email: "evan@example.com" },
-  { key: "farah",   name: "Farah Khan",     email: "farah@example.com" },
-];
-
-// Topics with brief, neutral descriptions; votes filled later
-const TOPICS = [
-  {
-    key: "brexit2ndref",
-    title: "Should the UK hold a second referendum on Brexit?",
-    description: "Evaluate whether public opinion and economic outcomes justify revisiting the 2016 decision.",
-    tags: ["UK", "Brexit", "Referendum", "Politics"],
-    createdByKey: "alice",
-  },
-  {
-    key: "israel-gaza-ceasefire",
-    title: "Should there be an immediate, unconditional ceasefire in the Israel–Gaza conflict?",
-    description: "Weigh humanitarian concerns against security and political conditions for a durable ceasefire.",
-    tags: ["Middle East", "Ceasefire", "Humanitarian", "Security"],
-    createdByKey: "bob",
-  },
-  {
-    key: "ai-licensing",
-    title: "Should governments require licenses to train large AI models?",
-    description: "Consider innovation, safety, and competition implications of licensing regimes.",
-    tags: ["AI", "Regulation", "Technology Policy"],
-    createdByKey: "charlie",
-  },
-  {
-    key: "ubi",
-    title: "Would a Universal Basic Income be beneficial overall?",
-    description: "Assess macroeconomic effects, incentives, poverty reduction, and fiscal trade-offs.",
-    tags: ["Economics", "Welfare", "Policy"],
-    createdByKey: "diana",
-  },
-  {
-    key: "nuclear-expansion",
-    title: "Should nuclear power be expanded to meet climate goals?",
-    description: "Balance reliability and emissions reductions against cost, timeline, and waste risks.",
-    tags: ["Energy", "Climate", "Nuclear"],
-    createdByKey: "farah",
-  },
-];
-
-// Arguments per topic (for/against)
-const ARGUMENTS = {
-  brexit2ndref: [
-    {
-  side: "for",
-      body:
-        "Public opinion and economic data have shifted since 2016. A second vote would provide democratic legitimacy given new information and post-Brexit realities.",
-      createdByKey: "diana",
-      isRemoved: false,
-    },
-    {
-  side: "against",
-      body:
-        "Re-running a national vote undermines democratic finality and risks deepening polarisation. Focus should be on making existing arrangements work better.",
-      createdByKey: "bob",
-      isRemoved: false,
-    },
-  ],
-  "israel-gaza-ceasefire": [
-    {
-  side: "for",
-      body:
-        "An immediate ceasefire would reduce civilian casualties, enable humanitarian aid, and create space for negotiations, including the release of hostages.",
-      createdByKey: "alice",
-      isRemoved: false,
-    },
-    {
-  side: "against",
-      body:
-        "A durable ceasefire requires conditions—such as verifiable security guarantees and hostage releases—otherwise violence may simply resume.",
-      createdByKey: "evan",
-      isRemoved: false,
-    },
-  ],
-  "ai-licensing": [
-    {
-  side: "for",
-      body:
-        "Licensing large-scale training can set safety baselines, ensure compute disclosures, and mitigate catastrophic misuse while preserving research carve-outs.",
-      createdByKey: "farah",
-      isRemoved: false,
-    },
-    {
-  side: "against",
-      body:
-        "Licensing risks regulatory capture, burdens startups, and pushes development offshore. Better to enforce targeted, outcome-based rules.",
-      createdByKey: "charlie",
-      isRemoved: false,
-    },
-  ],
-  ubi: [
-    {
-  side: "for",
-      body:
-        "A UBI reduces poverty, simplifies welfare, and strengthens bargaining power for low-income workers without bureaucracy-heavy means testing.",
-      createdByKey: "alice",
-      isRemoved: false,
-    },
-    {
-  side: "against",
-      body:
-        "It’s fiscally heavy and may dampen labour participation. Targeted transfers and earned income supports are more cost-effective.",
-      createdByKey: "evan",
-      isRemoved: false,
-    },
-  ],
-  "nuclear-expansion": [
-    {
-  side: "for",
-      body:
-        "Nuclear provides firm, low-carbon power at scale, complementing renewables and enhancing grid reliability during the transition.",
-      createdByKey: "bob",
-      isRemoved: false,
-    },
-    {
-  side: "against",
-      body:
-        "High capital costs, long build times, and waste risks argue for faster-to-deploy options like wind, solar, storage, and efficiency.",
-      createdByKey: "diana",
-      isRemoved: false,
-    },
-  ],
-};
-
-// Comments on arguments
-const COMMENTS = [
-  {
-    topicKey: "brexit2ndref",
-  argIndex: 0, // for
-    body: "Agree that circumstances changed—supply chains and trade frictions are clearer now.",
-    createdByKey: "charlie",
-    isRemoved: false,
-  },
-  {
-    topicKey: "brexit2ndref",
-  argIndex: 1, // against
-    body: "Democratic trust matters; moving on could help restore stability.",
-    createdByKey: "farah",
-    isRemoved: false,
-  },
-  {
-    topicKey: "israel-gaza-ceasefire",
-  argIndex: 0, // for
-    body: "Humanitarian access should be the priority while talks continue.",
-    createdByKey: "diana",
-    isRemoved: false,
-  },
-  {
-    topicKey: "israel-gaza-ceasefire",
-  argIndex: 1, // against
-    body: "Without clear enforcement, ceasefires can be fragile.",
-    createdByKey: "alice",
-    isRemoved: false,
-  },
-  {
-    topicKey: "ai-licensing",
-    argIndex: 0,
-    body: "Could small labs be exempted below a compute threshold?",
-    createdByKey: "evan",
-    isRemoved: false,
-  },
-  {
-    topicKey: "ubi",
-    argIndex: 1,
-    body: "Curious what tax changes would fund it sustainably.",
-    createdByKey: "bob",
-    isRemoved: false,
-  },
-];
+const USERS = populationData.users;
+const TOPICS = populationData.topics;
 
 // ---------- Helpers ----------
 
@@ -273,27 +99,6 @@ function pickIds(list, keys = []) {
   return ids;
 }
 
-// Simple heuristic to produce an aiAnalysis object for each argument.
-// This is intentionally lightweight - it gives a plausible example for seeding.
-function analyzeTextForAi(body) {
-  const text = (body || "").toLowerCase();
-  const factualSignals = ["evidence", "data", "study", "observations", "measured", "measurable", "statistics", "parallax", "doppler", "physics"];
-  const matches = factualSignals.some((w) => text.includes(w));
-  if (matches) {
-    return {
-      isFact: true,
-      isOpinion: false,
-      justification:
-        "This claim contains references to verifiable evidence or measurable observations and can be supported by empirical data, so it is treated as fact-like in this seed.",
-    };
-  }
-  return {
-    isFact: false,
-    isOpinion: true,
-    justification:
-      "This claim primarily expresses a value judgement or policy preference that depends on normative considerations rather than purely empirical proof.",
-  };
-}
 
 // ---------- Main Seed ----------
 
@@ -335,43 +140,43 @@ function analyzeTextForAi(body) {
   const topicsIndexed = TOPICS.map((t, i) => ({ ...t, _id: topicDocs[i]._id }));
   const topicsByKey = byKey(topicsIndexed);
 
-  // 3) Arguments per topic
-  const argumentPayload = [];
-  for (const t of topicsIndexed) {
-    const args = ARGUMENTS[t.key] || [];
-    for (const arg of args) {
-      const author = usersByKey.get(arg.createdByKey);
-      argumentPayload.push({
-        topic: t._id,
+  // 3) Arguments per topic and comments
+  for (const t of TOPICS) {
+    if (!t.arguments) t.arguments = [];
+    const argsForTopic = t.arguments;
+
+    for (const arg of argsForTopic) {
+      if (!arg.createdByKey) {
+        throw new Error(`Argument for topic ${t.key} is missing createdByKey`);
+      }
+
+      // Use Mongoose model create so middleware and validation run and we can await reliably
+      const createdArg = await Argument.create({
+        topic: topicsByKey.get(t.key)._id,
         side: arg.side,
         body: arg.body,
-        createdBy: author?._id,
+        createdBy: usersByKey.get(arg.createdByKey)._id,
         isRemoved: arg.isRemoved || false,
-        // small, realistic vote patterns
-        upvotes: pickIds(usersIndexed, ["alice", "bob", "charlie", "diana", "evan"].sort(() => 0.5 - Math.random()).slice(0, 3)),
-        downvotes: pickIds(usersIndexed, ["farah", "evan", "bob", "alice"].sort(() => 0.5 - Math.random()).slice(0, 2)),
-        // AI analysis seed data
-        aiAnalysis: analyzeTextForAi(arg.body),
+        upvotes: [],
+        downvotes: [],
+        aiAnalysis: arg.aiAnalysis || { isFact: false, isOpinion: true, justification: "" },
       });
+
+      arg.comments = arg.comments || [];
+      for (const c of arg.comments) {
+        if (!c.createdByKey) {
+          throw new Error(`Comment for argument in topic ${t.key} is missing createdByKey`);
+        }
+
+        await Comment.create({
+          argument: createdArg._id,
+          body: c.body,
+          createdBy: usersByKey.get(c.createdByKey)._id,
+          isRemoved: c.isRemoved || false,
+        });
+      }
     }
   }
-  const argumentDocs = await Argument.insertMany(argumentPayload);
-
-  // 4) Comments
-  const commentsPayload = COMMENTS.map((c) => {
-    const topic = topicsByKey.get(c.topicKey);
-    const argList = argumentDocs.filter((a) => a.topic.toString() === topic._id.toString());
-    const targetArg = argList[c.argIndex];
-    const author = usersByKey.get(c.createdByKey);
-    if (!targetArg) throw new Error(`No argument at index ${c.argIndex} for topic ${c.topicKey}`);
-    return {
-      argument: targetArg._id,
-      body: c.body,
-      createdBy: author?._id,
-      isRemoved: c.isRemoved || false,
-    };
-  });
-  await Comment.insertMany(commentsPayload);
 
   // Summary
   const withTotals = topicDocs.map((t) => ({

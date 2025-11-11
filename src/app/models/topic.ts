@@ -12,6 +12,8 @@ export interface ITopic extends Document {
     total: number;
   };
   score: number;          // optional: net score across all arguments
+  upvotes?: Types.ObjectId[]; // array of user ids
+  downvotes?: Types.ObjectId[]; // array of user ids
   createdAt: Date;
   updatedAt: Date;
   slug: string;           // for friendly URLs
@@ -30,6 +32,8 @@ const TopicSchema = new Schema<ITopic>({
     total: { type: Number, default: 0 },
   },
   score: { type: Number, default: 0 }, // sum of argument scores if you want
+  upvotes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
+  downvotes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
 }, { timestamps: true });
 
 TopicSchema.index({ createdAt: -1 });

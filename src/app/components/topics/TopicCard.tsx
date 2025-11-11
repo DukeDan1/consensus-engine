@@ -1,10 +1,19 @@
 "use client";
 import Link from "next/link";
 import React, { useState } from "react";
-import { TopTopic } from "@/app/app/page";
+
+// Local topic shape for the card to avoid cross-file type coupling
+type TopicListItem = {
+  _id: string;
+  title: string;
+  upvoteCount: number;
+  downvoteCount: number;
+  totalVotes: number;
+  creatorName: string;
+};
 
 type Props = {
-  topic: TopTopic;
+  topic: TopicListItem;
 };
 
 export default function TopTopicCard({ topic }: Props) {

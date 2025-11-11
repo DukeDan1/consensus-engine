@@ -44,6 +44,10 @@ export default [
       "react/jsx-key": "warn",
       "react/react-in-jsx-scope": "off",
       "no-undef": "off",
+      "no-unused-vars": [
+        "error",
+        { "argsIgnorePattern": "^_" }
+      ]
     },
   },
 ];

@@ -1,0 +1,666 @@
+{
+  "users": [
+    {
+      "key": "alice",
+      "name": "Alice Johnson",
+      "email": "alice@example.com"
+    },
+    {
+      "key": "bob",
+      "name": "Bob Smith",
+      "email": "bob@example.com"
+    },
+    {
+      "key": "charlie",
+      "name": "Charlie Patel",
+      "email": "charlie@example.com"
+    },
+    {
+      "key": "diana",
+      "name": "Diana Evans",
+      "email": "diana@example.com"
+    },
+    {
+      "key": "evan",
+      "name": "Evan Li",
+      "email": "evan@example.com"
+    },
+    {
+      "key": "farah",
+      "name": "Farah Khan",
+      "email": "farah@example.com"
+    }
+  ],
+  "topics": [
+    {
+      "key": "brexit2ndref",
+      "title": "Should the UK hold a second referendum on Brexit?",
+      "description": "Evaluate whether public opinion and economic outcomes justify revisiting the 2016 decision.",
+      "tags": [
+        "UK",
+        "Brexit",
+        "Referendum",
+        "Politics"
+      ],
+      "createdByKey": "alice",
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Public opinion and economic data have shifted since 2016. A second vote would provide democratic legitimacy given new information and post-Brexit realities.",
+          "createdByKey": "diana",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Mixes verifiable observations (changes in opinion and economic indicators) with a normative policy recommendation (holding a second vote), so it contains both factual and opinion components."
+          }
+        },
+        {
+          "side": "against",
+          "body": "Re-running a national vote undermines democratic finality and risks deepening polarisation. Focus should be on making existing arrangements work better.",
+          "createdByKey": "bob",
+          "isRemoved": false,
+          "comments": [
+            {
+              "body": "I agree that stability is important, but what about the economic data showing negative impacts?",
+              "createdByKey": "charlie",
+              "isRemoved": false
+            }
+          ],
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a normative argument about democratic practice and political consequences; it expresses a value judgment about finality and stability rather than a single verifiable fact."
+          }
+        }
+      ],
+      "israel-gaza-ceasefire": [
+        {
+          "side": "for",
+          "body": "An immediate ceasefire would reduce civilian casualties, enable humanitarian aid, and create space for negotiations, including the release of hostages.",
+          "createdByKey": "alice",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This argues for humanitarian and diplomatic outcomes that depend on many factors; it is primarily a policy recommendation rather than a single verifiable fact."
+          }
+        },
+        {
+          "side": "against",
+          "body": "A durable ceasefire requires conditions—such as verifiable security guarantees and hostage releases—otherwise violence may simply resume.",
+          "createdByKey": "evan",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a conditional policy argument about the enforceability and durability of ceasefires; it expresses a judgement about risk and required conditions, not a single factual claim."
+          }
+        }
+      ]
+    },
+    {
+      "key": "israel-gaza-ceasefire",
+      "title": "Should there be an immediate, unconditional ceasefire in the Israel–Gaza conflict?",
+      "description": "Weigh humanitarian concerns against security and political conditions for a durable ceasefire.",
+      "tags": [
+        "Middle East",
+        "Ceasefire",
+        "Humanitarian",
+        "Security"
+      ],
+      "createdByKey": "bob",
+      "arguments": [
+        {
+          "side": "for",
+          "body": "An immediate ceasefire would reduce civilian casualties, expand humanitarian access, and create diplomatic space for negotiations including prisoner exchanges.",
+          "createdByKey": "alice",
+          "isRemoved": false,
+          "comments": [
+            {
+              "body": "Ceasefires often break, but even temporary pauses save lives and allow aid convoys through.",
+              "createdByKey": "farah",
+              "isRemoved": false
+            }
+          ],
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Predictive and normative policy claim: reducing casualties and enabling diplomacy are plausible outcomes but depend on context, so the statement functions primarily as an opinionated policy argument."
+          }
+        },
+        {
+          "side": "against",
+          "body": "Without enforceable guarantees and demobilisation steps, a ceasefire may entrench combatants, enable rearmament, and fail to address core security concerns.",
+          "createdByKey": "evan",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a conditional and predictive assessment about the risks of an unconditional ceasefire; it expresses policy caution rather than a single verifiable fact."
+          }
+        }
+      ]
+    },
+    {
+      "key": "ai-licensing",
+      "title": "Should governments require licenses to train large AI models?",
+      "description": "Consider innovation, safety, and competition implications of licensing regimes.",
+      "tags": [
+        "AI",
+        "Regulation",
+        "Technology Policy"
+      ],
+      "createdByKey": "charlie",
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Licensing creates accountability for high-risk actors, enabling audits, safety baselines, and incident reporting without banning open research.",
+          "createdByKey": "diana",
+          "isRemoved": false,
+          "comments": [
+            {
+              "body": "Could a tiered system avoid burdening startups while still covering frontier models?",
+              "createdByKey": "alice",
+              "isRemoved": false
+            }
+          ],
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Describes a policy mechanism and expected governance outcomes; while procedural elements are feasible, the overall claim is normative and contingent on implementation."
+          }
+        },
+        {
+          "side": "against",
+          "body": "Licensing risks regulatory capture, raises barriers to entry, and may push innovation offshore without demonstrable safety gains.",
+          "createdByKey": "bob",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This warns about potential political-economy effects of licensing; it is a predictive and evaluative claim that can be illustrated by case studies but is not a single objective fact."
+          }
+        }
+      ]
+    },
+    {
+      "key": "ubi",
+      "title": "Would a Universal Basic Income be beneficial overall?",
+      "description": "Assess macroeconomic effects, incentives, poverty reduction, and fiscal trade-offs.",
+      "tags": [
+        "Economics",
+        "Welfare",
+        "Policy"
+      ],
+      "createdByKey": "diana",
+      "arguments": [
+        {
+          "side": "for",
+          "body": "A UBI simplifies welfare, reduces poverty, and increases bargaining power, while pilots show limited negative effects on work incentives.",
+          "createdByKey": "charlie",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Mixes empirical references to pilot studies with normative conclusions about broad policy effects; overall it is an argument dependent on interpretation of evidence and assumptions."
+          }
+        },
+        {
+          "side": "against",
+          "body": "Financing a meaningful UBI would require large tax increases or cuts elsewhere; targeted programs may deliver better outcomes for the cost.",
+          "createdByKey": "evan",
+          "isRemoved": false,
+          "comments": [
+            {
+              "body": "Targeting adds admin complexity and misses people; universality avoids stigma and churn.",
+              "createdByKey": "farah",
+              "isRemoved": false
+            }
+          ],
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "A fiscal critique that references modelling assumptions; while cost claims are testable, the policy judgement about targeting versus universality is normative."
+          }
+        }
+      ]
+    },
+    {
+      "key": "nuclear-expansion",
+      "title": "Should nuclear power be expanded to meet climate goals?",
+      "description": "Balance reliability and emissions reductions against cost, timeline, and waste risks.",
+      "tags": [
+        "Energy",
+        "Climate",
+        "Nuclear"
+      ],
+      "createdByKey": "farah",
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Firm, low-carbon power from nuclear complements renewables, supports grid stability, and reduces reliance on fossil baselines.",
+          "createdByKey": "alice",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Mixes factual claims about low operational carbon emissions and grid-support characteristics with a policy recommendation about complementing renewables; thus it contains both verifiable and evaluative elements."
+          }
+        },
+        {
+          "side": "for",
+          "body": "Nuclear plants generate massive amounts of electricity with near-zero carbon emissions, making them a powerful tool for decarbonizing energy systems.",
+          "createdByKey": "charlie",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Mixed statement. Verifiable facts: nuclear plants produce large amounts of electricity and have very low operational/lifecycle CO2 emissions compared to fossil fuels. Opinion/judgment: terms like “massive” and the conclusion that they are a “powerful tool for decarbonizing energy systems” reflect an evaluative stance and policy judgment, even if supported by evidence."
+          }
+        },
+        {
+          "side": "for",
+          "body": "Unlike solar and wind, nuclear power provides stable, continuous output that isn’t affected by weather or time of day.",
+          "createdByKey": "evan",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "This is a verifiable claim. Nuclear plants typically operate at high capacity factors (~90%) and provide steady baseload power largely independent of time of day or typical weather, whereas solar and wind output varies with sunlight and wind conditions. Although nuclear units can experience outages or deratings due to maintenance or extreme conditions, their generation is not inherently intermittent like solar and wind."
+          }
+        },
+        {
+          "side": "for",
+          "body": "The energy density of uranium is enormous, meaning small quantities produce vast energy with minimal fuel requirements.",
+          "createdByKey": "bob",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "This statement is verifiable: nuclear fission of uranium has an energy density orders of magnitude higher than chemical fuels. For example, fission of 1 kg of U‑235 releases ~8×10^13 J, far exceeding the energy from 1 kg of coal or gasoline, so small quantities indeed yield large amounts of energy and reduce fuel requirements."
+          }
+        },
+        {
+          "side": "for",
+          "body": "New reactor designs promise greater safety, efficiency, and flexibility, addressing many of the flaws in older technologies.",
+          "createdByKey": "farah",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a generalized, non-specific claim using evaluative and forward-looking language (e.g., “promise,” “greater safety/efficiency/flexibility”). Without specific designs, data, or sources, it is not directly verifiable and reflects an opinion or promotional assertion rather than a concrete fact."
+          }
+        },
+        {
+          "side": "for",
+          "body": "Expanding nuclear power can reduce dependence on imported fossil fuels and improve national energy security.",
+          "createdByKey": "diana",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a policy/predictive claim using terms like “can” and “improve,” which depend on context, assumptions, and value judgments (e.g., what counts as energy security). While it can be supported by evidence in some cases, it is not universally verifiable as a standalone factual statement."
+          }
+        },
+        {
+          "side": "against",
+          "body": "High capital costs, long build times, and waste concerns make nuclear a slower, riskier path than scaling renewables, storage, and efficiency.",
+          "createdByKey": "bob",
+          "isRemoved": false,
+          "comments": [
+            {
+              "body": "Advanced modular designs could shorten timelines—cost overruns are not inevitable.",
+              "createdByKey": "diana",
+              "isRemoved": false
+            }
+          ],
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Contains verifiable elements (documented cost overruns and long build times in many projects) alongside normative conclusions about relative risk and strategic priorities, so it mixes fact and opinion."
+          }
+        },
+        {
+          "side": "against",
+          "body": "Nuclear projects are slow and extremely expensive, often taking decades to complete and running far over budget.",
+          "createdByKey": "alice",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "This statement blends verifiable claims with subjective judgment. Empirically, many recent nuclear power projects (especially in the U.S. and Europe) have experienced long timelines and significant cost overruns, which can be documented, making parts of the claim factual. However, terms like \"extremely expensive\" and the generalization \"often taking decades\" are subjective/context-dependent and imply an evaluative stance, making it also an opinion."
+          }
+        },
+        {
+          "side": "against",
+          "body": "Long-term storage and management of radioactive waste remain unresolved, posing environmental and ethical challenges.",
+          "createdByKey": "charlie",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "The statement makes a broad, generalized assessment (“remain unresolved”) and includes value-laden language (“posing environmental and ethical challenges”). While it references real issues around radioactive waste, the claims are not strictly verifiable in a universally objective way and depend on context, interpretation, and ethical judgment."
+          }
+        },
+        {
+          "side": "against",
+          "body": "The potential for catastrophic accidents, while rare, carries consequences too severe for public and political comfort.",
+          "createdByKey": "evan",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This statement expresses a value judgment about the severity of consequences and what is acceptable to \"public and political\" comfort. Terms like \"too severe\" and assessments of comfort are subjective and context-dependent, not directly verifiable. While it hints that such accidents are rare (which could be empirically assessed in a specific domain), the core claim hinges on normative evaluation rather than verifiable fact."
+          }
+        },
+        {
+          "side": "against",
+          "body": "Expanding nuclear infrastructure increases risks of weapons proliferation and misuse of nuclear materials.",
+          "createdByKey": "farah",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "This is an empirical, testable causal claim. It asserts that expanding nuclear infrastructure correlates with increased proliferation and misuse risks, which can be evaluated using data (e.g., historical proliferation incidents, safeguard breach rates, quantities of fissile materials, and oversight capacity). It does not express a value judgment or preference."
+          }
+        },
+        {
+          "side": "against",
+          "body": "Renewable energy sources are now cheaper and faster to deploy, making nuclear expansion an inefficient use of resources.",
+          "createdByKey": "diana",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "The statement contains a verifiable-sounding empirical claim (“renewables are now cheaper and faster to deploy”) but it is generalized across contexts and technologies and depends on specific metrics, regions, and timeframes. The main conclusion (“making nuclear expansion an inefficient use of resources”) is a normative, evaluative judgment that depends on priorities and assumptions (e.g., cost metrics, reliability needs, climate targets). Therefore, overall it is an opinion, though it references empirical considerations."
+          }
+        },
+        {
+          "side": "for",
+          "body": "The energy density of uranium is enormous, meaning small quantities produce vast energy with minimal fuel requirements. This will result in greater efficiency compared to renewables. We will be failing the planet if we do not expand nuclear power production.",
+          "createdByKey": "evan",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Mixed content. Fact: Uranium has very high energy density; small quantities can produce large amounts of energy (verifiable via physics/nuclear data). Opinion: Claims that this necessarily results in greater efficiency than renewables and the normative statement that not expanding nuclear means “failing the planet” are value-laden, comparative, and contingent on definitions, assumptions, and policy judgments."
+          }
+        },
+        {
+          "side": "for",
+          "body": "I agree",
+          "createdByKey": "alice",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "The statement expresses a personal stance (“I agree”), which is subjective and not independently verifiable, so it is an opinion rather than a fact."
+          }
+        }
+      ]
+    },
+    {
+      "key": "digital-id",
+      "title": "Should there be a national digital ID system?",
+      "description": "Examine privacy, security, inclusion, and service delivery trade-offs of digital identity programs.",
+      "tags": [
+        "Digital Identity",
+        "Privacy",
+        "Security"
+      ],
+      "createdByKey": "alice",
+      "arguments": [
+        {
+          "side": "for",
+          "body": "A voluntary, privacy-preserving digital ID can streamline access to public and financial services, reduce fraud, and improve inclusion.",
+          "createdByKey": "farah",
+          "isRemoved": false,
+          "comments": [
+            {
+              "body": "Voluntary and decentralised credentials could mitigate surveillance concerns.",
+              "createdByKey": "charlie",
+              "isRemoved": false
+            }
+          ],
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "A policy suggestion combining technical design choices with expected benefits; while some benefits are plausible, the overall claim is contingent and normative."
+          }
+        },
+        {
+          "side": "against",
+          "body": "Centralised identity systems create tempting surveillance targets and single points of failure that can be abused or breached.",
+          "createdByKey": "evan",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Highlights risks and failure modes associated with centralised systems; this is a risk assessment and policy judgement rather than a simple factual claim."
+          }
+        }
+      ]
+    },
+    {
+      "key": "crypto-regulation",
+      "title": "Should retail cryptocurrency trading be tightly regulated?",
+      "description": "Balance consumer protection with innovation and capital formation.",
+      "tags": [
+        "Crypto",
+        "Finance",
+        "Regulation"
+      ],
+      "createdByKey": "bob",
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Clear rules on disclosures, custody, and market integrity reduce scams and systemic risks while enabling compliant innovation.",
+          "createdByKey": "alice",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "A regulatory claim that connects governance measures to improved outcomes; its plausibility can be supported by evidence but it remains a policy argument."
+          }
+        },
+        {
+          "side": "against",
+          "body": "Overly strict rules could push activity offshore, limiting legitimate use cases and experimentation without stopping bad actors.",
+          "createdByKey": "charlie",
+          "isRemoved": false,
+          "comments": [
+            {
+              "body": "A sandbox model might offer a middle path: supervision without premature bans.",
+              "createdByKey": "diana",
+              "isRemoved": false
+            }
+          ],
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Predicts economic displacement of regulated activity; this is a policy risk argument that can be illustrated by past cases but is primarily evaluative."
+          }
+        }
+      ]
+    },
+    {
+      "key": "meat-tax",
+      "title": "Should there be a tax on meat to address climate change?",
+      "description": "Consider emissions pricing, fairness, nutrition, and alternatives to reduce agricultural impacts.",
+      "tags": [
+        "Climate",
+        "Agriculture",
+        "Tax"
+      ],
+      "createdByKey": "diana",
+      "arguments": [
+        {
+          "side": "for",
+          "body": "A modest, revenue-neutral tax on high-emission meats can internalise environmental costs and fund healthier, low-carbon alternatives.",
+          "createdByKey": "farah",
+          "isRemoved": false,
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Economic policy proposal: the mechanics are plausible (price signals, revenue use) but effects depend on design and context; overall it is a normative policy argument."
+          }
+        },
+        {
+          "side": "against",
+          "body": "Food taxes are regressive and culturally sensitive; investment in innovation and voluntary shifts may achieve similar goals without penalties.",
+          "createdByKey": "bob",
+          "isRemoved": false,
+          "comments": [
+            {
+              "body": "Targeted rebates or exemptions could address regressivity concerns.",
+              "createdByKey": "evan",
+              "isRemoved": false
+            }
+          ],
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Expresses distributive and political concerns about taxation; while regressivity can be measured, the policy preference and alternatives are normative."
+          }
+        }
+      ]
+    },
+    {
+      "key": "should_companies_adopt_a_four-day_workweek?",
+      "title": "Should companies adopt a four-day workweek?",
+      "description": "A debate about Should companies adopt a four-day workweek?.",
+      "createdByKey": "evan",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Trials of four-day workweeks in several organizations have shown that productivity can be maintained or even improved while working fewer hours, largely due to better focus and reduced burnout.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Cites empirical trials (fact) but generalizes outcomes to broader contexts and asserts causation (opinion)."
+          },
+          "comments": [
+            {
+              "body": "My team switched to 32 hours and our sprint velocity stayed the same.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "Our pilot showed fewer meetings made the biggest difference.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "It depends on the nature of work—deep-work roles seemed to benefit most.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "A four-day workweek can improve employee well-being and work-life balance, which in turn can lower turnover, reduce absenteeism, and enhance employer branding.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The link between reduced hours and well-being/turnover has empirical support (fact), but predicting consistent outcomes across all firms is interpretive (opinion)."
+          },
+          "comments": [
+            {
+              "body": "Recruiting got easier for us—candidates mention it in interviews.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "I finally have a weekday for errands and childcare without using PTO.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Fewer commuting days can lower carbon emissions and reduce office energy usage, creating environmental and cost benefits.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Reduced commuting and office usage logically reduce emissions/energy (fact), while the magnitude and net benefits vary by context (opinion)."
+          },
+          "comments": [
+            {
+              "body": "Our utility bill dropped about 12% during the pilot.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Remote-heavy teams may see less impact, but facilities savings still add up.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Many sectors require continuous coverage (e.g., healthcare, hospitality, customer support), making a four-day schedule impractical or more expensive due to added shifts.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Operational coverage needs in certain industries are a matter of fact; concluding impracticality or higher costs is a generalization (opinion)."
+          },
+          "comments": [
+            {
+              "body": "We had to hire more weekend staff to maintain SLAs—costs went up.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "24/7 operations can do it, but it becomes a staffing puzzle.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Compressing work into fewer days can lead to longer hours, reduced recovery time, and hidden overtime, undermining the intended well-being benefits.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Reports of longer daily shifts in some implementations are factual; claiming it undermines benefits is a value-laden assessment (opinion)."
+          },
+          "comments": [
+            {
+              "body": "Our 10-hour days were exhausting; people started checking email on off-days anyway.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Policy without enforcement just shifted work into evenings.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Reduced availability can hinder collaboration across time zones and partners, slow decision-making, and potentially reduce revenue if customers expect five-day support.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Availability constraints and coordination delays are observable (fact); predicting revenue impact depends on context and assumptions (opinion)."
+          },
+          "comments": [
+            {
+              "body": "We lost a deal because we couldn’t turn around a proposal on Friday.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Staggered schedules helped, but meeting windows got narrower.",
+              "createdByKey": "alice"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
