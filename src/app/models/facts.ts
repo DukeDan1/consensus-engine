@@ -7,6 +7,7 @@ export interface IFact extends Document {
     sourceArgument: Types.ObjectId;    // primary argument fact was derived from
     createdAt: Date;
     updatedAt: Date;
+    aiJustification?: string;      // optional justification from AI on why this is a fact
 }
 
 const FactSchema = new Schema<IFact>({
@@ -14,6 +15,7 @@ const FactSchema = new Schema<IFact>({
     topic: { type: Schema.Types.ObjectId, ref: "Topic", required: true, index: true },
     text: { type: String, required: true, trim: true, maxlength: 5000 },
     sourceArgument: { type: Schema.Types.ObjectId, ref: "Argument", required: true, index: true },
+    aiJustification: { type: String, trim: true, maxlength: 5000 },
 }, { timestamps: true });
 
 FactSchema.index({ topic: 1, createdAt: -1 });

@@ -80,6 +80,7 @@ export async function POST(req: Request) {
                             topic: topicObjId,
                             text: factual.factualPart,
                             sourceArgument: created._id,
+                            aiJustification: factual.justification || "",
                         });
                     }
                 }
