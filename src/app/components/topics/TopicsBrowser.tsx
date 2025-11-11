@@ -152,13 +152,13 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
 
   return (
     <div>
-      <div className="d-flex align-items-center justify-content-between mb-2">
-        <h2 className="h5 mb-0">Browse</h2>
+      <div className="mb-3">
         <CreateNewTopic onCreated={() => {
           // After creation, reset to first page and refresh
           setPage(1);
         }} />
       </div>
+
 
       <div className="mb-3">
         <TopicFilters value={filters} onChange={setFilters} onSearch={onSearch} />

@@ -42,7 +42,8 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: () => void }
   return (
     <div>
       {!open ? (
-        <button className="btn btn-primary btn-sm" onClick={() => setOpen(true)}>
+        <button className="btn btn-outline-success" onClick={() => setOpen(true)} aria-label="Add topic">
+          <i className="fa-solid fa-plus me-1"></i>
           New Topic
         </button>
       ) : (
