@@ -4,15 +4,19 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function getAIAnalysisForArgument(argumentText: string) {
+export async function getAIAnalysisForArgument(argumentText: string, topicName: String) {
     const response = await openai.responses.create({
         prompt: {
             "id": "pmpt_68f0c016b1448190a6d11717cdd84e7c0142635054d01cbe",
-            "version": "5"
+            "version": "4"
         },
         input: [
-            { 
-                role: "user", 
+            {
+                role: "developer",
+                content: `The argument is made in the context of the topic: "${topicName}".`
+            },
+            {
+                role: "user",
                 content: argumentText 
             }
         ],
@@ -33,13 +37,17 @@ export async function getAIAnalysisForArgument(argumentText: string) {
     };
 }
 
-export async function extractFactualInformationFromComment(argumentText: string) {
+export async function extractFactualInformationFromComment(argumentText: string, topicName: String) {
     const response = await openai.responses.create({
         prompt: {
             "id": "pmpt_691321c60ba88194bf7aa1ce08718dfe0e634e3c9603cfdc",
             "version": "2"
         },
         input: [
+            {
+                role: "developer",
+                content: `The comment is made in the context of the topic: "${topicName}".`
+            },
             { 
                 role: "user", 
                 content: argumentText 

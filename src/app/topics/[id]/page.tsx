@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic"; // render server-side on each request
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
 import ArgumentCard from "@/app/components/ArgumentCard";
 import AddNewArgumentComponent from "@/app/components/AddNewArgumentComponent";
+import FactCard from "@/app/components/topics/FactCard";
 
 async function fetchTopicBundle(id: string, ordering: "relevant" | "newest", numArguments: number): Promise<TopicApiResponse | null> {
   const base = process.env.NEXTJS_APP_BASE_URL ?? "";
@@ -73,11 +74,26 @@ export default async function TopicPage({ params, searchParams }: any) {
         <AddNewArgumentComponent topicId={t.id} />
       </div>
 
+      {/* Derived Facts */}
+      {Array.isArray(data.facts) && data.facts.length > 0 && (
+        <div className="mt-5">
+          <h5 className="mb-3">Facts derived from arguments</h5>
+          <ul className="list-group mb-4">
+            {data.facts.map((f) => (
+              <FactCard fact={f} key={f.id} />
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Arguments */}
       {data.arguments.length === 0 ? (
         <div className="alert alert-secondary">No arguments yet.</div>
       ) : (
         <div className="row g-3">
+          <div className="col-12">
+            <h5 className="mb-3">Arguments</h5>
+          </div>
           {data.arguments.map((a) => (
             <ArgumentCard argument={a} key={a.id} />
           ))}

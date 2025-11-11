@@ -31,6 +31,13 @@ const dataTool = {
                                         justification: { type: "string", description: "Justification for the AI's analysis." },
                                     },
                                 },
+                                factualExtraction: {
+                                    type: "object",
+                                    properties: {
+                                        factualPart: { type: "string", description: "Any parts of the argument that are factual. You can rephrase them or use information from different parts of the argument if needed." },
+                                        justification: { type: "string", description: "Justification for the factual extraction." },
+                                    },
+                                },
                                 comments: {
                                     type: "array",
                                     description: "List of user comments on the argument.",
@@ -132,7 +139,14 @@ const generate_topic = async () => {
                         body: c.body,
                         createdByKey: populationData.users[Math.floor(Math.random() * populationData.users.length)].key,
                     }))
-                }))
+                })),
+                facts: topicData.arguments
+                    .filter((arg) => arg.factualExtraction && arg.factualExtraction.factualPart && arg.factualExtraction.factualPart.trim() !== "")
+                    .map((arg) => ({
+                        text: arg.factualExtraction.factualPart,
+                        sourceArgumentBody: arg.body,
+                        aiJustification: arg.factualExtraction.justification || "",
+                    })),
             });
         }
     });

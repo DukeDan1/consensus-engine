@@ -72,6 +72,18 @@ const CommentSchema = new Schema(
 );
 const Comment = mongoose.model("Comment", CommentSchema);
 
+// Facts extracted from arguments (minimal schema to match app model)
+const FactSchema = new Schema(
+  {
+    linkedArguments: [{ type: Schema.Types.ObjectId, ref: "Argument" }],
+    topic: { type: Schema.Types.ObjectId, ref: "Topic", required: true },
+    text: { type: String, required: true, trim: true, maxlength: 5000 },
+    sourceArgument: { type: Schema.Types.ObjectId, ref: "Argument", required: true },
+  },
+  { timestamps: true }
+);
+const Fact = mongoose.model("Fact", FactSchema);
+
 // ---------- Hard-coded Data ----------
 
 const USERS = populationData.users;
@@ -107,7 +119,12 @@ function pickIds(list, keys = []) {
   await mongoose.connect(MONGODB_URI);
 
   // Wipe previous (safe for dev)
-  await Promise.all([Topic.deleteMany({}), Argument.deleteMany({}), Comment.deleteMany({})]);
+  await Promise.all([
+    Topic.deleteMany({}),
+    Argument.deleteMany({}),
+    Comment.deleteMany({}),
+    Fact.deleteMany({}),
+  ]);
 
   const existingUsers = await User.find({ email: { $in: USERS.map((u) => u.email) } });
   if (existingUsers.length > 0) {
@@ -141,6 +158,8 @@ function pickIds(list, keys = []) {
   const topicsByKey = byKey(topicsIndexed);
 
   // 3) Arguments per topic and comments
+  // Keep a lookup of created arguments by topic key + argument body for linking Facts later
+  const argIdByTopicAndBody = new Map(); // Map<string, Map<string, ObjectId>>
   for (const t of TOPICS) {
     if (!t.arguments) t.arguments = [];
     const argsForTopic = t.arguments;
@@ -162,6 +181,10 @@ function pickIds(list, keys = []) {
         aiAnalysis: arg.aiAnalysis || { isFact: false, isOpinion: true, justification: "" },
       });
 
+      // record in lookup
+      if (!argIdByTopicAndBody.has(t.key)) argIdByTopicAndBody.set(t.key, new Map());
+      argIdByTopicAndBody.get(t.key).set(arg.body, createdArg._id);
+
       arg.comments = arg.comments || [];
       for (const c of arg.comments) {
         if (!c.createdByKey) {
@@ -175,6 +198,34 @@ function pickIds(list, keys = []) {
           isRemoved: c.isRemoved || false,
         });
       }
+      
+    }
+  }
+
+  // 4) Facts per topic (optional in data)
+  let totalFacts = 0;
+  for (const t of TOPICS) {
+    if (!Array.isArray(t.facts) || t.facts.length === 0) continue;
+    const topicId = topicsByKey.get(t.key)._id;
+    const argMap = argIdByTopicAndBody.get(t.key) || new Map();
+    for (const f of t.facts) {
+      if (!f.text || !f.sourceArgumentBody) {
+        console.warn(`⚠️ Skipping fact for topic ${t.key}: missing text or sourceArgumentBody`);
+        continue;
+      }
+      const srcId = argMap.get(f.sourceArgumentBody);
+      if (!srcId) {
+        console.warn(`⚠️ Could not find source argument by body for topic ${t.key}. Fact text: ${f.text.slice(0, 80)}…`);
+        continue;
+      }
+      await Fact.create({
+        topic: topicId,
+        text: f.text,
+        sourceArgument: srcId,
+        linkedArguments: [srcId],
+        aiJustification: f.aiJustification || "",
+      });
+      totalFacts += 1;
     }
   }
 
@@ -190,6 +241,7 @@ function pickIds(list, keys = []) {
 
   console.log("✅ Seed complete.");
   console.table(withTotals);
+  console.log(`📚 Inserted facts: ${totalFacts}`);
 
   await mongoose.disconnect();
   console.log("🔌 Disconnected.");

@@ -398,6 +398,23 @@
             "justification": "The statement expresses a personal stance (“I agree”), which is subjective and not independently verifiable, so it is an opinion rather than a fact."
           }
         }
+      ],
+      "facts": [
+        {
+          "sourceArgumentBody": "Unlike solar and wind, nuclear power provides stable, continuous output that isn’t affected by weather or time of day.",
+          "text": "Nuclear plants sustain high capacity factors (often 85–95%), delivering continuous baseload generation largely independent of diurnal or typical weather variation.",
+          "aiJustification": "This is a verifiable claim. Nuclear plants typically operate at high capacity factors (~90%) and provide steady baseload power largely independent of time of day or typical weather, whereas solar and wind output varies with sunlight and wind conditions. Although nuclear units can experience outages or deratings due to maintenance or extreme conditions, their generation is not inherently intermittent like solar and wind."
+        },
+        {
+          "sourceArgumentBody": "The energy density of uranium is enormous, meaning small quantities produce vast energy with minimal fuel requirements.",
+          "text": "Fission of 1 kg of U-235 releases on the order of 8×10^13 joules, orders of magnitude more energy per kilogram than combustion of coal or gasoline.",
+          "aiJustification": "This statement is verifiable: nuclear fission of uranium has an energy density orders of magnitude higher than chemical fuels. For example, fission of 1 kg of U‑235 releases ~8×10^13 J, far exceeding the energy from 1 kg of coal or gasoline, so small quantities indeed yield large amounts of energy and reduce fuel requirements."
+        },
+        {
+          "sourceArgumentBody": "Firm, low-carbon power from nuclear complements renewables, supports grid stability, and reduces reliance on fossil baselines.",
+          "text": "Lifecycle analyses show nuclear’s greenhouse gas emissions are comparable to wind and solar (< ~50 g CO2e/kWh), enabling reliable low-carbon generation that can displace fossil backup capacity.",
+          "aiJustification": "Mixes factual claims about low operational carbon emissions and grid-support characteristics with a policy recommendation about complementing renewables; thus it contains both verifiable and evaluative elements."
+        }
       ]
     },
     {
@@ -3792,6 +3809,1469 @@
             "justification": "Platforms have implemented or are piloting many of these measures; the claim that they effectively mitigate harms is partly opinion and context-dependent."
           },
           "comments": []
+        }
+      ]
+    },
+    {
+      "key": "the_impact_of_artificial_intelligence_on_employment",
+      "title": "The impact of artificial intelligence on employment",
+      "description": "A debate about The impact of artificial intelligence on employment.",
+      "createdByKey": "diana",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "AI creates new job categories and industries, such as machine learning engineering, AI operations, data annotation, AI safety and governance, and applied AI product management, which did not meaningfully exist a decade ago.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that these job titles and functions exist and have grown in recent years; the claim that AI \"creates\" them is descriptive. The implication that this will materially offset losses is partly opinion."
+          },
+          "comments": [
+            {
+              "body": "I transitioned from data analyst to MLOps last year—definitely a new path that didn’t exist at my company before.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "But are these enough to replace millions of admin jobs?",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "AI systems can automate a wide range of routine cognitive tasks—like data entry, first-line customer support, and document processing—leading to displacement in administrative and back‑office roles.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that AI can perform these tasks and that some firms automate them. The broader claim about displacement magnitude is partly opinion/forecast."
+          },
+          "comments": [
+            {
+              "body": "We replaced our overnight email triage team with an AI system; only two supervisors remained.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "AI augments worker productivity—drafting emails, summarizing documents, or generating code—allowing the same headcount to produce more, which can stimulate demand and, over time, support employment growth.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Productivity gains from specific AI tools are documented. The claim that this ultimately supports net employment is an economic inference and partly opinion."
+          },
+          "comments": [
+            {
+              "body": "As a lawyer, AI summaries cut my prep time by half. We hired another paralegal because throughput increased.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "The benefits of AI may accrue primarily to capital owners and highly skilled workers, reducing labor’s share of income and dampening job growth for the median worker.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Distributional outcomes are debated and depend on policy and market structure; no single empirical consensus makes this a fact claim."
+          },
+          "comments": [
+            {
+              "body": "This is what happened with earlier waves of automation in our factory—profits rose but wage growth stalled.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "AI lowers barriers to entrepreneurship by providing low‑cost capabilities—marketing copy, design mockups, basic coding—enabling sole proprietors and small firms to start and scale with fewer hires.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that these tools are available at low cost; the effect on entrepreneurship rates and hiring needs is a reasoned opinion."
+          },
+          "comments": [
+            {
+              "body": "Launched my boutique online store using AI for product photos and ads—no agency needed.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "But if founders can do more alone, doesn’t that mean fewer jobs?",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Displacement can outpace reskilling: workers in affected roles may lack time, money, or access to training, leading to long spells of unemployment or underemployment.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This projects a causal sequence; while plausible and supported by past patterns, it is not a universally established fact."
+          },
+          "comments": [
+            {
+              "body": "My call center closed; the free online courses help, but I still can’t land interviews without experience.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "AI can reduce exposure to hazardous work—using robots and computer vision for inspections in mines, oil facilities, or disaster zones—shifting employment toward safer oversight and maintenance roles.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that such AI-enabled systems are deployed; the net effect on employment composition is partly opinion."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Market concentration in AI (compute, data, platforms) can entrench monopolistic providers, weakening labor’s bargaining power and leading to more gig‑like, precarious employment structures.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "The causal link to employment structures is a projection; concerns about concentration are documented but outcomes vary by policy context."
+          },
+          "comments": [
+            {
+              "body": "If a handful of vendors control the stack, they’ll dictate terms to everyone else, including workers.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Education and training can be scaled with AI tutors and personalized learning systems, potentially speeding up upskilling for displaced workers at a lower cost.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "AI tutoring systems exist and can personalize content; the claim about speeding up upskilling at scale is a plausible but partly opinion-based effect."
+          },
+          "comments": [
+            {
+              "body": "Our community college piloted an AI math tutor; completion rates improved in my class.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Regulation and social safety nets typically lag technology adoption, so firms may automate quickly while policy responses (retraining funds, wage insurance) arrive slowly, amplifying job losses in the short run.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "The timing and effect of policy lag vary by jurisdiction; this is a reasoned opinion grounded in past tech cycles."
+          },
+          "comments": []
+        },
+        {
+          "side": "for",
+          "body": "Aging populations and persistent labor shortages in sectors like logistics and eldercare mean AI and automation can help maintain output without reducing employment among working‑age populations.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that many economies face aging demographics and shortages; the inference about employment maintenance is partly opinion."
+          },
+          "comments": [
+            {
+              "body": "Our nursing home uses AI scheduling and documentation tools so nurses spend more time with residents—we’re still hiring.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Generative AI reduces demand for some creative and knowledge work—copywriting, basic design, simple coding—pressuring rates and opportunities for freelancers and junior talent.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that AI can produce such outputs and that some clients substitute away from humans; the breadth of impact is partly opinion."
+          },
+          "comments": [
+            {
+              "body": "My freelance writing income dropped 30% this year as clients started using AI drafts.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "As AI becomes regulated, new compliance, auditing, and risk management roles emerge (e.g., AI auditors, model risk managers, prompt governance), creating complementary human employment.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Regulatory proposals and industry standards are creating demand for human oversight roles; the claim about job creation is supported by postings but still partly opinion regarding scale."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "AI may substitute for offshore business process outsourcing (BPO) in customer service and back‑office workflows, threatening employment in developing economies reliant on these sectors.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "AI systems can handle many BPO tasks; the socioeconomic impact on specific regions is a forecast and thus partly opinion."
+          },
+          "comments": [
+            {
+              "body": "I work in BPO in Manila—clients are already asking for AI-first solutions instead of new seats.",
+              "createdByKey": "diana"
+            }
+          ]
+        }
+      ],
+      "facts": [
+        {
+          "text": "Job roles such as machine learning engineer, AI operations (MLOps), data annotation, AI safety/governance, and applied AI product management exist today and have grown compared to a decade ago.",
+          "sourceArgumentBody": "AI creates new job categories and industries, such as machine learning engineering, AI operations, data annotation, AI safety and governance, and applied AI product management, which did not meaningfully exist a decade ago.",
+          "aiJustification": "These roles are observable in job postings, company org charts, and industry reports."
+        },
+        {
+          "text": "AI can perform tasks such as data entry, first-line customer service interactions, and document processing with automation tools.",
+          "sourceArgumentBody": "AI systems can automate a wide range of routine cognitive tasks—like data entry, first-line customer support, and document processing—leading to displacement in administrative and back‑office roles.",
+          "aiJustification": "Demonstrated by commercially available RPA and generative AI customer service solutions."
+        },
+        {
+          "text": "AI tools can draft emails, summarize documents, and assist with code generation, increasing individual task productivity.",
+          "sourceArgumentBody": "AI augments worker productivity—drafting emails, summarizing documents, or generating code—allowing the same headcount to produce more, which can stimulate demand and, over time, support employment growth.",
+          "aiJustification": "These capabilities are widely available and measured in pilot studies and product benchmarks."
+        },
+        {
+          "text": "Economic outcomes from technological change can be uneven, with returns differing between capital owners and various labor segments.",
+          "sourceArgumentBody": "The benefits of AI may accrue primarily to capital owners and highly skilled workers, reducing labor’s share of income and dampening job growth for the median worker.",
+          "aiJustification": "Historical episodes show varied distributional effects from automation."
+        },
+        {
+          "text": "Generative AI tools can produce marketing text, design drafts, and code at relatively low cost.",
+          "sourceArgumentBody": "AI lowers barriers to entrepreneurship by providing low‑cost capabilities—marketing copy, design mockups, basic coding—enabling sole proprietors and small firms to start and scale with fewer hires.",
+          "aiJustification": "Observed in widely used commercial tools and pricing."
+        },
+        {
+          "text": "Reskilling requires resources (time, money, training access) that displaced workers may not have immediately.",
+          "sourceArgumentBody": "Displacement can outpace reskilling: workers in affected roles may lack time, money, or access to training, leading to long spells of unemployment or underemployment.",
+          "aiJustification": "Documented in labor economics research on structural change and retraining barriers."
+        },
+        {
+          "text": "Robotics and AI-driven inspection systems are used in hazardous environments such as industrial facilities and disaster sites.",
+          "sourceArgumentBody": "AI can reduce exposure to hazardous work—using robots and computer vision for inspections in mines, oil facilities, or disaster zones—shifting employment toward safer oversight and maintenance roles.",
+          "aiJustification": "Documented by deployments from robotics and industrial monitoring companies."
+        },
+        {
+          "text": "AI development depends on scarce inputs like high-end compute and large datasets, which may concentrate in a few firms.",
+          "sourceArgumentBody": "Market concentration in AI (compute, data, platforms) can entrench monopolistic providers, weakening labor’s bargaining power and leading to more gig‑like, precarious employment structures.",
+          "aiJustification": "Industry analyses show significant concentration in leading AI infrastructure providers."
+        },
+        {
+          "text": "AI-powered tutoring and personalized learning tools are available and can adapt materials to learners.",
+          "sourceArgumentBody": "Education and training can be scaled with AI tutors and personalized learning systems, potentially speeding up upskilling for displaced workers at a lower cost.",
+          "aiJustification": "Visible in commercial and research-backed education technology."
+        },
+        {
+          "text": "Policy changes often take time to design and implement relative to private technology adoption cycles.",
+          "sourceArgumentBody": "Regulation and social safety nets typically lag technology adoption, so firms may automate quickly while policy responses (retraining funds, wage insurance) arrive slowly, amplifying job losses in the short run.",
+          "aiJustification": "Historically observed in multiple technology transitions."
+        },
+        {
+          "text": "Several countries face aging demographics and labor shortages in areas such as logistics and eldercare; automation can supplement labor supply.",
+          "sourceArgumentBody": "Aging populations and persistent labor shortages in sectors like logistics and eldercare mean AI and automation can help maintain output without reducing employment among working‑age populations.",
+          "aiJustification": "Supported by demographic data and industry reports on vacancies."
+        },
+        {
+          "text": "AI tools can generate text, images, and code suitable for some commercial tasks, influencing client purchasing decisions.",
+          "sourceArgumentBody": "Generative AI reduces demand for some creative and knowledge work—copywriting, basic design, simple coding—pressuring rates and opportunities for freelancers and junior talent.",
+          "aiJustification": "Evidenced by widespread availability and adoption in marketing and software tooling."
+        },
+        {
+          "text": "Organizations are hiring for AI-related compliance and risk roles such as model risk management and AI auditing.",
+          "sourceArgumentBody": "As AI becomes regulated, new compliance, auditing, and risk management roles emerge (e.g., AI auditors, model risk managers, prompt governance), creating complementary human employment.",
+          "aiJustification": "Reflected in job listings and governance frameworks under development."
+        },
+        {
+          "text": "AI tools can automate portions of customer service and back‑office workflows that are commonly handled by BPO providers.",
+          "sourceArgumentBody": "AI may substitute for offshore business process outsourcing (BPO) in customer service and back‑office workflows, threatening employment in developing economies reliant on these sectors.",
+          "aiJustification": "Demonstrated by AI customer support and document automation products."
+        }
+      ]
+    },
+    {
+      "key": "should_social_media_platforms_be_regulated_by_the_government?",
+      "title": "Should social media platforms be regulated by the government?",
+      "description": "A debate about Should social media platforms be regulated by the government?.",
+      "createdByKey": "bob",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Government regulation can reduce the spread of harmful content and misinformation at scale by imposing baseline safety standards and crisis protocols on social platforms.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that platforms can rapidly amplify content to large audiences and that misinformation can cause real‑world harms; it is opinion that government regulation is the preferred remedy."
+          },
+          "comments": [
+            {
+              "body": "As a healthcare worker, I saw rumors spread faster than we could correct them—some baseline rules would help.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "Regulation is the only way to make platforms take public safety seriously.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Mandating algorithmic transparency and risk assessments would increase accountability, allowing researchers and regulators to evaluate systemic risks like amplification of extremism or health misinformation.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It’s factual that platform ranking systems are largely opaque to outsiders; it’s opinion that mandated transparency is the appropriate policy response."
+          },
+          "comments": [
+            {
+              "body": "At minimum, independent researchers need data access without NDAs that muzzle findings.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Privacy and data protection require public rules: platforms collect extensive user data and use it for targeted advertising, so regulations can set limits on collection, retention, and secondary uses.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It’s factual that platforms collect and monetize user data via advertising; it’s opinion that additional regulation is necessary and beneficial."
+          },
+          "comments": []
+        },
+        {
+          "side": "for",
+          "body": "Child and teen safety warrants government standards such as age‑appropriate design, default privacy protections, and restrictions on manipulative features that maximize engagement.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It’s factual that minors are active users and that engagement‑maximizing features (e.g., infinite scroll, autoplay) exist; it’s opinion that governments should mandate design standards."
+          },
+          "comments": [
+            {
+              "body": "As a parent, I want safer defaults—kids shouldn’t have to navigate dark patterns.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "Age checks worry me, though—ID verification can backfire on privacy.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Competition can be bolstered through interoperability and data portability mandates, reducing lock‑in from network effects and making it easier for users to switch services.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It’s factual that network effects increase switching costs; it’s opinion that regulation should impose interoperability and portability requirements."
+          },
+          "comments": []
+        },
+        {
+          "side": "for",
+          "body": "Election integrity and national security benefit from rules on political ad transparency, disclosure of state‑linked accounts, and rapid response procedures for coordinated manipulation.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It’s factual that foreign and domestic influence operations have used social platforms; it’s opinion that additional regulation is the best mitigation."
+          },
+          "comments": [
+            {
+              "body": "Require machine‑readable disclosures on political ads, with public archives.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Government regulation risks infringing free speech and could lead to censorship or viewpoint discrimination, especially if officials pressure platforms to remove controversial content.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It’s factual that government action affecting speech raises constitutional and human‑rights concerns; it’s opinion that proposed regulations would result in censorship."
+          },
+          "comments": [
+            {
+              "body": "We don’t want whichever party is in power deciding what we’re allowed to read.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "Courts have already warned about state coercion of platforms—slippery slope is real.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Heavy compliance burdens entrench incumbents and deter startups; large firms can absorb legal and auditing costs while small entrants cannot, reducing innovation and competition.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It’s factual that compliance programs impose costs; it’s opinion that these costs will significantly suppress entry and innovation."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Rules are vulnerable to political capture: regulators or ruling parties may shape content standards to favor their interests, leading to biased enforcement and public distrust.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a risk‑based, speculative claim about future behavior; while capture is a known phenomenon in regulation generally, the specific outcome is an opinion."
+          },
+          "comments": [
+            {
+              "body": "Look at how media regulators have been used in some countries—social media could be next.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Global, conflicting rules will fragment the internet—platforms must comply with divergent national standards, causing over‑blocking, geofencing, and a patchwork of user experiences.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It’s factual that countries adopt different legal standards; it’s opinion that this leads to harmful fragmentation outweighing benefits."
+          },
+          "comments": [
+            {
+              "body": "I already see features disabled in my country due to local compliance—balkanization is happening.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Content moderation at scale is inherently error‑prone; mandates could force rigid rules that increase false positives and negatives, harming legitimate speech and missing genuine harm.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It’s factual that automated and human moderation make mistakes at scale; it’s opinion that regulation will necessarily worsen these errors."
+          },
+          "comments": [
+            {
+              "body": "My art account was mistakenly banned twice—more rigid rules won’t help.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "Nuance is hard for algorithms; context matters.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "User empowerment and market mechanisms can address many concerns without direct government control, through better tools (block/mute, keyword filters, chronological feeds) and clearer platform‑level contracts with users.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It’s factual that platforms provide user controls like blocking and muting; it’s opinion that these are sufficient substitutes for regulation."
+          },
+          "comments": []
+        }
+      ],
+      "facts": [
+        {
+          "text": "Social media platforms can amplify content to very large audiences, and misinformation can lead to real‑world harms.",
+          "sourceArgumentBody": "Government regulation can reduce the spread of harmful content and misinformation at scale by imposing baseline safety standards and crisis protocols on social platforms.",
+          "aiJustification": "These claims are supported by documented instances of online virality and offline consequences reported by research and news sources."
+        },
+        {
+          "text": "Platform recommendation and ranking systems are generally not transparent to external researchers or the public.",
+          "sourceArgumentBody": "Mandating algorithmic transparency and risk assessments would increase accountability, allowing researchers and regulators to evaluate systemic risks like amplification of extremism or health misinformation.",
+          "aiJustification": "Companies typically treat these systems as proprietary, limiting outside scrutiny."
+        },
+        {
+          "text": "Major social platforms collect user data and use it for targeted advertising.",
+          "sourceArgumentBody": "Privacy and data protection require public rules: platforms collect extensive user data and use it for targeted advertising, so regulations can set limits on collection, retention, and secondary uses.",
+          "aiJustification": "This is widely documented in company disclosures and privacy policies."
+        },
+        {
+          "text": "Minors widely use social media, and platforms employ engagement‑driving features like infinite scroll and autoplay.",
+          "sourceArgumentBody": "Child and teen safety warrants government standards such as age‑appropriate design, default privacy protections, and restrictions on manipulative features that maximize engagement.",
+          "aiJustification": "Both claims are observable in usage surveys and product designs."
+        },
+        {
+          "text": "Network effects make it harder for users to switch away from dominant platforms.",
+          "sourceArgumentBody": "Competition can be bolstered through interoperability and data portability mandates, reducing lock‑in from network effects and making it easier for users to switch services.",
+          "aiJustification": "This is a well‑established economic property of networked services."
+        },
+        {
+          "text": "Coordinated influence operations and deceptive accounts have targeted users on social platforms.",
+          "sourceArgumentBody": "Election integrity and national security benefit from rules on political ad transparency, disclosure of state‑linked accounts, and rapid response procedures for coordinated manipulation.",
+          "aiJustification": "Documented by multiple investigations and platform takedown reports."
+        },
+        {
+          "text": "Government involvement in content rules can implicate free‑speech protections and constitutional limits (e.g., in the U.S.).",
+          "sourceArgumentBody": "Government regulation risks infringing free speech and could lead to censorship or viewpoint discrimination, especially if officials pressure platforms to remove controversial content.",
+          "aiJustification": "Legal frameworks like the First Amendment constrain government regulation of speech."
+        },
+        {
+          "text": "Regulatory compliance requires resources that are easier for large incumbents to absorb than for small startups.",
+          "sourceArgumentBody": "Heavy compliance burdens entrench incumbents and deter startups; large firms can absorb legal and auditing costs while small entrants cannot, reducing innovation and competition.",
+          "aiJustification": "Observed across many regulated sectors (finance, healthcare, etc.)."
+        },
+        {
+          "text": "Regulatory capture is a documented phenomenon where regulated entities or political actors influence rules or enforcement to their advantage.",
+          "sourceArgumentBody": "Rules are vulnerable to political capture: regulators or ruling parties may shape content standards to favor their interests, leading to biased enforcement and public distrust.",
+          "aiJustification": "Established in political‑economy literature, though application to social media policy varies."
+        },
+        {
+          "text": "Different countries maintain different content and data protection laws, forcing platforms to adapt policies by jurisdiction.",
+          "sourceArgumentBody": "Global, conflicting rules will fragment the internet—platforms must comply with divergent national standards, causing over‑blocking, geofencing, and a patchwork of user experiences.",
+          "aiJustification": "Observable in existing cross‑border internet services."
+        },
+        {
+          "text": "Automated and human moderation systems produce both false positives and false negatives, especially across languages and contexts.",
+          "sourceArgumentBody": "Content moderation at scale is inherently error‑prone; mandates could force rigid rules that increase false positives and negatives, harming legitimate speech and missing genuine harm.",
+          "aiJustification": "A well‑documented limitation of classification systems and moderation operations."
+        },
+        {
+          "text": "Many platforms offer user‑level controls such as blocking, muting, and keyword filtering.",
+          "sourceArgumentBody": "User empowerment and market mechanisms can address many concerns without direct government control, through better tools (block/mute, keyword filters, chronological feeds) and clearer platform‑level contracts with users.",
+          "aiJustification": "These features are publicly available in product settings and help centers."
+        }
+      ]
+    },
+    {
+      "key": "is_artificial_intelligence_a_threat_or_a_benefit_to_society?",
+      "title": "Is artificial intelligence a threat or a benefit to society?",
+      "description": "A debate about Is artificial intelligence a threat or a benefit to society?.",
+      "createdByKey": "alice",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "AI boosts productivity and economic growth by automating routine tasks and augmenting human workers, freeing time for higher‑value work.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There is empirical evidence of productivity gains from AI tools in tasks like coding and writing (fact), while claims about broad economic growth and the allocation of freed time are projections and normative judgments (opinion)."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "AI will displace many jobs—especially routine cognitive and clerical roles—and could widen inequality without policy interventions.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Automation risks for certain task categories are well documented (fact), but the extent of net job losses and inequality effects depend on policy and market responses (opinion)."
+          },
+          "comments": [
+            {
+              "body": "My small accounting firm reduced headcount after adopting AI bookkeeping—so the risk feels very real.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "We also created a new data‑analytics role to manage the AI outputs, so it’s not all loss.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "AI improves medical diagnostics and triage—for example, detecting patterns in medical images and helping clinicians prioritize cases—potentially saving lives.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Regulatory clearances and studies show AI systems achieving strong performance on specific diagnostic tasks (fact). Claims about broad life‑saving impact are forward‑looking and context‑dependent (opinion)."
+          },
+          "comments": [
+            {
+              "body": "As a radiologist, AI triage helps me review critical cases faster, but I still double‑check every flag.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "AI systems can encode and amplify biases from their training data, leading to unfair outcomes in hiring, lending, and predictive policing tools.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There are documented cases of biased model behavior in high‑stakes contexts (fact). The generalization to systemic unfair outcomes and the severity of impact involve value judgments (opinion)."
+          },
+          "comments": [
+            {
+              "body": "We paused an AI resume screener after it down‑ranked candidates from certain schools—bias mitigation is hard.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "AI accelerates scientific discovery by mining literature, proposing hypotheses, and aiding materials and drug design workflows.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "AI tools are actively used in literature mining and design pipelines (fact), while the magnitude of acceleration is debated (opinion)."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Advanced AI development tends to concentrate power because large datasets and compute give big firms and governments an advantage, increasing risks of monopolies and surveillance.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Training cutting‑edge models typically requires substantial compute and data resources held by a few actors (fact). The implications for monopoly power and surveillance are evaluative (opinion)."
+          },
+          "comments": [
+            {
+              "body": "Open‑source models help, but access to massive compute still feels like the bottleneck.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "AI can take on dangerous, dirty, and dull work—such as inspection in hazardous environments, certain manufacturing tasks, or assisting in disaster response—improving worker safety.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Robotics and AI are used in hazardous inspections and some disaster scenarios (fact); the scale of safety improvement is a claim about impact (opinion)."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "AI‑enabled surveillance, including facial recognition at scale, threatens privacy and civil liberties when deployed without strong oversight and safeguards.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Large‑scale AI surveillance deployments exist in various jurisdictions (fact). The assessment that they threaten civil liberties is a normative claim (opinion)."
+          },
+          "comments": [
+            {
+              "body": "As a privacy advocate, the lack of transparency around datasets and accuracy rates is alarming.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Targeted, regulated use in high‑risk settings might be acceptable, but blanket monitoring isn’t.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "AI‑powered accessibility tools—like speech recognition, real‑time captioning, screen readers, and synthetic voices—expand inclusion for people with disabilities and non‑native speakers.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "These tools exist and are widely used (fact); claims about the breadth of inclusion gains involve value judgments (opinion)."
+          },
+          "comments": [
+            {
+              "body": "Live captions have been transformative for my hard‑of‑hearing parent in video calls.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Generative AI lowers the cost of producing convincing misinformation and deepfakes, undermining trust in media, elections, and institutions.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Tools for generating synthetic text, audio, and video are widely available (fact). The scope of institutional harm and electoral impact is a projection (opinion)."
+          },
+          "comments": [
+            {
+              "body": "We already saw a fake audio clip sway local voters before it was debunked.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "Media literacy education needs to catch up fast.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "AI can support education with personalized practice, feedback, and tutoring, helping teachers manage diverse classrooms.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There are deployed AI tutoring and feedback systems (fact). The magnitude and consistency of learning‑gain improvements remain debated (opinion)."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Integrating AI into weapons and command‑and‑control raises escalation and failure‑mode risks, including accidental engagements and rapid conflict dynamics.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Defense programs exploring AI for targeting and decision support are publicly acknowledged (fact). The extent of escalation risk and specific failure scenarios are contested (opinion)."
+          },
+          "comments": [
+            {
+              "body": "Even decision‑support, not full autonomy, can compress timelines and increase pressure on commanders.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "AI helps optimize energy systems and climate efforts—improving grid forecasting, managing demand response, and enhancing building efficiency to cut emissions.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Utilities and building‑management systems use AI for forecasting and control (fact). The overall emissions impact depends on scale and adoption (opinion)."
+          },
+          "comments": []
+        },
+        {
+          "side": "against",
+          "body": "Overreliance on opaque models can create systemic brittleness—when models fail unexpectedly or are attacked, critical services may break in correlated ways.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Model brittleness and vulnerability to adversarial or distribution‑shift failures are well‑documented phenomena (fact). The prediction of systemic breakdowns is a risk assessment (opinion)."
+          },
+          "comments": []
+        }
+      ],
+      "facts": [
+        {
+          "text": "AI tools can automate routine tasks and augment human work, and multiple studies have measured productivity gains in certain knowledge‑work tasks.",
+          "sourceArgumentBody": "AI boosts productivity and economic growth by automating routine tasks and augmenting human workers, freeing time for higher‑value work.",
+          "aiJustification": "Documented experiments and field deployments report efficiency improvements with AI assistance."
+        },
+        {
+          "text": "Tasks that are routine and rules‑based are more automatable, and roles heavy in such tasks face higher displacement risk.",
+          "sourceArgumentBody": "AI will displace many jobs—especially routine cognitive and clerical roles—and could widen inequality without policy interventions.",
+          "aiJustification": "Labor economics literature on task automation supports higher exposure of routine tasks to automation."
+        },
+        {
+          "text": "AI systems are used to analyze medical images and assist with triage in clinical workflows in some settings.",
+          "sourceArgumentBody": "AI improves medical diagnostics and triage—for example, detecting patterns in medical images and helping clinicians prioritize cases—potentially saving lives.",
+          "aiJustification": "There are real‑world deployments and approvals for AI‑assisted diagnostics."
+        },
+        {
+          "text": "Bias present in training data can propagate to model outputs and affect downstream decisions.",
+          "sourceArgumentBody": "AI systems can encode and amplify biases from their training data, leading to unfair outcomes in hiring, lending, and predictive policing tools.",
+          "aiJustification": "Machine learning research shows that dataset bias influences model predictions and fairness metrics."
+        },
+        {
+          "text": "Researchers use AI for literature review, hypothesis generation, and in silico screening in materials and drug discovery.",
+          "sourceArgumentBody": "AI accelerates scientific discovery by mining literature, proposing hypotheses, and aiding materials and drug design workflows.",
+          "aiJustification": "Numerous published studies and industry pipelines report these uses."
+        },
+        {
+          "text": "State‑of‑the‑art model training often depends on large‑scale compute clusters and extensive datasets concentrated among a small number of organizations.",
+          "sourceArgumentBody": "Advanced AI development tends to concentrate power because large datasets and compute give big firms and governments an advantage, increasing risks of monopolies and surveillance.",
+          "aiJustification": "Industry reports and research acknowledge high capital and data requirements for frontier models."
+        },
+        {
+          "text": "AI‑enabled robots and systems are deployed for inspections in hazardous areas and to assist in some disaster response tasks.",
+          "sourceArgumentBody": "AI can take on dangerous, dirty, and dull work—such as inspection in hazardous environments, certain manufacturing tasks, or assisting in disaster response—improving worker safety.",
+          "aiJustification": "There are documented deployments of robots in industrial plants and disaster sites."
+        },
+        {
+          "text": "Facial recognition and other AI surveillance tools have been deployed by public and private entities in multiple regions.",
+          "sourceArgumentBody": "AI‑enabled surveillance, including facial recognition at scale, threatens privacy and civil liberties when deployed without strong oversight and safeguards.",
+          "aiJustification": "Reports and regulatory debates confirm real‑world deployments."
+        },
+        {
+          "text": "Speech recognition, real‑time captioning, and screen‑reader technologies using AI are used by people with disabilities and language learners.",
+          "sourceArgumentBody": "AI‑powered accessibility tools—like speech recognition, real‑time captioning, screen readers, and synthetic voices—expand inclusion for people with disabilities and non‑native speakers.",
+          "aiJustification": "Mainstream operating systems and apps provide these AI‑based features."
+        },
+        {
+          "text": "Generative models can create realistic synthetic text, audio, and video at low marginal cost.",
+          "sourceArgumentBody": "Generative AI lowers the cost of producing convincing misinformation and deepfakes, undermining trust in media, elections, and institutions.",
+          "aiJustification": "This capability is well documented and accessible through public tools."
+        },
+        {
+          "text": "AI tutoring and feedback tools are used in classrooms and by learners for personalized practice.",
+          "sourceArgumentBody": "AI can support education with personalized practice, feedback, and tutoring, helping teachers manage diverse classrooms.",
+          "aiJustification": "Multiple education platforms integrate AI‑driven support features."
+        },
+        {
+          "text": "Defense organizations are researching and in some cases deploying AI for targeting assistance and command‑and‑control support.",
+          "sourceArgumentBody": "Integrating AI into weapons and command‑and‑control raises escalation and failure‑mode risks, including accidental engagements and rapid conflict dynamics.",
+          "aiJustification": "Public statements, budgets, and reports discuss AI in defense contexts."
+        },
+        {
+          "text": "AI is used in grid forecasting, demand management, and building controls to improve efficiency.",
+          "sourceArgumentBody": "AI helps optimize energy systems and climate efforts—improving grid forecasting, managing demand response, and enhancing building efficiency to cut emissions.",
+          "aiJustification": "Industry case studies and academic work document these applications."
+        },
+        {
+          "text": "AI models can behave unpredictably under distribution shifts or adversarial inputs, and such failures can be correlated across deployments.",
+          "sourceArgumentBody": "Overreliance on opaque models can create systemic brittleness—when models fail unexpectedly or are attacked, critical services may break in correlated ways.",
+          "aiJustification": "Research shows non‑robustness and shared failure modes in many models."
+        }
+      ]
+    },
+    {
+      "key": "should_artificial_intelligence_be_allowed_to_make_decisions_in_the_judicial_system?",
+      "title": "Should artificial intelligence be allowed to make decisions in the judicial system?",
+      "description": "A debate about Should artificial intelligence be allowed to make decisions in the judicial system?.",
+      "createdByKey": "charlie",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "AI can reduce sentencing disparities by applying guidelines consistently across similar cases, minimizing the influence of human bias or mood.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The claim that AI could apply guidelines consistently is partly speculative (opinion), but it rests on factual premises: human sentencing disparities have been documented and algorithms can be configured to follow rules consistently (fact)."
+          },
+          "comments": [
+            {
+              "body": "I was sentenced in a county next to where my friend was, same charge, and our outcomes were night and day. Consistency would be nice.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "Consistency is only good if the rules themselves are fair.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Algorithms inherit biases from historical data; risk assessment tools used in some jurisdictions have shown disparate error rates across racial groups, which could worsen discrimination if AI makes final decisions.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is an opinion that AI would worsen discrimination, but it references factual observations: some deployed tools (e.g., risk assessments) have exhibited disparate error rates by race in audits and investigations."
+          },
+          "comments": [
+            {
+              "body": "See the COMPAS debate—whatever you think of the conclusions, the disparities were real.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Allowing AI to handle routine, low-stakes judicial decisions could reduce case backlogs and speed up resolutions, freeing judges to focus on complex matters.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Courts facing backlogs is factual in many places; the efficacy of AI in reducing them is an opinion/projection."
+          },
+          "comments": [
+            {
+              "body": "As a clerk, I see stacks of minor cases clogging the calendar. Anything to clear them helps everyone.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Define “low-stakes.” Bail can be life-changing.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Due process and accountability suffer when a non-human makes binding legal decisions: it is unclear who is responsible for errors, and defendants may struggle to obtain a clear, reasoned explanation they can challenge on appeal.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The argument is normative (opinion) but references factual issues: accountability chains in AI procurement are complex; many legal systems require reasoned decisions for appeal."
+          },
+          "comments": [
+            {
+              "body": "As a public defender, I already fight opaque procedures. Adding a proprietary model would make it worse.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "If we restrict use to interpretable models and require audit logs, AI decisions can be more transparent than some human judgments, enabling better oversight.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The feasibility of interpretable models and audit logs is factual; the claim that this yields better oversight is opinion."
+          },
+          "comments": [
+            {
+              "body": "Transparency is only meaningful if defense can access the logs and methodology.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Agree, but courts rarely have the budget to do deep audits.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Many state-of-the-art models are black boxes; opacity undermines the right to understand the basis of a decision and hampers appellate review.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that many high-performing models are not inherently interpretable; the normative implication about rights and appeals is opinion based on legal principles."
+          },
+          "comments": [
+            {
+              "body": "Even with explainability tools, you often get a heatmap, not a legal rationale.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Carefully designed guardrails—such as limiting AI to specific categories (e.g., traffic infractions), requiring human override, and ongoing bias audits—could allow safe deployment while gathering evidence of effectiveness.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The existence and feasibility of guardrails (audits, overrides) are factual; the claim they enable ‘safe’ deployment is opinion contingent on implementation."
+          },
+          "comments": [
+            {
+              "body": "Start with administrative hearings before criminal cases, please.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Slippery slope—pilots tend to expand without adequate evaluation.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Law is not only about rules; judges weigh mitigation, remorse, and community context—dimensions that are hard to capture in data and may be devalued by AI.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that many legal systems allow consideration of mitigating factors; the claim that AI would devalue them is an opinion."
+          },
+          "comments": [
+            {
+              "body": "Victim impact statements don’t fit neatly into datasets. That worries me.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Under-resourced courts and rural jurisdictions could improve access to justice by using AI to standardize forms, schedule hearings, and resolve minor disputes quickly and cheaply.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Resource constraints in many courts are factual; that AI would improve access is a policy judgment (opinion)."
+          },
+          "comments": [
+            {
+              "body": "As a taxpayer, I want fairness, but also efficiency. If AI helps both, I’m for it.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "AI systems can be attacked or manipulated—through data poisoning or adversarial inputs—raising security risks that are unacceptable when liberty is at stake.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The existence of adversarial and data poisoning attacks is factual; that this makes AI unacceptable in this context is opinion."
+          },
+          "comments": [
+            {
+              "body": "If we can’t secure voting machines perfectly, why would we trust sentencing software?",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Governments already use algorithms in administrative contexts (benefits eligibility, risk scoring). With proper legal constraints, extending algorithmic decision-making to narrowly defined judicial tasks is a logical next step to harmonize practices.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that agencies use algorithms in some administrative processes; the proposal to extend to judicial tasks is opinion."
+          },
+          "comments": [
+            {
+              "body": "Administrative law and criminal law are not the same. Stakes and rights differ a lot.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Public trust and legitimacy may erode if people perceive that ‘machines’ decide their fate, even if accuracy improves on average; perceived fairness matters for compliance and respect for the courts.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The importance of perceived fairness for institutional legitimacy is supported by social science (fact); the prediction about erosion of trust is opinion."
+          },
+          "comments": [
+            {
+              "body": "I served on a jury; everyone wanted the judge to explain things in human terms. A bot wouldn’t cut it.",
+              "createdByKey": "alice"
+            }
+          ]
+        }
+      ],
+      "facts": [
+        {
+          "text": "Human sentencing disparities across similar cases have been documented in various jurisdictions. Algorithms can be configured to apply predefined guidelines consistently.",
+          "sourceArgumentBody": "AI can reduce sentencing disparities by applying guidelines consistently across similar cases, minimizing the influence of human bias or mood.",
+          "aiJustification": "Extracted the non-normative components: existence of disparities and the capability of algorithms to follow set rules."
+        },
+        {
+          "text": "Risk assessment algorithms have been used in some jurisdictions, and external analyses have reported disparate error rates across racial groups.",
+          "sourceArgumentBody": "Algorithms inherit biases from historical data; risk assessment tools used in some jurisdictions have shown disparate error rates across racial groups, which could worsen discrimination if AI makes final decisions.",
+          "aiJustification": "Focuses on the verifiable elements without asserting causality."
+        },
+        {
+          "text": "Many courts face significant case backlogs. Automation can process routine tasks more quickly than humans in many domains.",
+          "sourceArgumentBody": "Allowing AI to handle routine, low-stakes judicial decisions could reduce case backlogs and speed up resolutions, freeing judges to focus on complex matters.",
+          "aiJustification": "These statements are commonly documented and do not assert normative conclusions."
+        },
+        {
+          "text": "AI systems in the public sector often involve multiple actors (vendors, agencies), complicating accountability. Many legal systems require reasoned decisions to enable meaningful appeals.",
+          "sourceArgumentBody": "Due process and accountability suffer when a non-human makes binding legal decisions: it is unclear who is responsible for errors, and defendants may struggle to obtain a clear, reasoned explanation they can challenge on appeal.",
+          "aiJustification": "Extracts procedural facts without taking a stance."
+        },
+        {
+          "text": "Interpretable models exist, and systems can log features and rules used in a decision.",
+          "sourceArgumentBody": "If we restrict use to interpretable models and require audit logs, AI decisions can be more transparent than some human judgments, enabling better oversight.",
+          "aiJustification": "These are technical capabilities that can be verified independently of the normative claim."
+        },
+        {
+          "text": "Many contemporary machine learning models (e.g., deep neural networks) lack inherent interpretability.",
+          "sourceArgumentBody": "Many state-of-the-art models are black boxes; opacity undermines the right to understand the basis of a decision and hampers appellate review.",
+          "aiJustification": "This is a widely accepted technical fact, separated from the normative claim."
+        },
+        {
+          "text": "Human override mechanisms and periodic bias audits are established governance practices that can be implemented in AI systems.",
+          "sourceArgumentBody": "Carefully designed guardrails—such as limiting AI to specific categories (e.g., traffic infractions), requiring human override, and ongoing bias audits—could allow safe deployment while gathering evidence of effectiveness.",
+          "aiJustification": "These are governance techniques documented in policy and engineering literature."
+        },
+        {
+          "text": "Sentencing frameworks in many jurisdictions permit consideration of mitigating factors such as remorse and community impact.",
+          "sourceArgumentBody": "Law is not only about rules; judges weigh mitigation, remorse, and community context—dimensions that are hard to capture in data and may be devalued by AI.",
+          "aiJustification": "States a procedural fact without asserting outcomes of AI use."
+        },
+        {
+          "text": "Some courts operate with limited staff and budgets, leading to slower processing of routine matters.",
+          "sourceArgumentBody": "Under-resourced courts and rural jurisdictions could improve access to justice by using AI to standardize forms, schedule hearings, and resolve minor disputes quickly and cheaply.",
+          "aiJustification": "Isolates the resource constraint as a factual premise."
+        },
+        {
+          "text": "Machine learning models can be vulnerable to adversarial examples and data poisoning, which can alter outputs.",
+          "sourceArgumentBody": "AI systems can be attacked or manipulated—through data poisoning or adversarial inputs—raising security risks that are unacceptable when liberty is at stake.",
+          "aiJustification": "Documents known security properties of ML systems."
+        },
+        {
+          "text": "Public agencies in various countries have deployed algorithms for tasks such as fraud detection and eligibility screening.",
+          "sourceArgumentBody": "Governments already use algorithms in administrative contexts (benefits eligibility, risk scoring). With proper legal constraints, extending algorithmic decision-making to narrowly defined judicial tasks is a logical next step to harmonize practices.",
+          "aiJustification": "States a general, verifiable practice without endorsing expansion."
+        },
+        {
+          "text": "Perceived procedural fairness is a key factor in public compliance and trust in legal institutions, according to social science research.",
+          "sourceArgumentBody": "Public trust and legitimacy may erode if people perceive that ‘machines’ decide their fate, even if accuracy improves on average; perceived fairness matters for compliance and respect for the courts.",
+          "aiJustification": "Extracts a well-documented empirical relationship."
+        }
+      ]
+    },
+    {
+      "key": "is_social_media_doing_more_harm_than_good_in_society?",
+      "title": "Is social media doing more harm than good in society?",
+      "description": "A debate about Is social media doing more harm than good in society?.",
+      "createdByKey": "charlie",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Social media exacerbates mental health challenges, especially among adolescents, by fueling constant social comparison, fear of missing out (FOMO), and late-night scrolling that disrupts sleep—factors associated with higher anxiety and depressive symptoms.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The claim references documented associations between social media use, sleep disruption, and mental health outcomes (factual), while asserting a normative judgment about harm (opinion)."
+          },
+          "comments": [
+            {
+              "body": "As a parent, I’ve noticed my teen’s mood gets worse after long nights on their phone. Anecdotal, but it tracks.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Correlation isn’t causation. Plenty of teens use socials and are fine—the issue might be broader adolescent stress.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Misinformation spreads rapidly on social platforms because engagement-optimizing algorithms tend to amplify sensational content, which can mislead the public on health, science, and elections.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that platforms use engagement-driven ranking and that misinformation can reach large audiences quickly; the conclusion that this results in net harm is a value judgment."
+          },
+          "comments": [
+            {
+              "body": "As a nurse during the pandemic, I spent hours debunking viral posts to my patients. It absolutely affected care decisions.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Social media fosters echo chambers and ideological polarization by repeatedly exposing users to like-minded views and filtering out dissenting information, making compromise harder in public life.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Empirical studies have documented homophily and selective exposure (factual); the broader claim about societal harm reflects opinion."
+          },
+          "comments": [
+            {
+              "body": "I had to mute family members because our feeds became nonstop politics. It didn’t make holidays easier.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Pervasive data collection and targeted advertising on social media erode privacy, with recurring data breaches exposing personal information and enabling profiling beyond users’ expectations.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Platforms do collect extensive user data for targeted ads, and breaches have occurred (factual). The degree of harm and ‘erosion’ are evaluative (opinion)."
+          },
+          "comments": [
+            {
+              "body": "I was part of a breach and started getting weird targeted messages for months. Felt creepy and out of control.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Online harassment and cyberbullying are common on social media, disproportionately affecting women and marginalized groups, leading to stress, self-censorship, and safety concerns.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Surveys document harassment rates and disparities (factual). The evaluation of net harm is a normative judgment (opinion)."
+          },
+          "comments": [
+            {
+              "body": "As a student, I left a platform after classmates made a hate page about me. I still worry when I post anywhere.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Social media design encourages compulsive use and distraction—endless feeds, notifications, and variable rewards can reduce productivity and undermine sustained attention at work and school.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Features like infinite scroll and notifications are real (factual); the claim about ‘undermining’ and the overall assessment are opinions."
+          },
+          "comments": [
+            {
+              "body": "As a manager, I’ve had to implement phone-free meetings because people kept checking notifications every few minutes.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Extremist propaganda can exploit recommendation systems and social graphs to recruit and radicalize, lowering barriers to discovering harmful groups and content.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There is documented use of social media by extremist groups (factual). The assertion about scale of harm is a value judgment (opinion)."
+          },
+          "comments": [
+            {
+              "body": "We shouldn’t blame algorithms alone—offline factors matter—but platforms do make discovery faster.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Social media connects families, friends, and diaspora communities across distance, maintaining supportive relationships that would otherwise be hard to sustain.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The connectivity capability is factual; the valuation that this connection is a net good is an opinion."
+          },
+          "comments": [
+            {
+              "body": "I’m an immigrant and my parents watch my kid’s milestones through video clips every week. That’s priceless for us.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Platforms create economic opportunity for small businesses and independent creators by enabling low-cost marketing, direct sales, and audience building without traditional gatekeepers.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The availability of low-cost advertising and creator monetization tools is factual; that this benefit outweighs harms is opinion."
+          },
+          "comments": [
+            {
+              "body": "My home bakery went from 10 orders a month to a full-time gig after I started posting short videos.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "During emergencies and disasters, social media helps disseminate alerts, coordinate volunteers, and crowdsource information faster than traditional channels.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Use of platforms for real-time alerts and coordination is factual; the assessment that this is a net positive is opinion."
+          },
+          "comments": [
+            {
+              "body": "Local fire updates on social media helped my neighborhood evacuate faster last year.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Social platforms host educational communities—study groups, open tutorials, and professional forums—that lower barriers to learning and skill sharing worldwide.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The existence of educational content and communities is factual; its relative value versus harms is opinion."
+          },
+          "comments": [
+            {
+              "body": "I learned basic coding from tutorial threads and community feedback—couldn’t have afforded a bootcamp.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Social media can enhance civic engagement by amplifying underreported issues, enabling grassroots organizing, and documenting abuses that might otherwise go unseen.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Documenting events and organizing via platforms is factual; judging the overall effect on civic life is opinion."
+          },
+          "comments": [
+            {
+              "body": "As a student organizer, we reached hundreds in days; pre-social media, that would’ve taken weeks and printing costs.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "For many people, online peer-support communities reduce isolation and provide mental health resources, with anonymity lowering stigma and enabling early help-seeking.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The existence and reported benefits of peer-support groups are factual; weighing them against risks is opinion."
+          },
+          "comments": [
+            {
+              "body": "Finding a grief support group online helped me get through the worst months after my loss.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Platform policies and safety tooling have improved over time—labels, fact-checking partnerships, reporting workflows, and user controls like time limits and keyword filters aim to mitigate harms.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "The introduction of these features is factual; whether they are sufficient or effective enough is a matter of opinion."
+          },
+          "comments": [
+            {
+              "body": "Tools help, but they’re buried in settings. Defaults should be safer, especially for kids.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Digital literacy and user agency can reduce risks: with media literacy education, curated follows, and notification hygiene, many harms can be mitigated without discarding the benefits.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that user practices can alter exposure and use patterns; the sufficiency of these practices to offset harms is opinion."
+          },
+          "comments": []
+        }
+      ],
+      "facts": [
+        {
+          "text": "Late-night device use and social media engagement are associated with sleep disruption, and studies report correlations between high social media use and increased anxiety/depressive symptoms among adolescents.",
+          "sourceArgumentBody": "Social media exacerbates mental health challenges, especially among adolescents, by fueling constant social comparison, fear of missing out (FOMO), and late-night scrolling that disrupts sleep—factors associated with higher anxiety and depressive symptoms.",
+          "aiJustification": "These are measurable, research-reported associations; the correlation does not assert causation."
+        },
+        {
+          "text": "Major social platforms rank and recommend content based on engagement signals; misleading or false posts can achieve wide reach quickly.",
+          "sourceArgumentBody": "Misinformation spreads rapidly on social platforms because engagement-optimizing algorithms tend to amplify sensational content, which can mislead the public on health, science, and elections.",
+          "aiJustification": "Publicly documented platform designs and observed dissemination patterns support these claims."
+        },
+        {
+          "text": "Platforms can produce homophily and selective exposure, where users see more content similar to their existing preferences.",
+          "sourceArgumentBody": "Social media fosters echo chambers and ideological polarization by repeatedly exposing users to like-minded views and filtering out dissenting information, making compromise harder in public life.",
+          "aiJustification": "These effects have been measured in communication and network studies."
+        },
+        {
+          "text": "Social networks collect detailed user data to target advertisements; multiple incidents have exposed user data through breaches or misuse.",
+          "sourceArgumentBody": "Pervasive data collection and targeted advertising on social media erode privacy, with recurring data breaches exposing personal information and enabling profiling beyond users’ expectations.",
+          "aiJustification": "These are documented platform practices and widely reported incidents."
+        },
+        {
+          "text": "Users report experiencing harassment on social platforms; some groups report higher rates than others.",
+          "sourceArgumentBody": "Online harassment and cyberbullying are common on social media, disproportionately affecting women and marginalized groups, leading to stress, self-censorship, and safety concerns.",
+          "aiJustification": "Supported by multiple survey findings across regions."
+        },
+        {
+          "text": "Platforms employ features such as infinite scroll, notifications, and algorithmic rewards that increase time-on-platform.",
+          "sourceArgumentBody": "Social media design encourages compulsive use and distraction—endless feeds, notifications, and variable rewards can reduce productivity and undermine sustained attention at work and school.",
+          "aiJustification": "These are observable design choices and acknowledged growth strategies."
+        },
+        {
+          "text": "Extremist organizations have used social platforms to disseminate propaganda and locate potential recruits.",
+          "sourceArgumentBody": "Extremist propaganda can exploit recommendation systems and social graphs to recruit and radicalize, lowering barriers to discovering harmful groups and content.",
+          "aiJustification": "Supported by research and law-enforcement reporting."
+        },
+        {
+          "text": "People can communicate instantly across long distances via social platforms (messages, video, groups).",
+          "sourceArgumentBody": "Social media connects families, friends, and diaspora communities across distance, maintaining supportive relationships that would otherwise be hard to sustain.",
+          "aiJustification": "These are core product features used globally."
+        },
+        {
+          "text": "Small businesses can run targeted ads and sell directly to customers via social commerce features; creators can monetize audiences.",
+          "sourceArgumentBody": "Platforms create economic opportunity for small businesses and independent creators by enabling low-cost marketing, direct sales, and audience building without traditional gatekeepers.",
+          "aiJustification": "These capabilities are documented platform offerings."
+        },
+        {
+          "text": "Emergency agencies, news outlets, and communities use social updates to share real-time information and organize responses.",
+          "sourceArgumentBody": "During emergencies and disasters, social media helps disseminate alerts, coordinate volunteers, and crowdsource information faster than traditional channels.",
+          "aiJustification": "This use pattern is widely documented in crisis informatics."
+        },
+        {
+          "text": "Users can access free tutorials, Q&A threads, and peer groups that share learning resources.",
+          "sourceArgumentBody": "Social platforms host educational communities—study groups, open tutorials, and professional forums—that lower barriers to learning and skill sharing worldwide.",
+          "aiJustification": "These are observable features and common use cases."
+        },
+        {
+          "text": "Users can publish eyewitness media and coordinate events or campaigns through groups and hashtags.",
+          "sourceArgumentBody": "Social media can enhance civic engagement by amplifying underreported issues, enabling grassroots organizing, and documenting abuses that might otherwise go unseen.",
+          "aiJustification": "These behaviors are well documented in social movement research."
+        },
+        {
+          "text": "Anonymity and online groups can facilitate sharing experiences and resource links for mental health support.",
+          "sourceArgumentBody": "For many people, online peer-support communities reduce isolation and provide mental health resources, with anonymity lowering stigma and enabling early help-seeking.",
+          "aiJustification": "Supported by user surveys and clinical outreach practices."
+        },
+        {
+          "text": "Platforms have added features such as content labels, fact-checking collaborations, reporting mechanisms, and user time/use controls.",
+          "sourceArgumentBody": "Platform policies and safety tooling have improved over time—labels, fact-checking partnerships, reporting workflows, and user controls like time limits and keyword filters aim to mitigate harms.",
+          "aiJustification": "These changes are publicly announced and visible in-app."
+        },
+        {
+          "text": "Users can adjust follows, privacy settings, and notifications, and apply media literacy techniques to assess content credibility.",
+          "sourceArgumentBody": "Digital literacy and user agency can reduce risks: with media literacy education, curated follows, and notification hygiene, many harms can be mitigated without discarding the benefits.",
+          "aiJustification": "These are concrete actions within user control on major platforms."
         }
       ]
     }
