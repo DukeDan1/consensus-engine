@@ -127,6 +127,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Title is required (<= 180 chars)" }, { status: 400 });
   }
 
+  if (description.length > 5000) {
+    return NextResponse.json({ error: "Description must be <= 5000 chars" }, { status: 400 });
+  }
+
   // Best-effort unique slug
   let slug = slugify(title);
   for (let i = 0; i < 3; i++) {
