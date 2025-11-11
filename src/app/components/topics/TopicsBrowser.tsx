@@ -68,9 +68,9 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
 
   const fetchFn = useMemo(() => {
     return async () => {
-  // Use a single term for both title and creator filters on the server
-  const term = filters.q;
-  const qs = buildQuery({ q: term, creator: term, page, pageSize });
+      // Use a single term for both title and creator filters on the server
+      const term = filters.q;
+      const qs = buildQuery({ q: term, creator: term, page, pageSize });
       const res = await fetch(`/api/topics?${qs}`, { cache: "no-store" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -140,11 +140,13 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
     items.push(makeBtn(Math.min(totalPages, page + 1), "Next", page >= totalPages));
 
     return (
-      <nav aria-label="Topics pages" className="mt-3">
-        <ul className="pagination pagination-sm mb-0">
-          {items}
-        </ul>
-      </nav>
+      <div className="d-flex justify-content-center mt-4">
+        <nav aria-label="Topics pages">
+          <ul className="pagination pagination-sm mb-0">
+            {items}
+          </ul>
+        </nav>
+      </div>
     );
   }
 
