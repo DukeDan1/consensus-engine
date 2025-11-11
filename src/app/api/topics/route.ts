@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
   const titleRaw = (body?.title || "").toString();
-  const description = (body?.description || "").toString();
+  const description = typeof body?.description === "string" ? body.description : "";
   const tags: string[] = Array.isArray(body?.tags)
     ? body.tags.map((t: any) => (t ?? "").toString()).filter((s: string) => s.length)
     : [];
