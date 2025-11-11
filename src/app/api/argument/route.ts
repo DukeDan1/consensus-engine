@@ -7,6 +7,7 @@ import { getAIAnalysisForArgument, extractFactualInformationFromComment } from "
 import { Fact } from "@/app/models/facts";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
+import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
 
 type Body = {
     topicId: string;
@@ -59,15 +60,14 @@ export async function POST(req: Request) {
 
         const topic = await Topic.findById(topicObjId).select({ title: 1 }).lean().exec();
         
-
-
-        (async () => {
+        // Track background AI processing for graceful shutdown
+        const backgroundTask = (async () => {
             try {
                 const analysis = await getAIAnalysisForArgument(created.body, topic?.title || "");
                 let factual = {} as {factualPart?: string, justification?: string};
                 if (analysis.isFact) {
                     factual = await extractFactualInformationFromComment(created.body, topic?.title || "");
-                };
+                }
 
                 await Argument.findByIdAndUpdate(created._id, { aiAnalysis: analysis }).exec();
 
@@ -88,6 +88,8 @@ export async function POST(req: Request) {
                 console.error("Background AI processing failed for argument", created._id, err);
             }
         })();
+        
+        trackBackgroundTask(backgroundTask);
 
         return NextResponse.json({
             id: (created._id as mongoose.Types.ObjectId).toString(),
