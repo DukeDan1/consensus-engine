@@ -58,6 +58,7 @@ function useAsync<T>(fn: () => Promise<T>, deps: any[]) {
   }, deps);
 
   return { data, loading, error, setData } as const;
+  return { data, loading, error, setData } as const;
 }
 
 const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser(_props, ref) {
@@ -81,7 +82,7 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
     };
   }, [filters.q, page, refreshCounter]);
 
-  const { data, loading, error } = useAsync<ApiResponse>(fetchFn, [fetchFn]);
+  const { data, loading, error, setData } = useAsync<ApiResponse>(fetchFn, [fetchFn]);
 
   // Expose a refresh method
   useImperativeHandle(ref, () => ({
@@ -153,9 +154,18 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
   return (
     <div>
       <div className="mb-3">
-        <CreateNewTopic onCreated={() => {
-          // After creation, reset to first page and refresh
+        <CreateNewTopic onCreated={(created) => {
+          // Go to first page
           setPage(1);
+          // Optimistically prepend the new topic
+          setData((prev) => {
+            if (!prev) return prev;
+            const dedup = prev.topics.filter((t) => t._id !== created._id);
+            const nextTopics = [created as any as TopicItem, ...dedup];
+            return { ...prev, topics: nextTopics.slice(0, prev.pageSize) };
+          });
+          // Scroll to top to reveal the new card
+          if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
         }} />
       </div>
 
