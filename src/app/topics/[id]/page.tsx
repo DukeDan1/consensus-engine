@@ -91,7 +91,9 @@ export default async function TopicPage({ params, searchParams }: any) {
         <div className="alert alert-secondary">No arguments yet.</div>
       ) : (
         <div className="row g-3">
-          <h5 className="mb-3">Arguments</h5>
+          <div className="col-12">
+            <h5 className="mb-3">Arguments</h5>
+          </div>
           {data.arguments.map((a) => (
             <ArgumentCard argument={a} key={a.id} />
           ))}
