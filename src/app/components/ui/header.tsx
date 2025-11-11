@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import LogoutButton from '../LogoutButton';
+import Image from 'next/image';
 
 interface HeaderProps {
   title: string;
@@ -88,13 +89,14 @@ export default function Header({ title }: HeaderProps) {
                   aria-haspopup="true"
                 >
                   {session.user?.image ? (
-                    <img
+                    <Image
                       src={session.user.image}
                       alt="User avatar"
                       width={40}
                       height={40}
                       className="rounded-circle"
                       style={{ objectFit: 'cover' }}
+                      priority
                     />
                   ) : (
                     <div
