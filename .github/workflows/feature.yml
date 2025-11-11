@@ -10,6 +10,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  NODE_ENV: production
+  MONGODB_URI: "mongodb://dummyvalue:blabla@mongodb.net/consensusengine"
+  OPENAI_API_KEY: "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
 jobs:
   lint:
     name: Lint Code
@@ -28,3 +33,22 @@ jobs:
 
       - name: ESLint
         run: npm run lint
+  
+  build:
+    name: Build Application
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        run: npm run build
