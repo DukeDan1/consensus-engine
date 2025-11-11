@@ -34,7 +34,7 @@ export default async function TopicPage({ params, searchParams }: any) {
             <Link href="/">Home</Link>
           </li>
           <li className="breadcrumb-item">
-            <Link href="/app">Topics</Link>
+            <Link href="/topics">Topics</Link>
           </li>
           <li className="breadcrumb-item active" aria-current="page">
             {t.title}

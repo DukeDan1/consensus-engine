@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 
 export async function redirectIfLoggedIn() {
     if (await isLoggedIn()) {
-        redirect("/app");
+        redirect("/topics");
     }
 }
 

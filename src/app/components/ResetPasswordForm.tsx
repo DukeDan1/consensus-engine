@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+const { useRouter } = await import('next/navigation');
+const router = useRouter();
 
 export default function ResetPasswordForm() {
     const [password, setPassword] = useState("");
@@ -25,8 +27,11 @@ export default function ResetPasswordForm() {
             });
             setLoading(false);
             const resJson = await res.json();
-            if (resJson.success) window.location.href = "/login?reset=success";
-            else setErr(resJson.error ?? "Password reset failed");
+            if (resJson.success) {
+                router.push("/login?reset=success");
+            } else {
+                setErr(resJson.error ?? "Password reset failed");
+            }
         } catch (err) {
             console.error(err);
             setErr("An error occurred");

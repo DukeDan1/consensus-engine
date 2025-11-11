@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import LogoutButton from '../LogoutButton';
+import Image from 'next/image';
 
 interface HeaderProps {
   title: string;
@@ -19,7 +20,7 @@ export default function Header({ title }: HeaderProps) {
   const toggleMenu = () => setMenuOpen((s) => !s);
   const closeMenu = () => setMenuOpen(false);
 
-  const brandHref = session ? '/app' : '/';
+  const brandHref = session ? '/topics' : '/';
 
   const userInitials = useMemo(() => {
     const name = session?.user?.name || session?.user?.email || '';
@@ -88,7 +89,7 @@ export default function Header({ title }: HeaderProps) {
                   aria-haspopup="true"
                 >
                   {session.user?.image ? (
-                    <img
+                    <Image
                       src={session.user.image}
                       alt="User avatar"
                       width={40}
