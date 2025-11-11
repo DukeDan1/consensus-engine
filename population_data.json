@@ -530,7 +530,7 @@
       "key": "should_companies_adopt_a_four-day_workweek?",
       "title": "Should companies adopt a four-day workweek?",
       "description": "A debate about Should companies adopt a four-day workweek?.",
-      "createdByKey": "evan",
+      "createdByKey": "alice",
       "tags": [
         "generated",
         "ai"
@@ -538,125 +538,1061 @@
       "arguments": [
         {
           "side": "for",
-          "body": "Trials of four-day workweeks in several organizations have shown that productivity can be maintained or even improved while working fewer hours, largely due to better focus and reduced burnout.",
+          "body": "A four-day workweek improves employee well-being by reducing burnout and stress, leading to better work–life balance.",
           "createdByKey": "alice",
           "aiAnalysis": {
             "isFact": true,
             "isOpinion": true,
-            "justification": "Cites empirical trials (fact) but generalizes outcomes to broader contexts and asserts causation (opinion)."
+            "justification": "Multiple large-scale pilots (e.g., in Iceland and the UK) reported lower burnout and higher well-being, though the extent and generalizability are debated."
           },
           "comments": [
             {
-              "body": "My team switched to 32 hours and our sprint velocity stayed the same.",
-              "createdByKey": "farah"
-            },
-            {
-              "body": "Our pilot showed fewer meetings made the biggest difference.",
-              "createdByKey": "bob"
-            },
-            {
-              "body": "It depends on the nature of work—deep-work roles seemed to benefit most.",
-              "createdByKey": "bob"
-            }
-          ]
-        },
-        {
-          "side": "for",
-          "body": "A four-day workweek can improve employee well-being and work-life balance, which in turn can lower turnover, reduce absenteeism, and enhance employer branding.",
-          "createdByKey": "charlie",
-          "aiAnalysis": {
-            "isFact": true,
-            "isOpinion": true,
-            "justification": "The link between reduced hours and well-being/turnover has empirical support (fact), but predicting consistent outcomes across all firms is interpretive (opinion)."
-          },
-          "comments": [
-            {
-              "body": "Recruiting got easier for us—candidates mention it in interviews.",
-              "createdByKey": "charlie"
-            },
-            {
-              "body": "I finally have a weekday for errands and childcare without using PTO.",
-              "createdByKey": "bob"
-            }
-          ]
-        },
-        {
-          "side": "for",
-          "body": "Fewer commuting days can lower carbon emissions and reduce office energy usage, creating environmental and cost benefits.",
-          "createdByKey": "charlie",
-          "aiAnalysis": {
-            "isFact": true,
-            "isOpinion": true,
-            "justification": "Reduced commuting and office usage logically reduce emissions/energy (fact), while the magnitude and net benefits vary by context (opinion)."
-          },
-          "comments": [
-            {
-              "body": "Our utility bill dropped about 12% during the pilot.",
+              "body": "My company tested this and sick days dropped noticeably.",
               "createdByKey": "alice"
             },
             {
-              "body": "Remote-heavy teams may see less impact, but facilities savings still add up.",
-              "createdByKey": "charlie"
+              "body": "Well-being is subjective, but our survey scores went up.",
+              "createdByKey": "evan"
             }
           ]
         },
         {
-          "side": "against",
-          "body": "Many sectors require continuous coverage (e.g., healthcare, hospitality, customer support), making a four-day schedule impractical or more expensive due to added shifts.",
-          "createdByKey": "evan",
+          "side": "for",
+          "body": "Productivity can increase because people focus on higher-value tasks and cut low-impact meetings when time is scarce.",
+          "createdByKey": "bob",
           "aiAnalysis": {
             "isFact": true,
             "isOpinion": true,
-            "justification": "Operational coverage needs in certain industries are a matter of fact; concluding impracticality or higher costs is a generalization (opinion)."
+            "justification": "Several pilots reported stable or higher output with reduced hours; mechanisms (fewer meetings, better prioritization) are plausible but context-dependent."
           },
           "comments": [
             {
-              "body": "We had to hire more weekend staff to maintain SLAs—costs went up.",
+              "body": "We cut two recurring meetings and got the same work done.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Depends on the team’s discipline; otherwise work spills into the fifth day anyway.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Fewer commuting days reduce carbon emissions and traffic congestion.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Commuting constitutes a measurable share of emissions; reducing commute frequency directly lowers associated emissions, all else equal."
+          },
+          "comments": [
+            {
+              "body": "Public transit load was lighter on Fridays during our trial.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Remote work already achieved this for many; marginal gains may be smaller.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "It helps attract and retain talent in competitive labor markets.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Recruiting data from trials show higher applicant interest and lower turnover, but effects vary by industry and compensation."
+          },
+          "comments": [
+            {
+              "body": "Our job postings got twice the usual applicants.",
               "createdByKey": "bob"
             },
             {
-              "body": "24/7 operations can do it, but it becomes a staffing puzzle.",
-              "createdByKey": "charlie"
+              "body": "Retention improved, but mainly for mid-career staff.",
+              "createdByKey": "farah"
             }
           ]
         },
         {
-          "side": "against",
-          "body": "Compressing work into fewer days can lead to longer hours, reduced recovery time, and hidden overtime, undermining the intended well-being benefits.",
+          "side": "for",
+          "body": "Companies can save on facilities, utilities, and ancillary operating costs by closing one extra day.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Fewer open days reduce variable costs like utilities and on-site services; magnitude depends on the operation’s cost structure."
+          },
+          "comments": [
+            {
+              "body": "We saved on HVAC and cafeteria staffing.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Savings are minimal for fully remote teams.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "A shorter week incentivizes automation and process improvement to maintain output with fewer hours.",
           "createdByKey": "evan",
           "aiAnalysis": {
             "isFact": true,
             "isOpinion": true,
-            "justification": "Reports of longer daily shifts in some implementations are factual; claiming it undermines benefits is a value-laden assessment (opinion)."
+            "justification": "Constraint-driven optimization is a known effect; several pilots cite workflow redesign and automation as enablers of maintained output."
           },
           "comments": [
             {
-              "body": "Our 10-hour days were exhausting; people started checking email on off-days anyway.",
+              "body": "We finally automated reporting because we had to.",
               "createdByKey": "evan"
             },
             {
-              "body": "Policy without enforcement just shifted work into evenings.",
+              "body": "This assumes upfront investment capacity, which not all teams have.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Customer service and 24/7 operations can suffer from reduced availability if coverage isn’t extended.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Reduced staffed hours objectively decrease availability unless shifts are staggered or headcount increases."
+          },
+          "comments": [
+            {
+              "body": "Our NPS dipped when Fridays were understaffed.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "Rotating schedules can mitigate this, but it gets complex.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Maintaining five-day coverage often requires hiring more people or paying overtime, increasing labor costs.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "To keep service hours constant with fewer hours per employee, total labor hours must be replaced, raising costs unless productivity offsets it."
+          },
+          "comments": [
+            {
+              "body": "Retail here can’t just close; we had to add weekend shifts.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Overtime erased any savings for us.",
               "createdByKey": "farah"
             }
           ]
         },
         {
           "side": "against",
-          "body": "Reduced availability can hinder collaboration across time zones and partners, slow decision-making, and potentially reduce revenue if customers expect five-day support.",
+          "body": "It may widen inequities between desk-based workers who can adopt it and frontline roles that cannot.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Feasibility differs across roles; differential benefits can create perceived or real inequity within organizations."
+          },
+          "comments": [
+            {
+              "body": "Warehouse staff couldn’t switch, which felt unfair.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Offering other perks helped, but not fully.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Compressed schedules (e.g., 4×10 hours) can increase fatigue and safety risks, negating well-being gains.",
           "createdByKey": "evan",
           "aiAnalysis": {
             "isFact": true,
             "isOpinion": true,
-            "justification": "Availability constraints and coordination delays are observable (fact); predicting revenue impact depends on context and assumptions (opinion)."
+            "justification": "Longer daily shifts are associated with higher fatigue; whether firms compress or truly reduce hours determines the risk."
           },
           "comments": [
             {
-              "body": "We lost a deal because we couldn’t turn around a proposal on Friday.",
+              "body": "Ten-hour shifts were brutal in summer for field techs.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "True four-day/32-hour pilots didn’t have this problem for us.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Cross-team coordination suffers when different teams pick different off-days, slowing decision cycles.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Asynchronous availability reduces overlapping working hours; organizations report scheduling friction when off-days are non-uniform."
+          },
+          "comments": [
+            {
+              "body": "We had Slack ping-pong over long weekends.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Standardizing Friday off helped, but clients disliked it.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Employers may use it to justify pay cuts or higher intensity per hour, leading to hidden overwork.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "There are documented cases of workload compression or unchanged expectations, causing off-the-clock work or burnout."
+          },
+          "comments": [
+            {
+              "body": "We were told to hit the same KPIs with fewer hours; stress went up.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Clear workload scoping is crucial; otherwise it backfires.",
+              "createdByKey": "diana"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "should_cities_ban_private_cars_in_downtown_areas?",
+      "title": "Should cities ban private cars in downtown areas?",
+      "description": "A debate about Should cities ban private cars in downtown areas?.",
+      "createdByKey": "charlie",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Car restrictions in city centers reduce congestion and make remaining traffic (buses, emergency, delivery) flow more reliably.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Multiple cities that implemented low-traffic or car-free cores (e.g., Oslo, Madrid Central, London with access restrictions) reported lower inner-area traffic volumes and improved bus speeds. Effects vary by design, but congestion reduction within the restricted zone is documented."
+          },
+          "comments": [
+            {
+              "body": "Bus times dropped in my city after a new bus lane + car access rules.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Depends if they also tighten curbside delivery—double parking can kill the gains.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Air quality improves when private car traffic is restricted, leading to measurable health benefits.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Empirical studies link reductions in NO2/PM to traffic restrictions and low-emission zones; short-term drops in pollutants have been measured following car access limits, with associated reductions in asthma exacerbations."
+          },
+          "comments": [
+            {
+              "body": "During lockdown we saw cleaner air—this is a permanent way to capture some of that.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Bans encourage modal shift to public transit, walking, and cycling, creating a more efficient transport mix.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Evidence from pedestrianized areas and low-traffic neighborhoods shows increases in cycling and walking and higher transit ridership when infrastructure and service improvements accompany restrictions."
+          },
+          "comments": [
+            {
+              "body": "Only works if transit is frequent and safe at night.",
               "createdByKey": "bob"
             },
             {
-              "body": "Staggered schedules helped, but meeting windows got narrower.",
+              "body": "Our bike counts doubled after a central street went car-free.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Reclaiming road space enables more parks, outdoor dining, and housing, improving urban livability.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that reducing lanes and parking frees land/curb space; whether this 'improves livability' is a value judgment, though supported by many resident satisfaction surveys."
+          },
+          "comments": [
+            {
+              "body": "We turned two parking lanes into a plaza and weekend markets—huge hit.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Fewer vehicles in dense areas reduce crash risk and severity, improving street safety.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Lower vehicle volumes and speeds correlate with fewer and less severe collisions. Cities implementing traffic calming and access restrictions often report reduced injuries."
+          },
+          "comments": [
+            {
+              "body": "As a parent, I feel safer letting kids walk to the library now.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Cutting downtown car trips helps cities meet climate targets by reducing tailpipe emissions and enabling more efficient transit.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Transportation is a major urban emissions source; restricting high-emission modes and shifting trips lowers operational emissions, especially when paired with electrified transit."
+          },
+          "comments": [
+            {
+              "body": "Scope 3 and induced demand elsewhere still matter, but it’s a start.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Bans can disproportionately burden people with disabilities or mobility impairments who rely on door-to-door vehicle access.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that some disabled people depend on private vehicles and paratransit; whether a given policy is burdensome depends on design (exemptions, accessible taxis, curb access). Equity impacts require careful mitigation."
+          },
+          "comments": [
+            {
+              "body": "Exemptions and blue-badge access lanes should be non-negotiable.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Paratransit wait times are already bad; a ban could make it worse without investment.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Downtown businesses may lose customers who prefer to drive, harming revenue.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Economic outcomes are mixed across cases: some areas see higher footfall and sales after pedestrianization, others see declines during transition. The claim is a prediction and context-dependent, not a universal fact."
+          },
+          "comments": [
+            {
+              "body": "Our shop saw fewer suburban customers for a few months, then tourists and locals made up the difference.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "If transit is inadequate—especially late nights—workers face longer, less safe commutes.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a plausible risk frequently reported anecdotally, but not universally true. It hinges on the local transit network, frequency, and safety; evidence varies widely."
+          },
+          "comments": [
+            {
+              "body": "Service-hour extensions must come first, not after the ban.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "Ride-hailing isn’t affordable for regular shifts.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Traffic may be displaced to surrounding neighborhoods, increasing pollution and noise at the edges of the zone.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Research shows both displacement and 'traffic evaporation' effects; outcomes depend on network design and complementary measures. Without mitigation, edge streets can see higher volumes."
+          },
+          "comments": [
+            {
+              "body": "Our ring road got slammed after the trial started.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "Later signal tweaks eased it—design matters.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Deliveries and logistics become more complex and costly, raising prices for consumers.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Some cities manage with timed freight windows, microhubs, and cargo bikes; others face higher costs. The direction and magnitude of cost impacts are uncertain and context-specific."
+          },
+          "comments": [
+            {
+              "body": "Microhubs worked for parcels, but food wholesalers struggled.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Quieter streets improve sleep and reduce stress for residents and visitors.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Measured sound levels decline with fewer motor vehicles; chronic noise exposure is linked to stress and health impacts. Noise reduction is a documented effect of traffic calming and restrictions."
+          },
+          "comments": [
+            {
+              "body": "Nighttime dB levels on my block dropped noticeably after the pilot.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Pedestrianized districts often see increased foot traffic and tourism, benefiting many retailers and cultural venues.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Many case studies (e.g., major European pedestrian zones) report higher footfall and retail sales, though results vary by sector and implementation quality."
+          },
+          "comments": [
+            {
+              "body": "Our museum attendance rose after the street outside closed to cars.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Extreme weather makes walking and cycling impractical for many, reducing accessibility without car access.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Weather can deter active travel, but infrastructure (shelters, snow clearance) and transit quality mediate impacts. The claim is a context-specific judgment rather than a universal fact."
+          },
+          "comments": [
+            {
+              "body": "Summer heat waves make a 15-minute walk rough without shade.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Implementation and enforcement are complex, risking confusion, fines, and unequal policing.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Complex schemes (permits, ANPR, time windows) can be hard to navigate. Evidence of disparate enforcement exists in some traffic contexts, but impacts depend on policy design and oversight."
+          },
+          "comments": [
+            {
+              "body": "Clear signage and a grace period helped in our rollout.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Transparency on citations by neighborhood is crucial.",
               "createdByKey": "alice"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "should_countries_adopt_a_four-day_workweek?",
+      "title": "Should countries adopt a four-day workweek?",
+      "description": "A debate about Should countries adopt a four-day workweek?.",
+      "createdByKey": "charlie",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Pilot programs in multiple countries have shown that moving to a four-day (32–36 hour) workweek can maintain or even improve productivity while keeping output steady.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Multiple well-documented trials (e.g., in Iceland, the UK, and corporate pilots elsewhere) reported maintained or improved productivity with shorter weeks."
+          },
+          "comments": [
+            {
+              "body": "Our startup did this and revenue per head actually went up after a few months.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Curious whether those trials were mostly knowledge work; retail might differ.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "A shorter workweek improves work-life balance, which can reduce burnout and turnover.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a value and outcome prediction; while supported by surveys and some studies on stress, it’s not universally guaranteed across roles and organizations."
+          },
+          "comments": [
+            {
+              "body": "Burnout dropped on my team when we tried 4x8s; people used Fridays for errands.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Fewer commuting days lower transportation emissions and urban congestion.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "All else equal, reducing commute frequency reduces vehicle miles traveled and associated emissions."
+          },
+          "comments": [
+            {
+              "body": "Transit agencies might see lower fare revenue though—tradeoffs matter.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Offering a four-day week is a strong talent attraction and retention lever in competitive labor markets.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Recruiting data and employer surveys commonly report schedule flexibility as a top attractor; however, impact varies by industry and role."
+          },
+          "comments": [
+            {
+              "body": "We saw applicant volume double after advertising 4-day weeks for engineers.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "In hospitality, applicants ask about tips, not schedules.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "A four-day week can support caregivers (parents, eldercare), potentially improving gender equity in the workforce.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Care responsibilities are unevenly distributed; additional non-work time can ease constraints. Equity outcomes depend on implementation across sectors and pay structures."
+          },
+          "comments": [
+            {
+              "body": "As a single parent, an extra day makes school logistics manageable.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Shorter weeks nudge organizations toward output-based management, automation, and process improvement, reducing busywork.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a managerial hypothesis: time constraints can incentivize efficiency, but outcomes depend on leadership and tooling."
+          },
+          "comments": [
+            {
+              "body": "We cut recurring meetings by 40% when we switched—no one missed them.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Population-level rest and recovery could translate into better public health and potentially lower healthcare costs over time.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Plausible extrapolation from stress-health research, but long-run causal effects at population scale are uncertain."
+          },
+          "comments": [
+            {
+              "body": "Hard to prove causally, but absenteeism did drop in our pilot.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Many frontline and shift-based sectors (healthcare, retail, logistics) require constant coverage; moving to four days can raise labor costs or reduce service availability.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Coverage requirements are real; if hours of operation are unchanged, fewer days per worker implies either hiring more staff or paying overtime."
+          },
+          "comments": [
+            {
+              "body": "Nurses already work 3x12s; switching models can be complex and expensive.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Compressing five days of work into four can increase daily intensity and stress, undermining the intended well-being benefits.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a plausible risk based on workload realities; experiences vary by team and task structure."
+          },
+          "comments": [
+            {
+              "body": "Our support team reported more end-of-day spillover and weekend catch-up.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Small businesses operating on thin margins may struggle with scheduling complexity, training costs, and potential overtime.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Operational constraints and cost sensitivities for small firms are well-documented; impact magnitude varies."
+          },
+          "comments": [
+            {
+              "body": "As a cafe owner, I’d need to hire more part-timers—training alone is costly.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Benefits may concentrate in high-skill, salaried roles, widening inequality if hourly or gig workers cannot access the same schedule without pay loss.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Access to flexibility often skews toward salaried roles; without policy safeguards, disparities can widen."
+          },
+          "comments": [
+            {
+              "body": "Unions could negotiate protections, but coverage is uneven.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Customer expectations for five-day (or seven-day) availability could be unmet, hurting competitiveness, especially in client-facing industries.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Market response is context-dependent; some firms might differentiate positively, others could lose clients."
+          },
+          "comments": [
+            {
+              "body": "Our B2B clients demanded Friday coverage; we had to rotate teams.",
+              "createdByKey": "bob"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Global teams spanning time zones may face coordination gaps if multiple regions compress schedules differently.",
+          "createdByKey": "diana",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Time-zone coordination is a known challenge; disparate schedules can amplify handoff delays."
+          },
+          "comments": [
+            {
+              "body": "We solved this with staggered off-days, but handoffs still slipped.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Without explicit guarantees, employers may tie the four-day week to proportional pay cuts for hourly workers or reduce benefits, negating the gains.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Pay and benefits policies vary; there are real cases of hours reduced with proportional pay adjustments when schedules change."
+          },
+          "comments": [
+            {
+              "body": "Policy design matters: 32 hours at 40 hours pay vs. 32 hours pay is a big difference.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Longer weekends can boost local leisure and tourism spending, supporting small businesses in hospitality and recreation.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "Economic spillovers are plausible but context-specific and sensitive to disposable income and seasonal patterns."
+          },
+          "comments": [
+            {
+              "body": "Our town’s Friday markets got noticeably busier during a municipal pilot.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Education and skill-building may increase as workers use the extra day for courses or certifications, enhancing human capital.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a behavioral assumption; some will rest, others will study. No guarantee of widespread uptake."
+          },
+          "comments": [
+            {
+              "body": "I finally finished a cybersecurity cert thanks to having Fridays free.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Transitioning policies are complex: collective bargaining, regulatory updates, payroll changes, and pilot evaluation require time and administrative capacity.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Implementation involves concrete administrative steps that impose real costs and coordination challenges."
+          },
+          "comments": [
+            {
+              "body": "Our HRIS didn’t support 32-hour benefits logic out of the box.",
+              "createdByKey": "farah"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "should_major_cities_implement_congestion_pricing_in_their_downtown_cores?",
+      "title": "Should major cities implement congestion pricing in their downtown cores?",
+      "description": "A debate about Should major cities implement congestion pricing in their downtown cores?.",
+      "createdByKey": "bob",
+      "tags": [
+        "generated",
+        "ai"
+      ],
+      "arguments": [
+        {
+          "side": "for",
+          "body": "Congestion pricing has reduced traffic volumes by roughly 15–30% in cities like London, Stockholm, and Singapore, shortening travel times for remaining drivers and buses.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "This claim summarizes documented outcomes from multiple implemented schemes with measured traffic reductions and speed improvements."
+          },
+          "comments": [
+            {
+              "body": "Stockholm’s trial made my bus commute much faster—felt like night and day.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Do you have a source for the 30% figure? I’ve seen lower numbers for London post-expansion.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "By cutting vehicle miles traveled in dense cores, congestion pricing improves air quality and reduces asthma and cardiovascular risks.",
+          "createdByKey": "bob",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": false,
+            "justification": "Peer-reviewed studies associate reduced traffic and emissions with improved air quality and health outcomes in cities with pricing."
+          },
+          "comments": [
+            {
+              "body": "As a parent of an asthmatic child, cleaner air is a huge selling point.",
+              "createdByKey": "bob"
+            },
+            {
+              "body": "Health benefits are real, but attribution can be complex—weather and fleet changes matter too.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Pricing raises predictable revenue that can be dedicated to public transit upgrades and street improvements, making the whole network more reliable and equitable.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that pricing generates revenue often earmarked for transit; the claim about reliability and equity reflects a value judgment on spending impacts."
+          },
+          "comments": [
+            {
+              "body": " earmarking the funds by law is crucial—otherwise it just becomes a general tax.",
+              "createdByKey": "charlie"
+            },
+            {
+              "body": "NYC’s MTA could really use a stable funding source.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "It nudges some trips to off-peak times and to public transit, walking, and cycling, freeing scarce road space for essential trips and freight.",
+          "createdByKey": "alice",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Mode and time-of-day shifts are empirically observed; the framing of what counts as 'essential' is normative."
+          },
+          "comments": [
+            {
+              "body": "Freight reliability is underrated—delivery delays raise prices for everyone.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Only works if transit has capacity; otherwise people just pay the fee.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "Dynamic pricing uses price signals to allocate scarce road space efficiently, internalizing congestion externalities instead of rationing with queues.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is grounded in economic theory about efficiency and externalities; it is a normative efficiency argument rather than an empirical fact claim."
+          },
+          "comments": [
+            {
+              "body": "Economist here: this is textbook Pigouvian pricing.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "Efficiency isn’t the only goal—equity matters too.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "for",
+          "body": "A user-pays approach is fairer: drivers who impose congestion, noise, and pollution should pay rather than shifting those costs to everyone.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a normative fairness claim, even though it references real external costs."
+          },
+          "comments": [
+            {
+              "body": "Make it progressive with income-based discounts and I’m on board.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "Some drivers have no alternatives—fairness cuts both ways.",
+              "createdByKey": "farah"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Tolls are regressive: lower-income drivers pay a larger share of income, and many service workers have inflexible hours and limited transit options.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that flat fees take a larger income share from low-income users; the policy implication and emphasis are normative."
+          },
+          "comments": [
+            {
+              "body": "Night-shift hospital staff often can’t rely on transit—exemptions should exist.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "If revenue funds better transit in low-income areas, isn’t that progressive overall?",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Small businesses inside the zone may lose spontaneous customers and face higher delivery costs, squeezing already thin margins.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This is a predictive economic impact claim; evidence is mixed across cities, so it is best classified as opinion."
+          },
+          "comments": [
+            {
+              "body": "Our cafe depends on lunchtime office workers—remote work already hurt us.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "London shops adapted fine after the charge; foot traffic rebounded.",
+              "createdByKey": "alice"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "The required camera and plate-recognition infrastructure expands surveillance and creates data-privacy risks if breached or misused.",
+          "createdByKey": "charlie",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "It is factual that ANPR/camera systems collect data; the assessment of privacy risk and misuse likelihood is partly normative and speculative."
+          },
+          "comments": [
+            {
+              "body": "Data retention limits and independent audits should be non-negotiable.",
+              "createdByKey": "farah"
+            },
+            {
+              "body": "I’m less worried about toll data than about ubiquitous private trackers on our phones.",
+              "createdByKey": "diana"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Drivers may divert to boundary roads, shifting congestion and emissions to outer neighborhoods that already face environmental burdens.",
+          "createdByKey": "evan",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "Traffic diversion to perimeters has been observed in some cases; the framing as environmental injustice is a normative judgment."
+          },
+          "comments": [
+            {
+              "body": "Buffer investments—bus lanes and low-emission zones—can mitigate this.",
+              "createdByKey": "diana"
+            },
+            {
+              "body": "My street borders the zone; we already see more cut-through traffic.",
+              "createdByKey": "evan"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Set-up and operating costs can be high; in smaller or more sprawled, car-dependent cities, the net benefits may be low or even negative.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": true,
+            "isOpinion": true,
+            "justification": "High capex/opex for gantries, IT, and enforcement are documented; concluding that net benefits are negative is a context-dependent judgment."
+          },
+          "comments": [
+            {
+              "body": "Cost-benefit analyses should be city-specific, not copy-pasted from London.",
+              "createdByKey": "alice"
+            },
+            {
+              "body": "Tolling tech is cheaper now than a decade ago, which changes the math.",
+              "createdByKey": "charlie"
+            }
+          ]
+        },
+        {
+          "side": "against",
+          "body": "Similar goals could be achieved with better transit, employer-subsidized passes, flexible work hours, or staggered school times—without imposing new fees.",
+          "createdByKey": "farah",
+          "aiAnalysis": {
+            "isFact": false,
+            "isOpinion": true,
+            "justification": "This proposes alternative policies and asserts comparable effectiveness; it is a policy opinion rather than a verifiable fact."
+          },
+          "comments": [
+            {
+              "body": "We should try transit-first for a few years before charging people.",
+              "createdByKey": "evan"
+            },
+            {
+              "body": "Without pricing, free roads will still be overused at peak—capacity gets swamped.",
+              "createdByKey": "diana"
             }
           ]
         }
