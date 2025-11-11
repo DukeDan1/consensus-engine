@@ -160,7 +160,7 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
           setData((prev) => {
             if (!prev) return prev;
             const dedup = prev.topics.filter((t) => t._id !== created._id);
-            const nextTopics = [createdTopicToTopicItem(created), ...dedup];
+            const nextTopics = [created as any as TopicItem, ...dedup];
             return { ...prev, topics: nextTopics.slice(0, prev.pageSize) };
           });
           // Scroll to top to reveal the new card
