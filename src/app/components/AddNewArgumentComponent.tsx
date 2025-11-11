@@ -39,7 +39,7 @@ export default function AddNewArgumentComponent({ topicId }: { topicId: string }
             window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
-        // Update the page again after 15 seconds to reflect AI analysis updates
+        // Update the page again after 5 seconds to reflect AI analysis updates
         setTimeout(() => {
             router.refresh();
         }, 5000);
