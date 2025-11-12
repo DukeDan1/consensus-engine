@@ -10,6 +10,7 @@ import ErrorBoundary from "@/app/components/layout/ErrorBoundary";
 import { ToastContainer } from "react-toastify";
 import { Suspense } from "react";
 import Loading from "./loading";
+import "@/app/lib/initServerLifecycle";
 
 const roboto = Roboto_Flex({ subsets: ["latin"] });
 
