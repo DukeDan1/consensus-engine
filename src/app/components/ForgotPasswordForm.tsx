@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import Link from "next/link";
 
 export default function ForgotPasswordForm() {
     const [email, setEmail] = useState("");
@@ -69,7 +70,7 @@ export default function ForgotPasswordForm() {
                         </button>
                     </form>
                     {err && <div className="alert alert-danger mt-5 text-center" role="alert">{err}</div>}
-                    <p className="text-center mt-3"><a href="/login">Back to login</a></p>
+                    <p className="text-center mt-3"><Link href="/login">Back to login</Link></p>
                 </div>
             </div>
         </>
