@@ -3,7 +3,7 @@ import { waitForBackgroundTasks } from "./backgroundTasks";
 async function flushAndExit(signal: NodeJS.Signals) {
   console.log(`[${signal}] draining background tasks…`);
   await waitForBackgroundTasks();
-  process.exit();
+  process.exit(0);
 }
 
 ["SIGINT", "SIGTERM"].forEach((signal) => {
