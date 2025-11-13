@@ -38,9 +38,9 @@ async function fetchTopicTitle(id: string): Promise<TopicMeta | null> {
     return { topic: { id: res.data.topic?.id ?? id, title: res.data.topic?.title ?? "" } };
 }
 
-export default async function TopicFactsPage({ params }: { params: { id: string } }) {
+export default async function TopicFactsPage({ params }: any) {
     await redirectIfLoggedOut();
-    const { id } = params;
+    const { id } = await Promise.resolve(params);
 
     const [facts, topicMeta] = await Promise.all([fetchFacts(id), fetchTopicTitle(id)]);
     if (!facts || !topicMeta) {

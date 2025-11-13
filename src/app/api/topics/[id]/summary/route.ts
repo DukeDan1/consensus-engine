@@ -1,12 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
 import { getTopicSummaryWithRefresh } from "@/app/services/topicSummaryService";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest, ctx: { params: { id: string } }) {
-    const { id } = ctx.params;
+export async function GET(ctx: any) {
+    const resolvedCtx = await Promise.resolve(ctx.params);
+    const id = resolvedCtx.id as string;
     if (!id || !mongoose.isValidObjectId(id)) {
         return NextResponse.json({ error: "Invalid or missing id" }, { status: 400 });
     }

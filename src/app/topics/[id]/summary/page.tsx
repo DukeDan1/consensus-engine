@@ -64,9 +64,9 @@ function renderColumn(label: string, items: SummaryColumn[], topicId: string, to
     );
 }
 
-export default async function TopicSummaryPage({ params }: { params: { id: string } }) {
+export default async function TopicSummaryPage({ params }: any ) {
     await redirectIfLoggedOut();
-    const { id } = params;
+    const { id } = await Promise.resolve(params);
     const summary = await fetchTopicSummary(id);
     if (!summary) {
         return notFound();
