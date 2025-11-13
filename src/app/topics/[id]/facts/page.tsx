@@ -1,0 +1,97 @@
+import Link from "next/link";
+import axios from "axios";
+import { notFound } from "next/navigation";
+import FactCard from "@/app/components/topics/FactCard";
+import { redirectIfLoggedOut } from "@/app/lib/commonFunctions";
+
+export const dynamic = "force-dynamic";
+
+type FactsResponse = {
+    topicId: string;
+    facts: Array<{
+        id: string;
+        text: string;
+        sourceArgument: string;
+        createdAt?: string;
+    }>;
+};
+
+type TopicMeta = {
+    topic: {
+        id: string;
+        title: string;
+    };
+};
+
+async function fetchFacts(id: string): Promise<FactsResponse | null> {
+    const base = process.env.NEXTJS_APP_BASE_URL ?? "";
+    const url = `${base}/api/topics/${encodeURIComponent(id)}/facts`;
+    const res = await axios.get(url, { headers: { "Cache-Control": "no-store" } }).catch(() => null);
+    return res?.data ?? null;
+}
+
+async function fetchTopicTitle(id: string): Promise<TopicMeta | null> {
+    const base = process.env.NEXTJS_APP_BASE_URL ?? "";
+    const url = `${base}/api/topics/${encodeURIComponent(id)}?num_arguments=1&ordering=relevant`;
+    const res = await axios.get(url, { headers: { "Cache-Control": "no-store" } }).catch(() => null);
+    if (!res?.data) return null;
+    return { topic: { id: res.data.topic?.id ?? id, title: res.data.topic?.title ?? "" } };
+}
+
+export default async function TopicFactsPage({ params }: { params: { id: string } }) {
+    await redirectIfLoggedOut();
+    const { id } = params;
+
+    const [facts, topicMeta] = await Promise.all([fetchFacts(id), fetchTopicTitle(id)]);
+    if (!facts || !topicMeta) {
+        return notFound();
+    }
+
+    return (
+        <div className="container py-4">
+            <nav aria-label="breadcrumb" className="mb-3">
+                <ol className="breadcrumb mb-0">
+                    <li className="breadcrumb-item">
+                        <Link href="/">Home</Link>
+                    </li>
+                    <li className="breadcrumb-item">
+                        <Link href="/topics">Topics</Link>
+                    </li>
+                    <li className="breadcrumb-item">
+                        <Link href={`/topics/${id}`}>Discussion</Link>
+                    </li>
+                    <li className="breadcrumb-item active" aria-current="page">
+                        Facts
+                    </li>
+                </ol>
+            </nav>
+
+            <div className="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-4">
+                <div>
+                    <h1 className="h4 mb-1">Factual highlights: {topicMeta.topic.title}</h1>
+                    <small className="text-muted">Based on AI-backed analysis of the discussion</small>
+                </div>
+                <div className="d-flex flex-wrap gap-2">
+                    <Link href={`/topics/${id}`} className="btn btn-outline-secondary btn-sm">
+                        <i className="fa-solid fa-comments me-1" aria-hidden></i>
+                        Back to discussion
+                    </Link>
+                    <Link href={`/topics/${id}/summary`} className="btn btn-outline-primary btn-sm">
+                        <i className="fa-solid fa-file-lines me-1" aria-hidden></i>
+                        View summary
+                    </Link>
+                </div>
+            </div>
+
+            {facts.facts.length === 0 ? (
+                <div className="alert alert-info">No consensus-backed facts have been extracted yet. Check back soon.</div>
+            ) : (
+                <ul className="list-group">
+                    {facts.facts.map((fact) => (
+                        <FactCard key={fact.id} fact={fact} />
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+}

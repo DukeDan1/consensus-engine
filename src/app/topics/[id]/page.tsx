@@ -43,21 +43,34 @@ export default async function TopicPage({ params, searchParams }: any) {
         </ol>
       </nav>
 
-      <div className="d-flex align-items-center justify-content-between mb-2">
-        <h1 className="h4 mb-0">{t.title}</h1>
-        <div className="btn-group btn-group-sm" role="group" aria-label="Ordering">
-          <Link
-            href={{ pathname: `/topics/${id}`, query: { ordering: "relevant", num_arguments: String(numArgs) } }}
-            className={`btn btn-outline-secondary ${data.meta.ordering === "relevant" ? "active" : ""}`}
-          >
-            Relevant
+      <div className="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-3">
+        <div>
+          <h1 className="h4 mb-1">{t.title}</h1>
+          <small className="text-muted">Started by {t.createdBy?.name ?? "Unknown"}</small>
+        </div>
+        <div className="d-flex flex-wrap gap-2">
+          <Link href={`/topics/${id}/summary`} className="btn btn-outline-primary btn-sm">
+            <i className="fa-solid fa-file-lines me-1" aria-hidden></i>
+            Summary view
           </Link>
-          <Link
-            href={{ pathname: `/topics/${id}`, query: { ordering: "newest", num_arguments: String(numArgs) } }}
-            className={`btn btn-outline-secondary ${data.meta.ordering === "newest" ? "active" : ""}`}
-          >
-            Newest
+          <Link href={`/topics/${id}/facts`} className="btn btn-outline-secondary btn-sm">
+            <i className="fa-solid fa-lightbulb me-1" aria-hidden></i>
+            Facts view
           </Link>
+          <div className="btn-group btn-group-sm" role="group" aria-label="Ordering">
+            <Link
+              href={{ pathname: `/topics/${id}`, query: { ordering: "relevant", num_arguments: String(numArgs) } }}
+              className={`btn btn-outline-secondary ${data.meta.ordering === "relevant" ? "active" : ""}`}
+            >
+              Top
+            </Link>
+            <Link
+              href={{ pathname: `/topics/${id}`, query: { ordering: "newest", num_arguments: String(numArgs) } }}
+              className={`btn btn-outline-secondary ${data.meta.ordering === "newest" ? "active" : ""}`}
+            >
+              New
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -69,7 +82,7 @@ export default async function TopicPage({ params, searchParams }: any) {
           ))}
         </div>
       )}
-      <small className="text-muted d-block mb-4">by {t.createdBy?.name ?? "Unknown"}</small>
+      <hr className="my-4" />
       <div className="mb-4">
         <AddNewArgumentComponent topicId={t.id} />
       </div>
@@ -77,9 +90,15 @@ export default async function TopicPage({ params, searchParams }: any) {
       {/* Derived Facts */}
       {Array.isArray(data.facts) && data.facts.length > 0 && (
         <div className="mt-5">
-          <h5 className="mb-3">Facts derived from arguments</h5>
+          <div className="d-flex align-items-center justify-content-between mb-3">
+            <h5 className="mb-0">Recent factual highlights</h5>
+            <Link href={`/topics/${id}/facts`} className="btn btn-link btn-sm">
+              View all facts
+              <i className="fa-solid fa-arrow-right ms-1" aria-hidden></i>
+            </Link>
+          </div>
           <ul className="list-group mb-4">
-            {data.facts.map((f) => (
+            {data.facts.slice(0, 3).map((f) => (
               <FactCard fact={f} key={f.id} />
             ))}
           </ul>

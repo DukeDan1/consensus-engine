@@ -11,15 +11,22 @@ export type TopicApiResponse = {
   };
   arguments: Array<{
     id: string;
-    side: "for" | "against";
+    side?: "for" | "against" | "neutral" | string;
     body: string;
     createdBy?: { _id: string; name?: string };
     createdAt?: string;
+    upvoteCount?: number;
+    downvoteCount?: number;
+    score?: number;
+    commentCount?: number;
     comments: Array<{
       id: string;
       body: string;
       createdBy?: { _id: string; name?: string };
       createdAt?: string;
+      upvoteCount?: number;
+      downvoteCount?: number;
+      score?: number;
     }>;
     aiAnalysis?: {
       isFact: boolean;

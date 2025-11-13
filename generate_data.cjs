@@ -17,11 +17,11 @@ const dataTool = {
                 properties: {
                     arguments: {
                         type: "array",
-                        description: "List of arguments for and against the topic. Generate at least 10 arguments, with a mix of 'for' and 'against' sides.",
+                        description: "List of arguments representing perspectives on the topic. Generate at least 10 arguments, with a mix of 'for', 'against', or neutral stances.",
                         items: {
                             type: "object",
                             properties: {
-                                side: { type: "string", description: "Either 'for' or 'against'." },
+                                side: { type: "string", description: "One of 'for', 'against', or 'neutral'." },
                                 body: { type: "string", description: "The content of the argument." },
                                 aiAnalysis: {
                                     type: "object",
@@ -44,7 +44,9 @@ const dataTool = {
                                     items: {
                                         type: "object",
                                         properties: {
-                                            body: { type: "string", description: "The content of the comment." }
+                                            body: { type: "string", description: "The content of the comment." },
+                                            upvoteCount: { type: "integer", description: "Number of upvotes for the comment." },
+                                            downvoteCount: { type: "integer", description: "Number of downvotes for the comment." }
                                         }
                                     }
                                 }
@@ -109,7 +111,7 @@ const generate_topic = async () => {
 
     const input = [
         { role: "developer", content: "You are an AI assistant that can generate debate topic data. Use the generate_topic_data tool to generate data about a random subject." },
-        { role: "user", content: `Generate debate topic data for the topic: "${topicName}". Include at least 10 arguments with a mix of 'for' and 'against' sides. Some arguments should have user comments.` }
+    { role: "user", content: `Generate debate topic data for the topic: "${topicName}". Include at least 10 arguments spanning 'for', 'against', and neutral stances. Some arguments should have user comments with optional vote counts.` }
     ];
 
     let response = await openai.responses.create({
@@ -131,13 +133,20 @@ const generate_topic = async () => {
                 createdByKey: populationData.users[Math.floor(Math.random() * populationData.users.length)].key,
                 tags: ["generated", "ai"],
                 arguments: topicData.arguments.map((arg) => ({
-                    side: arg.side,
+                    side: arg.side || "neutral",
                     body: arg.body,
                     createdByKey: populationData.users[Math.floor(Math.random() * populationData.users.length)].key,
                     aiAnalysis: arg.aiAnalysis,
                     comments: arg.comments.map((c) => ({
                         body: c.body,
                         createdByKey: populationData.users[Math.floor(Math.random() * populationData.users.length)].key,
+                        upvoteCount: typeof c.upvoteCount === "number" ? c.upvoteCount : 0,
+                        downvoteCount: typeof c.downvoteCount === "number" ? c.downvoteCount : 0,
+                        score: typeof c.score === "number"
+                            ? c.score
+                            : (typeof c.upvoteCount === "number" && typeof c.downvoteCount === "number"
+                                ? c.upvoteCount - c.downvoteCount
+                                : 0),
                     }))
                 })),
                 facts: topicData.arguments
