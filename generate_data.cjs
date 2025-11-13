@@ -111,7 +111,7 @@ const generate_topic = async () => {
 
     const input = [
         { role: "developer", content: "You are an AI assistant that can generate debate topic data. Use the generate_topic_data tool to generate data about a random subject." },
-    { role: "user", content: `Generate debate topic data for the topic: "${topicName}". Include at least 10 arguments spanning 'for', 'against', and neutral stances. Some arguments should have user comments with optional vote counts.` }
+        { role: "user", content: `Generate debate topic data for the topic: "${topicName}". Include at least 10 arguments spanning 'for', 'against', and neutral stances. Some arguments should have user comments with optional vote counts.` }
     ];
 
     let response = await openai.responses.create({
@@ -165,5 +165,5 @@ const NUMBER_OF_TOPICS_TO_GENERATE = 5;
 
 (async () => {
     await Promise.all(Array.from({ length: NUMBER_OF_TOPICS_TO_GENERATE }).map(() => generate_topic()));
-    fs.writeFileSync("./population_data.json", JSON.stringify(populationData, null, 2) );
+    fs.writeFileSync("./population_data.json", JSON.stringify(populationData, null, 2));
 })();

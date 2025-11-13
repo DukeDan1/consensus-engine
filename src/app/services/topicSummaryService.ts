@@ -95,7 +95,7 @@ export async function getTopicSummaryWithRefresh(topicId: MongooseId): Promise<S
 
     if (!summary) {
         await rebuildSummary(topicId);
-    summary = await TopicSummary.findOne({ topic: topicId }).lean<ITopicSummary | null>();
+        summary = await TopicSummary.findOne({ topic: topicId }).lean<ITopicSummary | null>();
     } else if (Date.now() - new Date(summary.generatedAt).getTime() > SUMMARY_REFRESH_INTERVAL_MS) {
         refreshQueued = true;
         const task = rebuildSummary(topicId).catch((err) => {

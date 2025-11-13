@@ -85,7 +85,7 @@ export default function InteractiveCard({
     <div
       className={className}
       {...commonHandlers}
-      role="link"
+      role="button"
       tabIndex={tabIndex ?? 0}
       aria-label={undefined}
     >
