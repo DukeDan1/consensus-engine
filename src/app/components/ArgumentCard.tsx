@@ -35,7 +35,7 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
     const [upvotes, setUpvotes] = useState<number>((argument as any).upvoteCount ?? 0);
     const [downvotes, setDownvotes] = useState<number>((argument as any).downvoteCount ?? 0);
     const [voting, setVoting] = useState<boolean>(false);
-    const [commentStates, setCommentStates] = useState(() => argument.comments?.map((c) => ({ ...c })) ?? []);
+    const [commentStates, setCommentStates] = useState(argument.comments?.map((c) => ({ ...c })) ?? []);
 
     useEffect(() => {
         setCommentStates(argument.comments?.map((c) => ({ ...c })) ?? []);
