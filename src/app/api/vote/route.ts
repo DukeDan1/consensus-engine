@@ -3,11 +3,12 @@ import { getServerSession } from "next-auth";
 import { dbConnect } from "@/app/lib/mongoose";
 import { Vote } from "@/app/models/vote";
 import { Argument } from "@/app/models/argument";
+import { Comment } from "@/app/models/comment";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
 
 type Body = {
-    targetType: "Argument" | "Topic";
+    targetType: "Argument" | "Topic" | "Comment";
     targetId: string;
     value: 1 | -1;
 };
@@ -63,6 +64,12 @@ export async function POST(req: Request) {
         // If this is an Argument, update its cached counts/score
         if (targetType === "Argument") {
             await Argument.findByIdAndUpdate(targetObjectId, {
+                upvoteCount: upCount,
+                downvoteCount: downCount,
+                score: upCount - downCount,
+            }).exec();
+        } else if (targetType === "Comment") {
+            await Comment.findByIdAndUpdate(targetObjectId, {
                 upvoteCount: upCount,
                 downvoteCount: downCount,
                 score: upCount - downCount,

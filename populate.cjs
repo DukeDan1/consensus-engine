@@ -33,8 +33,9 @@ const TopicSchema = new Schema(
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     isActive: { type: Boolean, default: true },
     tags: { type: [String], default: [] },
-    upvotes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
-    downvotes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
+  upvoteCount: { type: Number, default: 0 },
+  downvoteCount: { type: Number, default: 0 },
+  score: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
@@ -44,7 +45,7 @@ const Topic = mongoose.model("Topic", TopicSchema);
 const ArgumentSchema = new Schema(
   {
     topic: { type: Schema.Types.ObjectId, ref: "Topic", required: true, index: true },
-  side: { type: String, enum: ["for", "against"], required: true, index: true },
+    side: { type: String, enum: ["for", "against", "neutral"], default: "neutral", index: true },
     body: { type: String, required: true, trim: true, maxlength: 10000 },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     upvotes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
@@ -67,6 +68,9 @@ const CommentSchema = new Schema(
     body: { type: String, required: true, maxlength: 5000 },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
     isRemoved: { type: Boolean, default: false },
+    upvoteCount: { type: Number, default: 0 },
+    downvoteCount: { type: Number, default: 0 },
+    score: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
@@ -79,6 +83,7 @@ const FactSchema = new Schema(
     topic: { type: Schema.Types.ObjectId, ref: "Topic", required: true },
     text: { type: String, required: true, trim: true, maxlength: 5000 },
     sourceArgument: { type: Schema.Types.ObjectId, ref: "Argument", required: true },
+    aiJustification: { type: String, trim: true, maxlength: 5000 },
   },
   { timestamps: true }
 );
@@ -172,12 +177,17 @@ function pickIds(list, keys = []) {
       // Use Mongoose model create so middleware and validation run and we can await reliably
       const createdArg = await Argument.create({
         topic: topicsByKey.get(t.key)._id,
-        side: arg.side,
+        side: arg.side || "neutral",
         body: arg.body,
         createdBy: usersByKey.get(arg.createdByKey)._id,
         isRemoved: arg.isRemoved || false,
-        upvotes: [],
-        downvotes: [],
+        upvoteCount: typeof arg.upvoteCount === "number" ? arg.upvoteCount : 0,
+        downvoteCount: typeof arg.downvoteCount === "number" ? arg.downvoteCount : 0,
+        score: typeof arg.score === "number"
+          ? arg.score
+          : (typeof arg.upvoteCount === "number" && typeof arg.downvoteCount === "number"
+            ? arg.upvoteCount - arg.downvoteCount
+            : 0),
         aiAnalysis: arg.aiAnalysis || { isFact: false, isOpinion: true, justification: "" },
       });
 
@@ -196,6 +206,9 @@ function pickIds(list, keys = []) {
           body: c.body,
           createdBy: usersByKey.get(c.createdByKey)._id,
           isRemoved: c.isRemoved || false,
+          upvoteCount: typeof c.upvoteCount === "number" ? c.upvoteCount : 0,
+          downvoteCount: typeof c.downvoteCount === "number" ? c.downvoteCount : 0,
+          score: typeof c.score === "number" ? c.score : (typeof c.upvoteCount === "number" && typeof c.downvoteCount === "number" ? c.upvoteCount - c.downvoteCount : 0),
         });
       }
       

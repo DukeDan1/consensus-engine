@@ -52,6 +52,8 @@ export async function POST(req: Request) {
             body: created.body,
             createdBy: { _id: (user._id as mongoose.Types.ObjectId).toString(), name: user.name },
             createdAt: created.createdAt?.toISOString?.() ?? new Date().toISOString(),
+            upvoteCount: 0,
+            downvoteCount: 0,
         });
     } catch (err: any) {
         console.error("Create comment error", err);

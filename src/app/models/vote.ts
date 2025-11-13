@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 export type VoteValue = 1 | -1;
-export type VotableModel = "Argument" | "Topic"; // optional
+export type VotableModel = "Argument" | "Topic" | "Comment"; // optional
 
 export interface IVote extends Document {
   user: Types.ObjectId;
@@ -14,7 +14,7 @@ export interface IVote extends Document {
 const VoteSchema = new Schema<IVote>({
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   targetId: { type: Schema.Types.ObjectId, required: true, index: true },
-  targetType: { type: String, enum: ["Argument", "Topic"], required: true, index: true },
+  targetType: { type: String, enum: ["Argument", "Topic", "Comment"], required: true, index: true },
   value: { type: Number, enum: [1, -1], required: true },
 }, { timestamps: true });
 

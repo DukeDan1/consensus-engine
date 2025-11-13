@@ -68,6 +68,9 @@ export async function GET(
         body: c.body,
         createdBy: c.createdBy,
         createdAt: c.createdAt,
+        upvoteCount: c.upvoteCount ?? 0,
+        downvoteCount: c.downvoteCount ?? 0,
+        score: c.score ?? ((c.upvoteCount ?? 0) - (c.downvoteCount ?? 0)),
       });
     }
   }
@@ -95,6 +98,7 @@ export async function GET(
     arguments: argumentsList.map(a => {
       const rawSide = (a as any).side as string;
       const normalizedSide = rawSide === 'pro' ? 'for' : (rawSide === 'con' ? 'against' : rawSide);
+      const commentList = commentsByArgument[a._id.toString()] || [];
       return ({
       id: a._id,
       side: normalizedSide,
@@ -104,7 +108,8 @@ export async function GET(
       downvoteCount: a.downvoteCount,
       score: a.score,
       createdAt: a.createdAt,
-      comments: commentsByArgument[a._id.toString()] || [],
+      comments: commentList,
+      commentCount: commentList.length,
       aiAnalysis: a.aiAnalysis,
     })}),
     facts: facts.map(f => ({

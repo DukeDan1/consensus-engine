@@ -28,10 +28,10 @@ export default function RegisterForm() {
                     redirect: false,
                     email,
                     password,
-                    callbackUrl: "/app",
+                    callbackUrl: "/topics",
                 });
 
-                router.push("/app");
+                router.push("/topics");
             } else {
                 setErr(resJson.error ?? "Registration failed");
             }

@@ -5,6 +5,9 @@ export interface IComment extends Document {
   body: string;
   createdBy: Types.ObjectId;
   isRemoved: boolean;
+  upvoteCount: number;
+  downvoteCount: number;
+  score: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -15,6 +18,9 @@ const CommentSchema = new Schema<IComment>({
   body: { type: String, required: true, maxlength: 5000 },
   createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
   isRemoved: { type: Boolean, default: false, index: true },
+  upvoteCount: { type: Number, default: 0 },
+  downvoteCount: { type: Number, default: 0 },
+  score: { type: Number, default: 0 },
 }, { timestamps: true });
 
 CommentSchema.index({ argument: 1, createdAt: 1 });

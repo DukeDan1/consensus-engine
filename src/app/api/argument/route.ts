@@ -12,7 +12,7 @@ import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
 type Body = {
     topicId: string;
     body: string;
-    side?: "for" | "against" | "pro" | "con"; // accept legacy values, normalize below
+    side?: "for" | "against" | "neutral" | "pro" | "con"; // accept legacy values, normalize below
 };
 
 export async function POST(req: Request) {
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     const payload: Body = await req.json();
-    let { topicId, body, side = "for" } = payload || ({} as Body);
+    let { topicId, body, side = "neutral" } = payload || ({} as Body);
     // Normalize legacy values
     if (side === "pro") side = "for" as any;
     if (side === "con") side = "against" as any;
@@ -42,15 +42,15 @@ export async function POST(req: Request) {
     if (!trimmed || trimmed.length > 10000) {
         return NextResponse.json({ error: "Argument must be 1-10000 characters" }, { status: 400 });
     }
-    if (!["for", "against"].includes(side)) {
-        return NextResponse.json({ error: "Invalid side" }, { status: 400 });
+    if (!["for", "against", "neutral"].includes(side)) {
+        return NextResponse.json({ error: "Invalid stance" }, { status: 400 });
     }
 
     try {
         const topicObjId = new mongoose.Types.ObjectId(topicId);
         const created = await Argument.create({
             topic: topicObjId,
-            side: side as "for" | "against",
+            side: side as "for" | "against" | "neutral",
             body: trimmed,
             createdBy: user._id,
             upvoteCount: 0,

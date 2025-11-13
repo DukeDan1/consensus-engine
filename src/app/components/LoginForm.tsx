@@ -44,7 +44,7 @@ export default function LoginForm() {
             redirect: false,
             email,
             password,
-            callbackUrl: "/app",
+            callbackUrl: "/topics",
             });
 
             setLoading(false);
@@ -52,7 +52,7 @@ export default function LoginForm() {
             if (res?.error) {
                 setErr(errorMessages[res.error] || "Invalid email or password");
             } else {
-                router.push("/app");
+                router.push("/topics");
             }
         } catch(err) {
             console.error(err);

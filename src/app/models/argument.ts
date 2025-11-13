@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-export type ArgumentSide = "for" | "against";
+export type ArgumentSide = "for" | "against" | "neutral";
 
 
 export interface IArgument extends Document {
@@ -23,7 +23,7 @@ export interface IArgument extends Document {
 
 const ArgumentSchema = new Schema<IArgument>({
   topic: { type: Schema.Types.ObjectId, ref: "Topic", required: true, index: true },
-  side: { type: String, enum: ["for", "against"], required: true, index: true },
+  side: { type: String, enum: ["for", "against", "neutral"], default: "neutral", index: true },
   body: { type: String, required: true, trim: true, maxlength: 10000 },
   createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
   upvoteCount: { type: Number, default: 0 },
