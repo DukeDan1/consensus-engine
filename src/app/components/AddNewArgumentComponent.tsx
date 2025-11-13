@@ -29,8 +29,8 @@ export default function AddNewArgumentComponent({ topicId }: { topicId: string }
             console.error("Submit argument failed", err);
         }
 
-    setText("");
-    setShowForm(false);
+        setText("");
+        setShowForm(false);
         // Switch to newest ordering so the freshly added argument appears first
         router.replace(`/topics/${topicId}?ordering=newest`);
         router.refresh();
