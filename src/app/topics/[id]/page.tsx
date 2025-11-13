@@ -99,7 +99,7 @@ export default async function TopicPage({ params, searchParams }: any) {
           </div>
           <ul className="list-group mb-4">
             {data.facts.slice(0, 3).map((f) => (
-              <FactCard fact={f} key={f.id} />
+              <FactCard fact={f} key={f.id} topicId={t.id} />
             ))}
           </ul>
         </div>

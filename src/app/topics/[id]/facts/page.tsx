@@ -47,6 +47,8 @@ export default async function TopicFactsPage({ params }: any) {
         return notFound();
     }
 
+    const topicId = facts.topicId ?? id;
+
     return (
         <div className="container py-4">
             <nav aria-label="breadcrumb" className="mb-3">
@@ -88,7 +90,7 @@ export default async function TopicFactsPage({ params }: any) {
             ) : (
                 <ul className="list-group">
                     {facts.facts.map((fact) => (
-                        <FactCard key={fact.id} fact={fact} />
+                        <FactCard key={fact.id} fact={fact} topicId={topicId} />
                     ))}
                 </ul>
             )}
