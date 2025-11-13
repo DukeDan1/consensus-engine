@@ -1,8 +1,34 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
 import AddNewCommentComponent from "@/app/components/AddNewCommentComponent";
 import { timeAgo } from "@/app/lib/commonFunctions";
+
+function normaliseId(value: unknown): string | undefined {
+    if (!value) return undefined;
+    if (typeof value === "string") return value;
+    if (typeof value === "object" && value !== null) {
+        const maybeToString = (value as { toString?: () => string }).toString;
+        if (typeof maybeToString === "function") {
+            return maybeToString.call(value);
+        }
+    }
+    return undefined;
+}
+
+function applyHighlight(element: HTMLElement) {
+    const prevTransition = element.style.transition;
+    const prevBg = element.style.backgroundColor;
+    element.style.transition = prevTransition && prevTransition.length > 0
+        ? `${prevTransition}, background-color 0.6s ease`
+        : "background-color 0.6s ease";
+    element.style.backgroundColor = "#fff3cd";
+    window.setTimeout(() => {
+        element.style.backgroundColor = prevBg || "";
+        element.style.transition = prevTransition;
+    }, 1200);
+}
 
 
 export default function ArgumentCard({ argument }: { argument: TopicApiResponse["arguments"][number] }) {
@@ -14,6 +40,36 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
     useEffect(() => {
         setCommentStates(argument.comments?.map((c) => ({ ...c })) ?? []);
     }, [argument.comments]);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const highlightFromHash = () => {
+            const hash = window.location.hash?.replace("#", "");
+            if (!hash) return;
+
+            if (hash === `argument-${argument.id}`) {
+                const argumentElement = document.getElementById(hash);
+                if (!argumentElement) return;
+                argumentElement.scrollIntoView({ behavior: "smooth", block: "start" });
+                const cardElement = (argumentElement.querySelector(".card") as HTMLElement) || argumentElement;
+                applyHighlight(cardElement);
+                return;
+            }
+
+            if (hash.startsWith("comment-")) {
+                const commentElement = document.getElementById(hash);
+                if (commentElement && commentElement.closest(`#argument-${argument.id}`)) {
+                    commentElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                    applyHighlight(commentElement as HTMLElement);
+                }
+            }
+        };
+
+        highlightFromHash();
+        window.addEventListener("hashchange", highlightFromHash);
+        return () => window.removeEventListener("hashchange", highlightFromHash);
+    }, [argument.id, commentStates]);
 
     async function sendVote(value: 1 | -1) {
         if (voting) return;
@@ -72,6 +128,9 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
         return timeAgo(argument.createdAt);
     }, [argument.createdAt]);
 
+    const authorId = normaliseId(typeof argument.createdBy === "string" ? argument.createdBy : argument.createdBy?._id);
+    const authorName = argument.createdBy?.name ?? "Anonymous";
+
     return (
         <>
             <div id={`argument-${argument.id}`} className="col-12" key={argument.id}>
@@ -79,7 +138,15 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                     <div className="card-body">
                         <div className="d-flex align-items-start justify-content-between mb-3">
                             <div>
-                                <div className="fw-semibold">{argument.createdBy?.name ?? "Anonymous"}</div>
+                                <div className="fw-semibold">
+                                    {authorId ? (
+                                        <Link href={`/profile/${authorId}`} className="author-link">
+                                            {authorName}
+                                        </Link>
+                                    ) : (
+                                        authorName
+                                    )}
+                                </div>
                                 <small className="text-muted">{createdLabel}</small>
                             </div>
 
@@ -117,9 +184,12 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                                 <h6 className="mb-2">Comments</h6>
                                 <ul className="list-unstyled mb-0">
                                     {commentStates.map((c) => {
+                                        const commenterId = normaliseId(typeof c.createdBy === "string" ? c.createdBy : c.createdBy?._id);
+                                        const commenterName = c.createdBy?.name ?? "Anonymous";
                                         const pending = (c as any).pending;
                                         return (
                                             <li
+                                                id={`comment-${c.id}`}
                                                 key={c.id}
                                                 className="mb-2 p-2 rounded bg-light border"
                                                 style={{ borderLeft: "4px solid #6c757d" }}
@@ -127,7 +197,13 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                                                 <div className="d-flex justify-content-between align-items-start mb-2">
                                                     <div className="small text-muted fw-semibold">
                                                         <i className="fa-regular fa-user me-1"></i>
-                                                        {c.createdBy?.name ?? "Anonymous"}
+                                                        {commenterId ? (
+                                                            <Link href={`/profile/${commenterId}`} className="author-link">
+                                                                {commenterName}
+                                                            </Link>
+                                                        ) : (
+                                                            commenterName
+                                                        )}
                                                         <span className="ms-2 fw-light small">{c.createdAt ? timeAgo(c.createdAt) : ""}</span>
                                                     </div>
                                                     <div className="d-flex align-items-center gap-1">

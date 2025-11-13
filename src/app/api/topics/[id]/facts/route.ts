@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
 import { Fact } from "@/app/models/facts";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(ctx: any ) {
+export async function GET(_request: NextRequest, ctx: any) {
     const resolvedCtx = await Promise.resolve(ctx.params);
     const id = resolvedCtx.id as string;
     if (!id || !mongoose.isValidObjectId(id)) {
