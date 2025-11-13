@@ -180,7 +180,7 @@ function pickIds(list, keys = []) {
         side: arg.side || "neutral",
         body: arg.body,
         createdBy: usersByKey.get(arg.createdByKey)._id,
-  isRemoved: arg.isRemoved || false,
+        isRemoved: arg.isRemoved || false,
         upvoteCount: typeof arg.upvoteCount === "number" ? arg.upvoteCount : 0,
         downvoteCount: typeof arg.downvoteCount === "number" ? arg.downvoteCount : 0,
         score: typeof arg.score === "number"
