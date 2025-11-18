@@ -4,6 +4,7 @@ import { dbConnect } from "@/app/lib/mongoose";
 import { Topic } from "@/app/models/topic";
 import User from "@/app/models/user";
 import { getServerSession } from "next-auth";
+import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
 import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
 
 function slugify(input: string) {
@@ -163,23 +164,33 @@ export async function POST(request: NextRequest) {
     slug = slugify(title);
   }
 
-  const classifications = await classifyTextToOntology(`${title}\n\n${description}`.trim(), {
-    topK: 12,
-  }).catch((err) => {
-    console.error("Topic classification failed", err);
-    return [];
-  });
-
-  const ontologyCategories = classificationToAssignments(classifications, 6);
-
   const doc = await Topic.create({
     title,
     description,
-    ontologyCategories,
+    ontologyCategories: [],
     createdBy: creator._id,
     isActive: true,
     slug,
   });
+
+  const backgroundTask = (async () => {
+    try {
+      const classifications = await classifyTextToOntology(`${title}\n\n${description}`.trim(), {
+        topK: 12,
+      }).catch((err) => {
+        console.error("Topic classification failed", err);
+        return [];
+      });
+      const ontologyCategories = classificationToAssignments(classifications, 6);
+      if (ontologyCategories.length) {
+        await Topic.findByIdAndUpdate(doc._id, { ontologyCategories }).exec();
+      }
+    } catch (err) {
+      console.error("Async topic classification failed", err);
+    }
+  })();
+
+  trackBackgroundTask(backgroundTask);
 
   return NextResponse.json(
     {
@@ -187,7 +198,7 @@ export async function POST(request: NextRequest) {
       _id: doc._id,
       title: doc.title,
       description: doc.description,
-  ontologyCategories: doc.ontologyCategories,
+  ontologyCategories: doc.ontologyCategories ?? [],
       createdAt: doc.createdAt,
       upvoteCount: 0,
       downvoteCount: 0,

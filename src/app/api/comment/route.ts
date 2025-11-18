@@ -5,6 +5,7 @@ import { Comment } from "@/app/models/comment";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
 import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
+import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
 
 type Body = {
     argumentId: string;
@@ -40,19 +41,31 @@ export async function POST(req: Request) {
     try {
         const argObjId = new mongoose.Types.ObjectId(argumentId);
         const parentObjId = parentId ? new mongoose.Types.ObjectId(parentId) : undefined;
-        const classifications = await classifyTextToOntology(trimmed, { topK: 12 }).catch((err) => {
-            console.error("Comment classification failed", err);
-            return [];
-        });
-        const ontologyCategories = classificationToAssignments(classifications, 6);
 
         const created = await Comment.create({
             argument: argObjId,
             parent: parentObjId,
             body: trimmed,
             createdBy: user._id,
-            ontologyCategories,
+            ontologyCategories: [],
         });
+
+        const backgroundTask = (async () => {
+            try {
+                const classifications = await classifyTextToOntology(trimmed, { topK: 12 }).catch((err) => {
+                    console.error("Comment classification failed", err);
+                    return [];
+                });
+                const ontologyCategories = classificationToAssignments(classifications, 6);
+                if (ontologyCategories.length) {
+                    await Comment.findByIdAndUpdate(created._id, { ontologyCategories }).exec();
+                }
+            } catch (err) {
+                console.error("Async comment classification failed", err);
+            }
+        })();
+
+        trackBackgroundTask(backgroundTask);
 
         return NextResponse.json({
             id: (created._id as mongoose.Types.ObjectId).toString(),

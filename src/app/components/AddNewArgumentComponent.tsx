@@ -12,6 +12,7 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
     const [showForm, setShowForm] = useState(false);
     const [text, setText] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const [submitting, setSubmitting] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -29,6 +30,7 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
         const body = text.trim();
         if (!body) return;
 
+        setSubmitting(true);
         try {
             const res = await fetch("/api/argument", {
                 method: "POST",
@@ -38,6 +40,8 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
             if (!res.ok) throw new Error("Failed to add argument");
         } catch (err) {
             console.error("Submit argument failed", err);
+        } finally {
+            setSubmitting(false);
         }
 
         setText("");
@@ -93,10 +97,10 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
                                 ></textarea>
                             </div>
                             <div className="d-flex gap-2">
-                                <button type="submit" className="btn btn-primary btn-sm">
-                                    Post
+                                <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
+                                    {submitting ? "Posting..." : "Post"}
                                 </button>
-                                <button type="button" className="btn btn-light btn-sm" onClick={() => toggleForm(false)}>
+                                <button type="button" className="btn btn-light btn-sm" onClick={() => toggleForm(false)} disabled={submitting}>
                                     Cancel
                                 </button>
                             </div>

@@ -49,11 +49,6 @@ export async function POST(req: Request) {
 
     try {
         const topicObjId = new mongoose.Types.ObjectId(topicId);
-        const classifications = await classifyTextToOntology(trimmed, { topK: 12 }).catch((err) => {
-            console.error("Argument classification failed", err);
-            return [];
-        });
-        const ontologyCategories = classificationToAssignments(classifications, 6);
         const created = await Argument.create({
             topic: topicObjId,
             side: side as "for" | "against" | "neutral",
@@ -62,7 +57,7 @@ export async function POST(req: Request) {
             upvoteCount: 0,
             downvoteCount: 0,
             score: 0,
-            ontologyCategories,
+            ontologyCategories: [],
         });
 
         const topic = await Topic.findById(topicObjId).select({ title: 1 }).lean().exec();
@@ -70,6 +65,15 @@ export async function POST(req: Request) {
         // Track background AI processing for graceful shutdown
         const backgroundTask = (async () => {
             try {
+                const classifications = await classifyTextToOntology(trimmed, { topK: 12 }).catch((err) => {
+                    console.error("Argument classification failed", err);
+                    return [];
+                });
+                const ontologyCategories = classificationToAssignments(classifications, 6);
+                if (ontologyCategories.length) {
+                    await Argument.findByIdAndUpdate(created._id, { ontologyCategories }).exec();
+                }
+
                 const analysis = await getAIAnalysisForArgument(created.body, topic?.title || "");
                 let factual = {} as {factualPart?: string, justification?: string};
                 if (analysis.isFact) {
