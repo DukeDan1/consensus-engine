@@ -4,6 +4,8 @@ import { dbConnect } from "@/app/lib/mongoose";
 import { Comment } from "@/app/models/comment";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
+import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
+import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
 
 type Body = {
     argumentId: string;
@@ -45,7 +47,25 @@ export async function POST(req: Request) {
             parent: parentObjId,
             body: trimmed,
             createdBy: user._id,
+            ontologyCategories: [],
         });
+
+        const backgroundTask = (async () => {
+            try {
+                const classifications = await classifyTextToOntology(trimmed, { topK: 12 }).catch((err) => {
+                    console.error("Comment classification failed", err);
+                    return [];
+                });
+                const ontologyCategories = classificationToAssignments(classifications, 6);
+                if (ontologyCategories.length) {
+                    await Comment.findByIdAndUpdate(created._id, { ontologyCategories }).exec();
+                }
+            } catch (err) {
+                console.error("Async comment classification failed", err);
+            }
+        })();
+
+        trackBackgroundTask(backgroundTask);
 
         return NextResponse.json({
             id: (created._id as mongoose.Types.ObjectId).toString(),
@@ -54,6 +74,7 @@ export async function POST(req: Request) {
             createdAt: created.createdAt?.toISOString?.() ?? new Date().toISOString(),
             upvoteCount: 0,
             downvoteCount: 0,
+            ontologyCategories: created.ontologyCategories ?? [],
         });
     } catch (err: any) {
         console.error("Create comment error", err);

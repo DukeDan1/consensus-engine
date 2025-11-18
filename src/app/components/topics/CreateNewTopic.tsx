@@ -9,29 +9,35 @@ type CreatedTopic = {
   downvoteCount: number;
   totalVotes: number;
   creatorName: string;
+  ontologyCategories?: Array<{ id: string; label: string; description?: string }>;
 };
 
-export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: CreatedTopic) => void }) {
+type Props = {
+  onCreated?: (_t: CreatedTopic) => void;
+  onOpenChange?: (_open: boolean) => void;
+};
+
+export default function CreateNewTopic({ onCreated, onOpenChange }: Props) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [tagsInput, setTagsInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function toggleOpen(next: boolean) {
+    setOpen(next);
+    onOpenChange?.(next);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
     try {
-      const tags = tagsInput
-        .split(",")
-        .map((t) => t.trim())
-        .filter((t) => t.length > 0);
       const res = await fetch("/api/topics", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, tags }),
+        body: JSON.stringify({ title, description }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -45,11 +51,11 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: Created
         downvoteCount: data.downvoteCount ?? 0,
         totalVotes: data.totalVotes ?? 0,
         creatorName: data.creatorName || "You",
+        ontologyCategories: data.ontologyCategories || [],
       };
       setTitle("");
       setDescription("");
-      setTagsInput("");
-      setOpen(false);
+      toggleOpen(false);
       toast.success("Topic created successfully!");
       onCreated?.(created);
     } catch (err: any) {
@@ -60,9 +66,9 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: Created
   }
 
   return (
-    <div>
+    <div className="w-100">
       {!open ? (
-        <button className="btn btn-outline-success" onClick={() => setOpen(true)} aria-label="Add topic">
+        <button className="btn btn-outline-success" onClick={() => toggleOpen(true)} aria-label="Add topic">
           <i className="fa-solid fa-plus me-1"></i>
           New Topic
         </button>
@@ -70,7 +76,7 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: Created
         <div className="card shadow-sm mb-3">
           <div className="card-header d-flex align-items-center justify-content-between">
             <strong>Create a new topic</strong>
-            <button className="btn btn-outline-secondary btn-sm" onClick={() => setOpen(false)} disabled={submitting}>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => toggleOpen(false)} disabled={submitting}>
               Close
             </button>
           </div>
@@ -96,19 +102,14 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: Created
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
-              <div className="mb-2">
-                <label className="form-label">Tags (comma-separated)</label>
-                <input
-                  className="form-control"
-                  value={tagsInput}
-                  onChange={(e) => setTagsInput(e.target.value)}
-                />
+              <div className="alert alert-info py-2">
+                Ontology categories will be suggested automatically for new topics based on the content you enter.
               </div>
               <div className="d-flex gap-2">
                 <button className="btn btn-primary" type="submit" disabled={submitting}>
                   {submitting ? "Creating..." : "Create"}
                 </button>
-                <button className="btn btn-outline-secondary" type="button" onClick={() => setOpen(false)} disabled={submitting}>
+                <button className="btn btn-outline-secondary" type="button" onClick={() => toggleOpen(false)} disabled={submitting}>
                   Cancel
                 </button>
               </div>

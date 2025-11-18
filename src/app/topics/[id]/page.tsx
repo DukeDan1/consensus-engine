@@ -5,12 +5,37 @@ import { redirectIfLoggedOut } from "@/app/lib/commonFunctions";
 export const dynamic = "force-dynamic"; // render server-side on each request
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
 import ArgumentCard from "@/app/components/ArgumentCard";
-import AddNewArgumentComponent from "@/app/components/AddNewArgumentComponent";
 import FactCard from "@/app/components/topics/FactCard";
+import OntologyBadgeList from "@/app/components/ontology/OntologyBadgeList";
+import TopicDiscussionControls from "@/app/components/topics/TopicDiscussionControls";
 
-async function fetchTopicBundle(id: string, ordering: "relevant" | "newest", numArguments: number): Promise<TopicApiResponse | null> {
+function normalizeCategoryParams(value: string | string[] | undefined): string[] {
+  if (!value) return [];
+  const values = Array.isArray(value) ? value : [value];
+  return Array.from(
+    new Set(
+      values
+        .flatMap((entry) => entry.split(","))
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    )
+  );
+}
+
+async function fetchTopicBundle(
+  id: string,
+  ordering: "relevant" | "newest",
+  numArguments: number,
+  filters?: { argumentCategories?: string[]; commentCategories?: string[] }
+): Promise<TopicApiResponse | null> {
   const base = process.env.NEXTJS_APP_BASE_URL ?? "";
-  const url = `${base}/api/topics/${encodeURIComponent(id)}?num_arguments=${numArguments}&ordering=${ordering}`;
+  const params = new URLSearchParams({
+    num_arguments: String(numArguments),
+    ordering,
+  });
+  filters?.argumentCategories?.forEach((categoryId) => params.append("argumentCategory", categoryId));
+  filters?.commentCategories?.forEach((categoryId) => params.append("commentCategory", categoryId));
+  const url = `${base}/api/topics/${encodeURIComponent(id)}?${params.toString()}`;
   const res = await axios.get(url, { headers: { "Cache-Control": "no-store" } }).catch(() => null);
   return res?.data ?? null;
 }
@@ -21,8 +46,23 @@ export default async function TopicPage({ params, searchParams }: any) {
   const resolvedSearchParams = await Promise.resolve(searchParams);
   const ordering = (resolvedSearchParams?.ordering === "newest" ? "newest" : "relevant") as "relevant" | "newest";
   const numArgs = Math.max(1, Math.min(50, parseInt(resolvedSearchParams?.num_arguments ?? "10", 10) || 10));
+  const argumentCategoryIds = Array.from(
+    new Set([
+      ...normalizeCategoryParams(resolvedSearchParams?.argumentCategory),
+      ...normalizeCategoryParams(resolvedSearchParams?.argumentCategories),
+    ])
+  );
+  const commentCategoryIds = Array.from(
+    new Set([
+      ...normalizeCategoryParams(resolvedSearchParams?.commentCategory),
+      ...normalizeCategoryParams(resolvedSearchParams?.commentCategories),
+    ])
+  );
 
-  const data = await fetchTopicBundle(id, ordering, numArgs);
+  const data = await fetchTopicBundle(id, ordering, numArgs, {
+    argumentCategories: argumentCategoryIds,
+    commentCategories: commentCategoryIds,
+  });
   if (!data) return notFound();
 
   const t = data.topic;
@@ -59,13 +99,29 @@ export default async function TopicPage({ params, searchParams }: any) {
           </Link>
           <div className="btn-group btn-group-sm" role="group" aria-label="Ordering">
             <Link
-              href={{ pathname: `/topics/${id}`, query: { ordering: "relevant", num_arguments: String(numArgs) } }}
+              href={{
+                pathname: `/topics/${id}`,
+                query: {
+                  ordering: "relevant",
+                  num_arguments: String(numArgs),
+                  ...(argumentCategoryIds.length ? { argumentCategory: argumentCategoryIds } : {}),
+                  ...(commentCategoryIds.length ? { commentCategory: commentCategoryIds } : {}),
+                },
+              }}
               className={`btn btn-outline-secondary ${data.meta.ordering === "relevant" ? "active" : ""}`}
             >
               Top
             </Link>
             <Link
-              href={{ pathname: `/topics/${id}`, query: { ordering: "newest", num_arguments: String(numArgs) } }}
+              href={{
+                pathname: `/topics/${id}`,
+                query: {
+                  ordering: "newest",
+                  num_arguments: String(numArgs),
+                  ...(argumentCategoryIds.length ? { argumentCategory: argumentCategoryIds } : {}),
+                  ...(commentCategoryIds.length ? { commentCategory: commentCategoryIds } : {}),
+                },
+              }}
               className={`btn btn-outline-secondary ${data.meta.ordering === "newest" ? "active" : ""}`}
             >
               New
@@ -75,16 +131,14 @@ export default async function TopicPage({ params, searchParams }: any) {
       </div>
 
       {t.description && <p className="text-muted mb-2">{t.description}</p>}
-      {Array.isArray(t.tags) && t.tags.length > 0 && (
-        <div className="mb-3">
-          {t.tags.map((tag) => (
-            <span key={tag} className="badge text-bg-light border me-1">{tag}</span>
-          ))}
-        </div>
-      )}
+      <OntologyBadgeList categories={t.ontologyCategories} className="mb-3 d-flex flex-wrap gap-1" />
       <hr className="my-4" />
       <div className="mb-4">
-        <AddNewArgumentComponent topicId={t.id} />
+        <TopicDiscussionControls
+          topicId={t.id}
+          argumentCategoryIds={argumentCategoryIds}
+          commentCategoryIds={commentCategoryIds}
+        />
       </div>
 
       {/* Derived Facts */}

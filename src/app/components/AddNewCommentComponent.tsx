@@ -7,6 +7,7 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
     const [showForm, setShowForm] = useState(false);
     const [text, setText] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const [submitting, setSubmitting] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -20,6 +21,7 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
 
         // Placeholder: attempt to POST to a comments API if available. If you have an endpoint,
         // update the URL below. For now we'll optimistically clear and hide the form.
+        setSubmitting(true);
         try {
             const res = await fetch("/api/comment", {
                 method: "POST",
@@ -32,6 +34,8 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
         } catch (err) {
             // ignore network errors here; you can add toast/snackbar handling
             console.error("Submit comment failed", err);
+        } finally {
+            setSubmitting(false);
         }
 
         setText("");
@@ -77,8 +81,17 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
                                 ></textarea>
                             </div>
                             <div className="d-flex gap-2">
-                                <button type="submit" className="btn btn-primary btn-sm">Post Comment</button>
-                                <button type="button" className="btn btn-light btn-sm" onClick={() => { setShowForm(false); setText(""); }}>Cancel</button>
+                                <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
+                                    {submitting ? "Posting..." : "Post Comment"}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-light btn-sm"
+                                    onClick={() => { setShowForm(false); setText(""); }}
+                                    disabled={submitting}
+                                >
+                                    Cancel
+                                </button>
                             </div>
                         </form>
                     </div>
