@@ -11,6 +11,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import OpenAI from "openai";
+import { cleanOntologyLabel } from "@/app/lib/ontologyUtils";
 
 // Models (override via env if desired)
 const DEFAULT_EMBED_MODEL = process.env.OPENAI_EMBED_MODEL || "text-embedding-3-large";
@@ -132,7 +133,9 @@ async function loadOntologyFromFile(): Promise<OntologyCategory[]> {
   if (Array.isArray(data)) {
     for (const item of data) {
       const id = normalizeLabel((item as any).id) || normalizeLabel((item as any).topicId) || extractMedtopId(normalizeLabel((item as any).label));
-      const label = normalizeLabel((item as any).label) || normalizeLabel((item as any).name) || id || undefined;
+      const label = cleanOntologyLabel(
+        normalizeLabel((item as any).label) || normalizeLabel((item as any).name) || id || undefined
+      );
       if (!id || !label) continue;
       categories.push({
         id,
@@ -147,7 +150,9 @@ async function loadOntologyFromFile(): Promise<OntologyCategory[]> {
     if (Array.isArray(arr)) {
       for (const item of arr) {
         const id = normalizeLabel((item as any).id) || normalizeLabel((item as any).topicId) || extractMedtopId(normalizeLabel((item as any).label));
-        const label = normalizeLabel((item as any).label) || normalizeLabel((item as any).name) || id || undefined;
+        const label = cleanOntologyLabel(
+          normalizeLabel((item as any).label) || normalizeLabel((item as any).name) || id || undefined
+        );
         if (!id || !label) continue;
         categories.push({
           id,
@@ -318,7 +323,7 @@ export function classificationToAssignments(results: ClassificationResult, limit
     .slice(0, limit)
     .map((item) => ({
       id: item.id,
-      label: item.label,
+      label: cleanOntologyLabel(item.label) || item.label,
       description: item.description,
       similarity: item.similarity,
       confidence: item.confidence,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { cleanOntologyLabel } from "@/app/lib/ontologyUtils";
 
 type OntologyBadge = {
   id: string;
@@ -56,9 +57,9 @@ export default function OntologyBadgeList({
           className={`badge text-bg-light border ${badgeClassName ?? ""}`.trim()}
           data-bs-toggle="tooltip"
           data-bs-placement="top"
-          title={cat.description || `Category: ${cat.label}`}
+          title={cat.description || `Category: ${cleanOntologyLabel(cat.label) || cat.label}`}
         >
-          {cat.label}
+          {cleanOntologyLabel(cat.label) || cat.label}
         </span>
       ))}
     </div>

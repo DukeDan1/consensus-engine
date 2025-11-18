@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { cleanOntologyLabel } from "@/app/lib/ontologyUtils";
 
 export type OntologyCategoryOption = {
   id: string;
@@ -9,9 +10,7 @@ export type OntologyCategoryOption = {
 };
 
 function formatLabel(label?: string) {
-  if (!label) return "";
-  const cleaned = label.replace(/\s*\(medtop:[^)]+\)/gi, "").trim();
-  return cleaned.length > 0 ? cleaned : label;
+  return cleanOntologyLabel(label) || label || "";
 }
 
 type Props = {
