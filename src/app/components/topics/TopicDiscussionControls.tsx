@@ -14,17 +14,19 @@ export default function TopicDiscussionControls({
   commentCategoryIds: string[];
 }) {
   const [showFilters, setShowFilters] = useState(() => argumentCategoryIds.length > 0 || commentCategoryIds.length > 0);
+  const [argumentFormOpen, setArgumentFormOpen] = useState(false);
   const filtersPanelId = useMemo(() => `topic-discussion-filters-${topicId}`, [topicId]);
+  const controlsShouldStack = argumentFormOpen || showFilters;
 
   return (
     <div>
-      <div className="d-flex flex-wrap gap-2 align-items-start">
-        <div className="flex-grow-1 flex-md-grow-0">
-          <AddNewArgumentComponent topicId={topicId} />
+      <div className={`d-flex flex-wrap gap-2 align-items-start ${controlsShouldStack ? "flex-column" : ""}`}>
+        <div className={`flex-grow-1 ${controlsShouldStack ? "w-100" : "flex-md-grow-0"}`}>
+          <AddNewArgumentComponent topicId={topicId} onOpenChange={setArgumentFormOpen} />
         </div>
         <button
           type="button"
-          className="btn btn-outline-secondary"
+          className={`btn btn-outline-secondary ${controlsShouldStack ? "w-100" : ""}`}
           onClick={() => setShowFilters((prev) => !prev)}
           aria-expanded={showFilters}
           aria-controls={filtersPanelId}

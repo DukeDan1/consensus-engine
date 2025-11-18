@@ -77,6 +77,7 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
   const [page, setPage] = useState(1);
   const [refreshCounter, setRefreshCounter] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
+  const [newTopicOpen, setNewTopicOpen] = useState(false);
   const pageSize = 15;
 
   const categoryKey = useMemo(() => (filters.categories || []).map((cat) => cat.id).sort().join(","), [filters.categories]);
@@ -178,16 +179,18 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
     );
   }
 
+  const controlsShouldStack = newTopicOpen || showFilters;
+
   return (
     <div>
       <div className="mb-3">
-        <div className="d-flex flex-wrap gap-2 align-items-start">
-          <div className="flex-grow-1 flex-md-grow-0">
-            <CreateNewTopic onCreated={handleTopicCreated} />
+        <div className={`d-flex flex-wrap gap-2 align-items-start ${controlsShouldStack ? "flex-column" : ""}`}>
+          <div className={`flex-grow-1 ${controlsShouldStack ? "w-100" : "flex-md-grow-0"}`}>
+            <CreateNewTopic onCreated={handleTopicCreated} onOpenChange={setNewTopicOpen} />
           </div>
           <button
             type="button"
-            className="btn btn-outline-secondary"
+            className={`btn btn-outline-secondary ${controlsShouldStack ? "w-100" : ""}`}
             onClick={() => setShowFilters((prev) => !prev)}
             aria-expanded={showFilters}
             aria-controls="topics-filter-panel"

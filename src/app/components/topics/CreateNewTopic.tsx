@@ -12,12 +12,22 @@ type CreatedTopic = {
   ontologyCategories?: Array<{ id: string; label: string; description?: string }>;
 };
 
-export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: CreatedTopic) => void }) {
+type Props = {
+  onCreated?: (_t: CreatedTopic) => void;
+  onOpenChange?: (_open: boolean) => void;
+};
+
+export default function CreateNewTopic({ onCreated, onOpenChange }: Props) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function toggleOpen(next: boolean) {
+    setOpen(next);
+    onOpenChange?.(next);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -45,7 +55,7 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: Created
       };
       setTitle("");
       setDescription("");
-      setOpen(false);
+      toggleOpen(false);
       toast.success("Topic created successfully!");
       onCreated?.(created);
     } catch (err: any) {
@@ -56,9 +66,9 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: Created
   }
 
   return (
-    <div>
+    <div className="w-100">
       {!open ? (
-        <button className="btn btn-outline-success" onClick={() => setOpen(true)} aria-label="Add topic">
+        <button className="btn btn-outline-success" onClick={() => toggleOpen(true)} aria-label="Add topic">
           <i className="fa-solid fa-plus me-1"></i>
           New Topic
         </button>
@@ -66,7 +76,7 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: Created
         <div className="card shadow-sm mb-3">
           <div className="card-header d-flex align-items-center justify-content-between">
             <strong>Create a new topic</strong>
-            <button className="btn btn-outline-secondary btn-sm" onClick={() => setOpen(false)} disabled={submitting}>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => toggleOpen(false)} disabled={submitting}>
               Close
             </button>
           </div>
@@ -99,7 +109,7 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: Created
                 <button className="btn btn-primary" type="submit" disabled={submitting}>
                   {submitting ? "Creating..." : "Create"}
                 </button>
-                <button className="btn btn-outline-secondary" type="button" onClick={() => setOpen(false)} disabled={submitting}>
+                <button className="btn btn-outline-secondary" type="button" onClick={() => toggleOpen(false)} disabled={submitting}>
                   Cancel
                 </button>
               </div>
