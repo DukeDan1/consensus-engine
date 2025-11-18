@@ -11,7 +11,6 @@ type ProfileApiResponse = {
     id: string;
     name?: string | null;
     nickname?: string | null;
-    email?: string | null;
     createdAt?: string | null;
   };
   recentArguments: Array<{
@@ -61,11 +60,10 @@ type CommentItem = {
   score: number;
 };
 
-function getDisplayName(user: { name?: string | null; nickname?: string | null; email?: string | null }): string {
+function getDisplayName(user: { name?: string | null; nickname?: string | null; }): string {
   return (
     user.name?.trim() ||
     user.nickname?.trim() ||
-    (user.email ? user.email.split("@")[0] : null) ||
     "Member"
   );
 }
@@ -125,10 +123,9 @@ export default async function UserProfilePage({ params }: any ) {
   const displayName = getDisplayName({
     name: data.user?.name ?? null,
     nickname: data.user?.nickname ?? null,
-    email: data.user?.email ?? null,
   });
 
-  const initialsSource = data.user?.name || data.user?.nickname || data.user?.email || displayName;
+  const initialsSource = data.user?.name || data.user?.nickname || displayName;
   const initials = getInitials(initialsSource);
 
   const memberSinceDate = data.user?.createdAt ? new Date(data.user.createdAt) : null;
@@ -187,7 +184,6 @@ export default async function UserProfilePage({ params }: any ) {
         </div>
         <div className="text-center text-md-start">
           <h1 className="h3 mb-1">{displayName}</h1>
-          {data.user?.email && <p className="text-muted mb-2">{data.user.email}</p>}
           {memberSince && <p className="text-muted small mb-0">Member since {memberSince}</p>}
         </div>
       </div>
