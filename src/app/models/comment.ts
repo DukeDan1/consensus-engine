@@ -10,6 +10,13 @@ export interface IComment extends Document {
   score: number;
   createdAt: Date;
   updatedAt: Date;
+  ontologyCategories: Array<{
+    id: string;
+    label: string;
+    description?: string;
+    confidence?: number;
+    similarity?: number;
+  }>;
 }
 
 const CommentSchema = new Schema<IComment>({
@@ -21,8 +28,21 @@ const CommentSchema = new Schema<IComment>({
   upvoteCount: { type: Number, default: 0 },
   downvoteCount: { type: Number, default: 0 },
   score: { type: Number, default: 0 },
+  ontologyCategories: {
+    type: [
+      {
+        id: { type: String, required: true },
+        label: { type: String, required: true },
+        description: { type: String },
+        confidence: { type: Number },
+        similarity: { type: Number },
+      }
+    ],
+    default: [],
+  }
 }, { timestamps: true });
 
 CommentSchema.index({ argument: 1, createdAt: 1 });
+CommentSchema.index({ "ontologyCategories.id": 1, argument: 1 });
 
 export const Comment = mongoose.model<IComment>("Comment", CommentSchema);

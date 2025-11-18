@@ -8,6 +8,7 @@ import { Fact } from "@/app/models/facts";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
 import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
+import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
 
 type Body = {
     topicId: string;
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
             upvoteCount: 0,
             downvoteCount: 0,
             score: 0,
+            ontologyCategories: [],
         });
 
         const topic = await Topic.findById(topicObjId).select({ title: 1 }).lean().exec();
@@ -63,6 +65,15 @@ export async function POST(req: Request) {
         // Track background AI processing for graceful shutdown
         const backgroundTask = (async () => {
             try {
+                const classifications = await classifyTextToOntology(trimmed, { topK: 12 }).catch((err) => {
+                    console.error("Argument classification failed", err);
+                    return [];
+                });
+                const ontologyCategories = classificationToAssignments(classifications, 6);
+                if (ontologyCategories.length) {
+                    await Argument.findByIdAndUpdate(created._id, { ontologyCategories }).exec();
+                }
+
                 const analysis = await getAIAnalysisForArgument(created.body, topic?.title || "");
                 let factual = {} as {factualPart?: string, justification?: string};
                 if (analysis.isFact) {
@@ -97,6 +108,7 @@ export async function POST(req: Request) {
             body: created.body,
             createdBy: { _id: (user._id as mongoose.Types.ObjectId).toString(), name: user.name },
             createdAt: created.createdAt?.toISOString?.() ?? new Date().toISOString(),
+            ontologyCategories: created.ontologyCategories ?? [],
             comments: [],
         });
     } catch (err: any) {

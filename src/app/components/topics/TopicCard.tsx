@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import InteractiveCard from "@/app/components/ui/InteractiveCard";
+import OntologyBadgeList from "@/app/components/ontology/OntologyBadgeList";
 
 // Local topic shape for the card to avoid cross-file type coupling
 type TopicListItem = {
@@ -10,6 +11,7 @@ type TopicListItem = {
   downvoteCount: number;
   totalVotes: number;
   creatorName: string;
+  ontologyCategories?: Array<{ id: string; label: string; description?: string }>;
 };
 
 type Props = {
@@ -26,6 +28,7 @@ export default function TopTopicCard({ topic }: Props) {
       >
         <div className="card-body d-flex flex-column">
           <h2 className="h5 card-title mb-2">{topic.title}</h2>
+          <OntologyBadgeList categories={topic.ontologyCategories} className="d-flex flex-wrap gap-1 mb-3" />
           <div className="mb-3">
             <span className="badge bg-success-subtle text-success me-2">
               <i className="fa-solid fa-thumbs-up me-1" aria-hidden="true"></i>

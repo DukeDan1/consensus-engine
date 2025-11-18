@@ -18,7 +18,14 @@ export interface IArgument extends Document {
     isFact: boolean;
     isOpinion: boolean;
     justification: string;
-  }
+  };
+  ontologyCategories: Array<{
+    id: string;
+    label: string;
+    description?: string;
+    confidence?: number;
+    similarity?: number;
+  }>;
 }
 
 const ArgumentSchema = new Schema<IArgument>({
@@ -35,10 +42,23 @@ const ArgumentSchema = new Schema<IArgument>({
     isFact: { type: Boolean },
     isOpinion: { type: Boolean },
     justification: { type: String }
+  },
+  ontologyCategories: {
+    type: [
+      {
+        id: { type: String, required: true },
+        label: { type: String, required: true },
+        description: { type: String },
+        confidence: { type: Number },
+        similarity: { type: Number },
+      }
+    ],
+    default: [],
   }
 }, { timestamps: true });
 
 ArgumentSchema.index({ topic: 1, score: -1, createdAt: -1 });
 ArgumentSchema.index({ topic: 1, side: 1, createdAt: -1 });
+ArgumentSchema.index({ "ontologyCategories.id": 1, topic: 1 });
 
 export const Argument = mongoose.model<IArgument>("Argument", ArgumentSchema);
