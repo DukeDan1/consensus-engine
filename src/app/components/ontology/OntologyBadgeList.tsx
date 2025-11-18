@@ -22,13 +22,15 @@ export default function OntologyBadgeList({
   const tooltipInstances = useRef<any[]>([]);
 
   useEffect(() => {
-    let Tooltip: any;
-
     const setupTooltips = async () => {
-      Tooltip = (await import("bootstrap/js/dist/tooltip")).default;
+      // Import tooltip library first
+      const Tooltip = (await import("bootstrap/js/dist/tooltip")).default;
+      
+      // Dispose of any existing tooltip instances
       tooltipInstances.current.forEach((instance) => instance.dispose());
       tooltipInstances.current = [];
 
+      // Create new tooltip instances after import completes
       (categories || []).forEach((_cat, idx) => {
         const el = tooltipRefs.current[idx];
         if (el) {
