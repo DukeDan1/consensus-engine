@@ -15,7 +15,6 @@ type UserLean = {
     _id: mongoose.Types.ObjectId;
     name?: string | null;
     nickname?: string | null;
-    email?: string | null;
     createdAt?: Date | null;
 };
 
@@ -24,7 +23,6 @@ type ProfileResponse = {
         id: string;
         name: string | null;
         nickname: string | null;
-        email: string | null;
         createdAt: string | null;
     };
     recentArguments: Array<{
@@ -89,7 +87,7 @@ export async function GET(request: NextRequest, ctx: any) {
     await dbConnect();
 
     const userDoc = (await User.findById(userId)
-        .select({ name: 1, nickname: 1, email: 1, createdAt: 1 })
+        .select({ name: 1, nickname: 1, createdAt: 1 })
         .lean()
         .exec()) as UserLean | null;
 
@@ -170,7 +168,6 @@ export async function GET(request: NextRequest, ctx: any) {
             id: userDoc._id.toString(),
             name: userDoc.name ?? null,
             nickname: userDoc.nickname ?? null,
-            email: userDoc.email ?? null,
             createdAt: userDoc.createdAt ? userDoc.createdAt.toISOString() : null,
         },
         recentArguments,
