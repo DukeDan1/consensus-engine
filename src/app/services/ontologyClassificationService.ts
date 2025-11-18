@@ -177,7 +177,11 @@ async function embedBatch(texts: string[], model = DEFAULT_EMBED_MODEL): Promise
 }
 
 async function buildIndex(): Promise<void> {
+  console.log("[OntologyClassification] Starting index build...");
+  const startTime = Date.now();
+  
   const categories = await loadOntologyFromFile();
+  console.log(`[OntologyClassification] Loaded ${categories.length} categories from file`);
 
   // Create searchable texts
   const texts = categories.map((c) => buildSearchText(c));
@@ -185,18 +189,26 @@ async function buildIndex(): Promise<void> {
   // Batch embedding to avoid large payloads (OpenAI supports large batches, but keep modest)
   const batchSize = 128;
   const embeddings: number[][] = [];
+  const totalBatches = Math.ceil(texts.length / batchSize);
+  
   for (let i = 0; i < texts.length; i += batchSize) {
+    const batchNum = Math.floor(i / batchSize) + 1;
+    console.log(`[OntologyClassification] Embedding batch ${batchNum}/${totalBatches} (${Math.min(i + batchSize, texts.length)}/${texts.length} categories)`);
     const chunk = texts.slice(i, i + batchSize);
     const vecs = await embedBatch(chunk, cache.embedModel);
     embeddings.push(...vecs);
   }
 
+  console.log("[OntologyClassification] Normalizing embeddings...");
   // Normalize for cosine similarity via dot product
   const normalized = embeddings.map(normalizeVec);
 
   cache.categories = categories;
   cache.vectors = normalized;
   cache.ready = true;
+  
+  const duration = Date.now() - startTime;
+  console.log(`[OntologyClassification] Index build complete in ${duration}ms (${categories.length} categories)`);
 }
 
 async function ensureReady(): Promise<void> {
@@ -335,4 +347,22 @@ export function clearOntologyCacheForTests() {
   cache.readyPromise = null;
   cache.categories = [];
   cache.vectors = [];
+}
+
+/**
+ * Warmup function to pre-initialize the ontology index during application startup.
+ * This prevents the first request from blocking while the index is built.
+ * Can be called from Next.js instrumentation hook or other startup code.
+ * 
+ * Returns a promise that resolves when initialization is complete or rejects on error.
+ */
+export async function warmupOntologyIndex(): Promise<void> {
+  console.log("[OntologyClassification] Warmup requested");
+  try {
+    await ensureReady();
+    console.log("[OntologyClassification] Warmup complete - index is ready");
+  } catch (error) {
+    console.error("[OntologyClassification] Warmup failed:", error);
+    throw error;
+  }
 }
