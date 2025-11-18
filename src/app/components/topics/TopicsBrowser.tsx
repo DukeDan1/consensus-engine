@@ -4,6 +4,7 @@ import TopTopicCard from "@/app/components/topics/TopicCard";
 import CreateNewTopic from "@/app/components/topics/CreateNewTopic";
 import TopicFilters, { TopicFiltersValue } from "@/app/components/topics/TopicFilters";
 import SearchLoading from "@/app/components/topics/SearchLoading";
+import { OntologyCategoryOption } from "@/app/components/ontology/OntologyCategoryPicker";
 
 export type TopicsBrowserHandle = {
   refresh: () => void;
@@ -16,6 +17,7 @@ type TopicItem = {
   downvoteCount: number;
   totalVotes: number;
   creatorName: string;
+  ontologyCategories?: OntologyCategoryOption[];
 };
 
 type ApiResponse = {
@@ -26,10 +28,19 @@ type ApiResponse = {
   totalPages: number;
 };
 
-function buildQuery(params: Record<string, string | number | undefined>) {
+function buildQuery(params: Record<string, string | number | string[] | undefined>) {
   const usp = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== "" && v !== null) usp.set(k, String(v));
+    if (v === undefined || v === "" || v === null) return;
+    if (Array.isArray(v)) {
+      v.forEach((item) => {
+        if (item !== undefined && item !== null && item !== "") {
+          usp.append(k, item);
+        }
+      });
+      return;
+    }
+    usp.set(k, String(v));
   });
   return usp.toString();
 }
@@ -62,16 +73,21 @@ function useAsync<T>(fn: () => Promise<T>, deps: any[]) {
 }
 
 const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser(_props, ref) {
-  const [filters, setFilters] = useState<TopicFiltersValue>({ q: "" });
+  const [filters, setFilters] = useState<TopicFiltersValue>({ q: "", categories: [] });
   const [page, setPage] = useState(1);
   const [refreshCounter, setRefreshCounter] = useState(0);
+  const [showFilters, setShowFilters] = useState(false);
   const pageSize = 15;
+
+  const categoryKey = useMemo(() => (filters.categories || []).map((cat) => cat.id).sort().join(","), [filters.categories]);
+  const normalizedQuery = (filters.q || "").trim();
+  const hasActiveFilters = normalizedQuery !== "" || (filters.categories?.length ?? 0) > 0;
 
   const fetchFn = useMemo(() => {
     return async () => {
-      // Use a single term for both title and creator filters on the server
       const term = filters.q;
-      const qs = buildQuery({ q: term, creator: term, page, pageSize });
+      const categoryIds = (filters.categories || []).map((cat) => cat.id);
+      const qs = buildQuery({ q: term, creator: term, page, pageSize, categoryId: categoryIds });
       const res = await fetch(`/api/topics?${qs}`, { cache: "no-store" });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -80,7 +96,7 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
       const data: ApiResponse = await res.json();
       return data;
     };
-  }, [filters.q, page, refreshCounter]);
+  }, [filters.q, page, refreshCounter, categoryKey]);
 
   const { data, loading, error, setData } = useAsync<ApiResponse>(fetchFn, [fetchFn]);
 
@@ -91,6 +107,17 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
       setRefreshCounter((c) => c + 1);
     },
   }));
+
+  const handleTopicCreated = (created: TopicItem) => {
+    setPage(1);
+    setData((prev) => {
+      if (!prev) return prev;
+      const dedup = prev.topics.filter((t) => t._id !== created._id);
+      const nextTopics = [{ ...created } as TopicItem, ...dedup];
+      return { ...prev, topics: nextTopics.slice(0, prev.pageSize) };
+    });
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const totalPages = data?.totalPages ?? 0;
   const topics = data?.topics ?? [];
@@ -154,25 +181,33 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
   return (
     <div>
       <div className="mb-3">
-        <CreateNewTopic onCreated={(created) => {
-          // Go to first page
-          setPage(1);
-          // Optimistically prepend the new topic
-          setData((prev) => {
-            if (!prev) return prev;
-            const dedup = prev.topics.filter((t) => t._id !== created._id);
-            const nextTopics = [created as any as TopicItem, ...dedup];
-            return { ...prev, topics: nextTopics.slice(0, prev.pageSize) };
-          });
-          // Scroll to top to reveal the new card
-          if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-        }} />
+        <div className="d-flex flex-wrap gap-2 align-items-start">
+          <div className="flex-grow-1 flex-md-grow-0">
+            <CreateNewTopic onCreated={handleTopicCreated} />
+          </div>
+          <button
+            type="button"
+            className="btn btn-outline-secondary"
+            onClick={() => setShowFilters((prev) => !prev)}
+            aria-expanded={showFilters}
+            aria-controls="topics-filter-panel"
+          >
+            <i className="fa-solid fa-filter me-1" aria-hidden="true"></i>
+            {showFilters ? "Hide filters" : "Filter"}
+            {hasActiveFilters && !showFilters ? " (active)" : ""}
+          </button>
+        </div>
       </div>
 
-
-      <div className="mb-3">
-        <TopicFilters value={filters} onChange={setFilters} onSearch={onSearch} />
-      </div>
+      {showFilters && (
+        <div id="topics-filter-panel" className="mb-3">
+          <div className="card border-0 shadow-sm">
+            <div className="card-body">
+              <TopicFilters value={filters} onChange={setFilters} onSearch={onSearch} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {loading && <SearchLoading />}
       {error && <div className="alert alert-danger py-2">{error}</div>}

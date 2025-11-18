@@ -4,6 +4,7 @@ import { dbConnect } from "@/app/lib/mongoose";
 import { Comment } from "@/app/models/comment";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
+import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
 
 type Body = {
     argumentId: string;
@@ -39,12 +40,18 @@ export async function POST(req: Request) {
     try {
         const argObjId = new mongoose.Types.ObjectId(argumentId);
         const parentObjId = parentId ? new mongoose.Types.ObjectId(parentId) : undefined;
+        const classifications = await classifyTextToOntology(trimmed, { topK: 12 }).catch((err) => {
+            console.error("Comment classification failed", err);
+            return [];
+        });
+        const ontologyCategories = classificationToAssignments(classifications, 6);
 
         const created = await Comment.create({
             argument: argObjId,
             parent: parentObjId,
             body: trimmed,
             createdBy: user._id,
+            ontologyCategories,
         });
 
         return NextResponse.json({
@@ -54,6 +61,7 @@ export async function POST(req: Request) {
             createdAt: created.createdAt?.toISOString?.() ?? new Date().toISOString(),
             upvoteCount: 0,
             downvoteCount: 0,
+            ontologyCategories: created.ontologyCategories ?? [],
         });
     } catch (err: any) {
         console.error("Create comment error", err);

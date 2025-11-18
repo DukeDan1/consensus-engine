@@ -14,7 +14,7 @@ import OpenAI from "openai";
 
 // Models (override via env if desired)
 const DEFAULT_EMBED_MODEL = process.env.OPENAI_EMBED_MODEL || "text-embedding-3-large";
-const DEFAULT_RESPONSES_MODEL = process.env.OPENAI_RESPONSES_MODEL || "gpt-4.1-mini";
+const DEFAULT_RESPONSES_MODEL = process.env.OPENAI_RESPONSES_MODEL || "gpt-5.1";
 
 // File location for ontology
 const ONTOLOGY_PATH = path.resolve(process.cwd(), "ontology_categories.json");
@@ -35,14 +35,22 @@ export type ClassificationCandidate = OntologyCategory & {
 export type ClassificationResult = Array<{
   id: string;
   label: string;
+  description?: string;
   similarity: number;
   // present if LLM confirmation is enabled
   confidence?: number; // 0..1
   reason?: string;
 }>;
 
+export type OntologyAssignment = {
+  id: string;
+  label: string;
+  description?: string;
+  similarity?: number;
+  confidence?: number;
+};
+
 // Global cache to persist across hot reloads in dev and across requests
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const g: any = globalThis as any;
 
 if (!g.__ontologyIndexCache) {
@@ -116,7 +124,7 @@ async function loadOntologyFromFile(): Promise<OntologyCategory[]> {
   try {
     data = JSON.parse(raw);
   } catch (err) {
-    throw new Error("Failed to parse ontology_categories.json as JSON");
+    throw new Error("Failed to parse ontology_categories.json as JSON" + (err instanceof Error ? `: ${err.message}` : ""));
   }
 
   const categories: OntologyCategory[] = [];
@@ -242,7 +250,7 @@ export async function classifyTextToOntology(
   }
 
   if (!useLLM) {
-    return candidates.map((c) => ({ id: c.id, label: c.label, similarity: c.similarity }));
+    return candidates.map((c) => ({ id: c.id, label: c.label, description: c.description, similarity: c.similarity }));
   }
 
   // LLM confirmation step for precision
@@ -264,6 +272,9 @@ export async function classifyTextToOntology(
       { role: "system", content: "You are a precise classifier for an ontology of news/media topics. Return strict JSON only with no preamble or commentary." },
       { role: "user", content: JSON.stringify(payload) },
     ],
+    reasoning: {
+        effort: "none"
+    }
   });
 
   let selections: Array<{ id: string; confidence: number; reason?: string }> = [];
@@ -283,13 +294,13 @@ export async function classifyTextToOntology(
   for (const sel of selections) {
     const c = byId.get(sel.id);
     if (!c) continue;
-    results.push({ id: c.id, label: c.label, similarity: c.similarity, confidence: sel.confidence, reason: sel.reason });
+    results.push({ id: c.id, label: c.label, description: c.description, similarity: c.similarity, confidence: sel.confidence, reason: sel.reason });
   }
 
   // If LLM returns nothing, fall back to top 3 candidates (optional safety)
   if (results.length === 0 && candidates.length > 0) {
     for (const c of candidates.slice(0, 3)) {
-      results.push({ id: c.id, label: c.label, similarity: c.similarity });
+      results.push({ id: c.id, label: c.label, description: c.description, similarity: c.similarity });
     }
   }
 
@@ -299,6 +310,19 @@ export async function classifyTextToOntology(
 export async function getOntologyCategories(): Promise<OntologyCategory[]> {
   await ensureReady();
   return cache.categories.slice();
+}
+
+export function classificationToAssignments(results: ClassificationResult, limit = 5): OntologyAssignment[] {
+  return results
+    .filter((item) => !!item?.id && !!item?.label)
+    .slice(0, limit)
+    .map((item) => ({
+      id: item.id,
+      label: item.label,
+      description: item.description,
+      similarity: item.similarity,
+      confidence: item.confidence,
+    }));
 }
 
 export function clearOntologyCacheForTests() {

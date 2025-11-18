@@ -4,6 +4,7 @@ import { dbConnect } from "@/app/lib/mongoose";
 import { Topic } from "@/app/models/topic";
 import User from "@/app/models/user";
 import { getServerSession } from "next-auth";
+import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
 
 function slugify(input: string) {
   const base = input
@@ -16,6 +17,17 @@ function slugify(input: string) {
   return `${base}-${suffix}`;
 }
 
+function parseCategoryFilters(searchParams: URLSearchParams): string[] {
+  const list: string[] = [];
+  const direct = searchParams.getAll("categoryId");
+  const combined = searchParams.get("categoryIds");
+  if (combined) {
+    list.push(...combined.split(","));
+  }
+  list.push(...direct);
+  return Array.from(new Set(list.map((item) => item?.trim()).filter(Boolean)));
+}
+
 // GET /api/topics?q=&creator=&page=1&pageSize=15
 export async function GET(request: NextRequest) {
   await dbConnect();
@@ -25,6 +37,7 @@ export async function GET(request: NextRequest) {
   const creator = (searchParams.get("creator") || "").trim();
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10) || 1);
   const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get("pageSize") || "15", 10) || 15));
+  const categoryFilter = parseCategoryFilters(searchParams);
 
   const match: Record<string, any> = { isActive: true };
 
@@ -52,6 +65,10 @@ export async function GET(request: NextRequest) {
     match.$or = or;
   }
 
+  if (categoryFilter.length) {
+    match["ontologyCategories.id"] = { $in: categoryFilter };
+  }
+
   // Count total for pagination
   const total = await Topic.countDocuments(match).exec();
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -73,6 +90,7 @@ export async function GET(request: NextRequest) {
           createdAt: 1,
           upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
           downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
+          ontologyCategories: { $ifNull: ["$ontologyCategories", []] },
         },
       },
       { $addFields: { totalVotes: { $add: ["$upvoteCount", "$downvoteCount"] } } },
@@ -93,6 +111,7 @@ export async function GET(request: NextRequest) {
           downvoteCount: 1,
           totalVotes: 1,
           creatorName: { $ifNull: ["$creator.name", "Unknown"] },
+          ontologyCategories: 1,
         },
       },
     ])
@@ -126,10 +145,6 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const titleRaw = (body?.title || "").toString();
   const description = typeof body?.description === "string" ? body.description : "";
-  const tags: string[] = Array.isArray(body?.tags)
-    ? body.tags.map((t: any) => (t ?? "").toString()).filter((s: string) => s.length)
-    : [];
-
   const title = titleRaw.trim();
   if (!title || title.length > 180) {
     return NextResponse.json({ error: "Title is required (<= 180 chars)" }, { status: 400 });
@@ -148,10 +163,19 @@ export async function POST(request: NextRequest) {
     slug = slugify(title);
   }
 
+  const classifications = await classifyTextToOntology(`${title}\n\n${description}`.trim(), {
+    topK: 12,
+  }).catch((err) => {
+    console.error("Topic classification failed", err);
+    return [];
+  });
+
+  const ontologyCategories = classificationToAssignments(classifications, 6);
+
   const doc = await Topic.create({
     title,
     description,
-    tags,
+    ontologyCategories,
     createdBy: creator._id,
     isActive: true,
     slug,
@@ -163,7 +187,7 @@ export async function POST(request: NextRequest) {
       _id: doc._id,
       title: doc.title,
       description: doc.description,
-      tags: doc.tags,
+  ontologyCategories: doc.ontologyCategories,
       createdAt: doc.createdAt,
       upvoteCount: 0,
       downvoteCount: 0,

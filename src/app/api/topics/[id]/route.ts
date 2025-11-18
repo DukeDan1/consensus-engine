@@ -7,6 +7,16 @@ import { Comment } from "@/app/models/comment";
 import { Fact } from "@/app/models/facts";
 import User from "@/app/models/user";
 
+function parseCategoryFilters(searchParams: URLSearchParams, singularKey: string, pluralKey: string) {
+  const values: string[] = [];
+  searchParams.getAll(singularKey).forEach((value) => values.push(value));
+  const combined = searchParams.get(pluralKey);
+  if (combined) {
+    values.push(...combined.split(","));
+  }
+  return Array.from(new Set(values.map((v) => v?.trim()).filter(Boolean)));
+}
+
 // GET /api/topics/:id=?num_arguments=10&ordering=relevant|newest
 // Returns topic details + ordered arguments + comments per argument (relevant ordering by score/upvotes)
 export async function GET(
@@ -18,6 +28,8 @@ export async function GET(
   const { searchParams } = new URL(request.url);
   const numArgsRaw = searchParams.get("num_arguments");
   const ordering = (searchParams.get("ordering") || "relevant").toLowerCase();
+  const argumentCategoryFilter = parseCategoryFilters(searchParams, "argumentCategory", "argumentCategories");
+  const commentCategoryFilter = parseCategoryFilters(searchParams, "commentCategory", "commentCategories");
 
   if (!id || !mongoose.isValidObjectId(id)) {
     return NextResponse.json({ error: "Invalid or missing id" }, { status: 400 });
@@ -46,7 +58,12 @@ export async function GET(
     ? { score: -1, createdAt: -1 }
     : { createdAt: -1 };
 
-  const argumentsList = await Argument.find({ topic: topic._id, isRemoved: false })
+  const argumentQuery: Record<string, any> = { topic: topic._id, isRemoved: false };
+  if (argumentCategoryFilter.length) {
+    argumentQuery["ontologyCategories.id"] = { $in: argumentCategoryFilter };
+  }
+
+  const argumentsList = await Argument.find(argumentQuery)
     .sort(argSort)
     .limit(numArguments)
     .populate({ path: "createdBy", select: "name" })
@@ -63,15 +80,21 @@ export async function GET(
       .lean();
     for (const c of comments) {
       const key = c.argument.toString();
-      (commentsByArgument[key] = commentsByArgument[key] || []).push({
-        id: c._id,
-        body: c.body,
-        createdBy: c.createdBy,
-        createdAt: c.createdAt,
-        upvoteCount: c.upvoteCount ?? 0,
-        downvoteCount: c.downvoteCount ?? 0,
-        score: c.score ?? ((c.upvoteCount ?? 0) - (c.downvoteCount ?? 0)),
-      });
+      if (
+        commentCategoryFilter.length === 0 ||
+        (Array.isArray(c.ontologyCategories) && c.ontologyCategories.some((cat: any) => commentCategoryFilter.includes(cat?.id)))
+      ) {
+        (commentsByArgument[key] = commentsByArgument[key] || []).push({
+          id: c._id,
+          body: c.body,
+          createdBy: c.createdBy,
+          createdAt: c.createdAt,
+          upvoteCount: c.upvoteCount ?? 0,
+          downvoteCount: c.downvoteCount ?? 0,
+          score: c.score ?? ((c.upvoteCount ?? 0) - (c.downvoteCount ?? 0)),
+          ontologyCategories: c.ontologyCategories ?? [],
+        });
+      }
     }
   }
 
@@ -88,7 +111,7 @@ export async function GET(
       title: topic.title,
       description: topic.description,
       createdBy: topic.createdBy,
-      tags: topic.tags ?? [],
+  ontologyCategories: topic.ontologyCategories ?? [],
       isActive: topic.isActive,
       argumentCounts: topic.argumentCounts,
       score: topic.score,
@@ -108,6 +131,7 @@ export async function GET(
       downvoteCount: a.downvoteCount,
       score: a.score,
       createdAt: a.createdAt,
+  ontologyCategories: a.ontologyCategories ?? [],
       comments: commentList,
       commentCount: commentList.length,
       aiAnalysis: a.aiAnalysis,

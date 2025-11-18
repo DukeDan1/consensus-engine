@@ -4,6 +4,7 @@ import Link from "next/link";
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
 import AddNewCommentComponent from "@/app/components/AddNewCommentComponent";
 import { timeAgo } from "@/app/lib/commonFunctions";
+import OntologyBadgeList from "@/app/components/ontology/OntologyBadgeList";
 
 function normaliseId(value: unknown): string | undefined {
     if (!value) return undefined;
@@ -176,7 +177,8 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                             </div>
 
                         </div>
-                        <p className="mb-3">{argument.body}</p>
+                        <p className="mb-2">{argument.body}</p>
+                        <OntologyBadgeList categories={argument.ontologyCategories} className="mb-3 d-flex flex-wrap gap-1" />
 
                         {/* Comments */}
                         {commentStates.length > 0 && (
@@ -227,7 +229,8 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <div className="ps-2">{c.body}</div>
+                                                <div className="ps-2 mb-2">{c.body}</div>
+                                                <OntologyBadgeList categories={(c as any).ontologyCategories} className="ps-2 d-flex flex-wrap gap-1" />
                                             </li>
                                         );
                                     })}

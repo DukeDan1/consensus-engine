@@ -4,7 +4,13 @@ export type TopicApiResponse = {
     title: string;
     description?: string;
     createdBy?: { _id: string; name?: string };
-    tags?: string[];
+    ontologyCategories?: Array<{
+      id: string;
+      label: string;
+      description?: string;
+      confidence?: number;
+      similarity?: number;
+    }>;
     isActive?: boolean;
     createdAt?: string;
     updatedAt?: string;
@@ -19,6 +25,13 @@ export type TopicApiResponse = {
     downvoteCount?: number;
     score?: number;
     commentCount?: number;
+    ontologyCategories?: Array<{
+      id: string;
+      label: string;
+      description?: string;
+      confidence?: number;
+      similarity?: number;
+    }>;
     comments: Array<{
       id: string;
       body: string;
@@ -27,6 +40,13 @@ export type TopicApiResponse = {
       upvoteCount?: number;
       downvoteCount?: number;
       score?: number;
+      ontologyCategories?: Array<{
+        id: string;
+        label: string;
+        description?: string;
+        confidence?: number;
+        similarity?: number;
+      }>;
     }>;
     aiAnalysis?: {
       isFact: boolean;

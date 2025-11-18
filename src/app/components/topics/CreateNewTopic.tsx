@@ -9,13 +9,13 @@ type CreatedTopic = {
   downvoteCount: number;
   totalVotes: number;
   creatorName: string;
+  ontologyCategories?: Array<{ id: string; label: string; description?: string }>;
 };
 
 export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: CreatedTopic) => void }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [tagsInput, setTagsInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,14 +24,10 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: Created
     setSubmitting(true);
     setError(null);
     try {
-      const tags = tagsInput
-        .split(",")
-        .map((t) => t.trim())
-        .filter((t) => t.length > 0);
       const res = await fetch("/api/topics", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, tags }),
+        body: JSON.stringify({ title, description }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -45,10 +41,10 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: Created
         downvoteCount: data.downvoteCount ?? 0,
         totalVotes: data.totalVotes ?? 0,
         creatorName: data.creatorName || "You",
+        ontologyCategories: data.ontologyCategories || [],
       };
       setTitle("");
       setDescription("");
-      setTagsInput("");
       setOpen(false);
       toast.success("Topic created successfully!");
       onCreated?.(created);
@@ -96,13 +92,8 @@ export default function CreateNewTopic({ onCreated }: { onCreated?: (_t: Created
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
-              <div className="mb-2">
-                <label className="form-label">Tags (comma-separated)</label>
-                <input
-                  className="form-control"
-                  value={tagsInput}
-                  onChange={(e) => setTagsInput(e.target.value)}
-                />
+              <div className="alert alert-info py-2">
+                Ontology categories will be suggested automatically for new topics based on the content you enter.
               </div>
               <div className="d-flex gap-2">
                 <button className="btn btn-primary" type="submit" disabled={submitting}>
