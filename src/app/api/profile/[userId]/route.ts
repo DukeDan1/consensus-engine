@@ -5,6 +5,7 @@ import User from "@/app/models/user";
 import { Argument } from "@/app/models/argument";
 import { Comment } from "@/app/models/comment";
 import "@/app/models/topic";
+import { requireAuth } from "@/app/lib/authMiddleware";
 
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 25;
@@ -77,6 +78,9 @@ function sanitiseLimit(raw: string | null): number {
 }
 
 export async function GET(request: NextRequest, ctx: any) {
+    const authError = await requireAuth();
+    if (authError) return authError;
+
     const resolvedCtx = await Promise.resolve(ctx.params);
     const userId = resolvedCtx.userId as string;
 

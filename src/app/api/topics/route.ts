@@ -6,6 +6,7 @@ import User from "@/app/models/user";
 import { getServerSession } from "next-auth";
 import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
 import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
+import { requireAuth } from "@/app/lib/authMiddleware";
 
 function slugify(input: string) {
   const base = input
@@ -31,6 +32,9 @@ function parseCategoryFilters(searchParams: URLSearchParams): string[] {
 
 // GET /api/topics?q=&creator=&page=1&pageSize=15
 export async function GET(request: NextRequest) {
+  const authError = await requireAuth();
+  if (authError) return authError;
+
   await dbConnect();
 
   const { searchParams } = new URL(request.url);

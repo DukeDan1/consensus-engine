@@ -2,10 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
 import { getTopicSummaryWithRefresh } from "@/app/services/topicSummaryService";
+import { requireAuth } from "@/app/lib/authMiddleware";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(_request: NextRequest, ctx: any) {
+    const authError = await requireAuth();
+    if (authError) return authError;
+
+
     const resolvedCtx = await Promise.resolve(ctx.params);
     const id = resolvedCtx.id as string;
     if (!id || !mongoose.isValidObjectId(id)) {

@@ -2,8 +2,12 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
+import { requireAuth } from "@/app/lib/authMiddleware";
 
 export async function GET() {
+  const authError = await requireAuth();
+  if (authError) return authError;
+
   try {
     await dbConnect();
 

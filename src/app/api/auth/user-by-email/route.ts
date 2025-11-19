@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
+import { requireAuth } from "@/app/lib/authMiddleware";
 
 export async function GET(req: Request) {
+  const authError = await requireAuth();
+  if (authError) return authError;
+
   const { searchParams } = new URL(req.url);
   const email = searchParams.get("email");
 

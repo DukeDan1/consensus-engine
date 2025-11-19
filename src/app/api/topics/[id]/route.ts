@@ -6,6 +6,7 @@ import { Argument } from "@/app/models/argument";
 import { Comment } from "@/app/models/comment";
 import { Fact } from "@/app/models/facts";
 import User from "@/app/models/user";
+import { requireAuth } from "@/app/lib/authMiddleware";
 
 function parseCategoryFilters(searchParams: URLSearchParams, singularKey: string, pluralKey: string) {
   const values: string[] = [];
@@ -23,6 +24,9 @@ export async function GET(
   request: NextRequest,
   ctx: any
 ) {
+  const authError = await requireAuth();
+  if (authError) return authError;
+
   const resolvedCtx = await Promise.resolve(ctx.params);
   const id = resolvedCtx.id as string;
   const { searchParams } = new URL(request.url);

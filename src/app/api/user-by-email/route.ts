@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import {dbConnect} from "@/app/lib/mongoose";
 import User from "@/app/models/user";
+import { requireAuth } from "@/app/lib/authMiddleware";
 
 export async function POST(req: Request) {
+  const authError = await requireAuth();
+  if (authError) return authError;
+
   await dbConnect();
 
   const { email } = await req.json();

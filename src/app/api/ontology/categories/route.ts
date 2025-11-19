@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOntologyCategories } from "@/app/services/ontologyClassificationService";
+import { requireAuth } from "@/app/lib/authMiddleware";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  const authError = await requireAuth();
+  if (authError) return authError;
+
+
   const { searchParams } = new URL(request.url);
   const q = (searchParams.get("q") || "").trim().toLowerCase();
   const limit = Math.max(1, Math.min(500, parseInt(searchParams.get("limit") || "100", 10) || 100));
