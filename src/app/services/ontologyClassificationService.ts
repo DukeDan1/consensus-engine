@@ -226,7 +226,7 @@ async function buildIndex(): Promise<void> {
   }
 
   // Fallback: generate embeddings at runtime (for development/testing)
-  console.log("🔄 Generating embeddings at runtime...");
+  console.warn("WARNING: 🔄 Generating embeddings at runtime...");
   const categories = await loadOntologyFromFile();
 
   // Create searchable texts
