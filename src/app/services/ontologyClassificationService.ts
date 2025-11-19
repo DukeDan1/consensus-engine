@@ -308,6 +308,10 @@ export async function classifyTextToOntology(
     return candidates.map((c) => ({ id: c.id, label: c.label, description: c.description, similarity: c.similarity }));
   }
 
+  if (candidates.length === 0) {
+    return [];
+  }
+
   // LLM confirmation step for precision
   const payload = {
     input_text: text,
@@ -328,7 +332,7 @@ export async function classifyTextToOntology(
       { role: "user", content: JSON.stringify(payload) },
     ],
     reasoning: {
-        effort: "none"
+      effort: "none"
     }
   });
 
