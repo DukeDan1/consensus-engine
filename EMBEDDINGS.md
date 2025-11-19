@@ -117,11 +117,11 @@ npm run generate-embeddings
 
 When deploying changes to categories:
 
-- [ ] Update `ontology_categories.json`
-- [ ] Run `npm run generate-embeddings` locally
-- [ ] Verify `ontology_embeddings.json` is created/updated
-- [ ] Commit both `ontology_categories.json` and `ontology_embeddings.json`
-- [ ] Deploy to production
+- Update `ontology_categories.json`
+- Run `npm run generate-embeddings` locally
+- Verify `ontology_embeddings.json` is created/updated
+- Commit both `ontology_categories.json` and `ontology_embeddings.json`
+- Deploy to production
 
 ## Troubleshooting
 
@@ -145,28 +145,3 @@ Check:
 - API key is valid
 - You have sufficient API credits
 - Network connectivity
-
-## Performance Impact
-
-| Scenario | Startup Time | API Calls |
-|----------|-------------|-----------|
-| **Before (runtime generation)** | ~30-60s | ~13 (1700 categories / 128 batch size) |
-| **After (pre-computed)** | ~2-3s | 0 |
-
-**Savings**: ~50-57s faster startup, 13 fewer API calls per deployment
-
-## Technical Details
-
-- **Embedding Model**: `text-embedding-3-large` (3072 dimensions)
-- **Batch Size**: 128 categories per API call
-- **Normalization**: L2 normalization for cosine similarity
-- **File Size**: ~15 MB for 1700 categories
-- **Memory Usage**: ~45 MB when loaded in cache
-
-## Future Improvements
-
-Potential enhancements:
-- Automatic detection of category changes
-- CI/CD integration to regenerate on merge
-- Version tracking for embeddings
-- Compression for smaller file size
