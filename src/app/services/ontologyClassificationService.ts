@@ -1,7 +1,8 @@
 /*
   Ontology Classification Service
   - Loads categories from ontology_categories.json at project root
-  - Builds and caches an embeddings index with OpenAI
+  - Loads pre-computed embeddings from ontology_embeddings.json (run `npm run generate-embeddings` to update)
+  - Falls back to generating embeddings at runtime if pre-computed file is missing
   - Classifies arbitrary text to the most relevant categories (multi-label)
   - Optional LLM re-rank/confirmation to improve precision
 
