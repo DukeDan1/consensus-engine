@@ -21,7 +21,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/ontology_categories.json ./ontology_categories.json
+COPY --from=builder /app/ontology_embeddings.json ./ontology_embeddings.json
 
 EXPOSE 8080
 ENV PORT=8080
