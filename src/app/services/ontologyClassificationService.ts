@@ -1,7 +1,8 @@
 /*
   Ontology Classification Service
   - Loads categories from ontology_categories.json at project root
-  - Builds and caches an embeddings index with OpenAI
+  - Loads pre-computed embeddings from ontology_embeddings.json (run `npm run generate-embeddings` to update)
+  - Falls back to generating embeddings at runtime if pre-computed file is missing
   - Classifies arbitrary text to the most relevant categories (multi-label)
   - Optional LLM re-rank/confirmation to improve precision
 
@@ -17,8 +18,9 @@ import { cleanOntologyLabel } from "@/app/lib/ontologyUtils";
 const DEFAULT_EMBED_MODEL = process.env.OPENAI_EMBED_MODEL || "text-embedding-3-large";
 const DEFAULT_RESPONSES_MODEL = process.env.OPENAI_RESPONSES_MODEL || "gpt-5.1";
 
-// File location for ontology
+// File locations
 const ONTOLOGY_PATH = path.resolve(process.cwd(), "ontology_categories.json");
+const EMBEDDINGS_PATH = path.resolve(process.cwd(), "ontology_embeddings.json");
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -176,7 +178,55 @@ async function embedBatch(texts: string[], model = DEFAULT_EMBED_MODEL): Promise
   return res.data.map((r) => r.embedding as unknown as number[]);
 }
 
+async function loadPrecomputedEmbeddings(): Promise<{ categories: OntologyCategory[]; vectors: number[][] } | null> {
+  try {
+    if (!(await fileExists(EMBEDDINGS_PATH))) {
+      console.warn("⚠️ Pre-computed embeddings file not found. Will generate embeddings at runtime.");
+      return null;
+    }
+
+    const raw = await fs.readFile(EMBEDDINGS_PATH, "utf-8");
+    const data = JSON.parse(raw);
+
+    if (!data.categories || !Array.isArray(data.categories) || !data.embeddings || !Array.isArray(data.embeddings)) {
+      console.warn("⚠️ Invalid embeddings file format. Will generate embeddings at runtime.");
+      return null;
+    }
+
+    if (data.categories.length !== data.embeddings.length) {
+      console.warn("⚠️ Mismatch between categories and embeddings count. Will generate embeddings at runtime.");
+      return null;
+    }
+
+    // Check if model matches (optional warning)
+    if (data.model && data.model !== cache.embedModel) {
+      console.warn(`⚠️ Embeddings were generated with model ${data.model}, but current model is ${cache.embedModel}. Consider regenerating embeddings.`);
+    }
+
+    console.log(`✅ Loaded pre-computed embeddings for ${data.categories.length} categories from ${EMBEDDINGS_PATH}`);
+    return {
+      categories: data.categories,
+      vectors: data.embeddings,
+    };
+  } catch (err) {
+    console.warn("⚠️ Error loading pre-computed embeddings:", err);
+    return null;
+  }
+}
+
 async function buildIndex(): Promise<void> {
+  // Try to load pre-computed embeddings first
+  const precomputed = await loadPrecomputedEmbeddings();
+
+  if (precomputed) {
+    cache.categories = precomputed.categories;
+    cache.vectors = precomputed.vectors;
+    cache.ready = true;
+    return;
+  }
+
+  // Fallback: generate embeddings at runtime (for development/testing)
+  console.warn("WARNING: 🔄 Generating embeddings at runtime...");
   const categories = await loadOntologyFromFile();
 
   // Create searchable texts
@@ -258,6 +308,10 @@ export async function classifyTextToOntology(
     return candidates.map((c) => ({ id: c.id, label: c.label, description: c.description, similarity: c.similarity }));
   }
 
+  if (candidates.length === 0) {
+    return [];
+  }
+
   // LLM confirmation step for precision
   const payload = {
     input_text: text,
@@ -278,7 +332,7 @@ export async function classifyTextToOntology(
       { role: "user", content: JSON.stringify(payload) },
     ],
     reasoning: {
-        effort: "none"
+      effort: "none"
     }
   });
 
