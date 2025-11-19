@@ -62,6 +62,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Auth to Google Cloud
         uses: google-github-actions/auth@v2
