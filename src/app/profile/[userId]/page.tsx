@@ -87,9 +87,6 @@ function truncateText(text: string, limit = 200): string {
 async function buildProfileApiUrl(userId: string, limit: number): Promise<string> {
   const headersList = await headers();
   const base = buildBaseUrl(headersList);
-  if (!base) {
-    throw new Error("Unable to resolve host for profile request");
-  }
   return `${base}/api/profile/${userId}?limit=${limit}`;
 }
 
