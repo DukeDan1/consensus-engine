@@ -1,5 +1,5 @@
 import Link from "next/link";
-import axios from "axios";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import FactCard from "@/app/components/topics/FactCard";
 import { redirectIfLoggedOut } from "@/app/lib/commonFunctions";
@@ -26,16 +26,21 @@ type TopicMeta = {
 async function fetchFacts(id: string): Promise<FactsResponse | null> {
     const base = process.env.NEXTJS_APP_BASE_URL ?? "";
     const url = `${base}/api/topics/${encodeURIComponent(id)}/facts`;
-    const res = await axios.get(url, { headers: { "Cache-Control": "no-store" } }).catch(() => null);
-    return res?.data ?? null;
+    const incomingHeaders = await headers();
+    const res = await fetch(url, { headers: { "Cache-Control": "no-store", cookie: incomingHeaders.get("cookie") ?? "" } }).catch(() => null);
+    if (!res) return null;
+    const data = await res.json();
+    return data;
 }
 
 async function fetchTopicTitle(id: string): Promise<TopicMeta | null> {
     const base = process.env.NEXTJS_APP_BASE_URL ?? "";
     const url = `${base}/api/topics/${encodeURIComponent(id)}?num_arguments=1&ordering=relevant`;
-    const res = await axios.get(url, { headers: { "Cache-Control": "no-store" } }).catch(() => null);
-    if (!res?.data) return null;
-    return { topic: { id: res.data.topic?.id ?? id, title: res.data.topic?.title ?? "" } };
+    const incomingHeaders = await headers();
+    const res = await fetch(url, { headers: { "Cache-Control": "no-store", cookie: incomingHeaders.get("cookie") ?? "" } }).catch(() => null);
+    if (!res) return null;
+    const data = await res.json();
+    return { topic: { id: data.topic?.id ?? id, title: data.topic?.title ?? "" } };
 }
 
 export default async function TopicFactsPage({ params }: any) {

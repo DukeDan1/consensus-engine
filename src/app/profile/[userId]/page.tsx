@@ -106,8 +106,12 @@ export default async function UserProfilePage({ params }: any ) {
     notFound();
   }
 
+  const headersList = await headers();
   const response = await fetch(await buildProfileApiUrl(userId, RECENT_LIMIT), {
     cache: "no-store",
+    headers: {
+      cookie: headersList.get("cookie") ?? "",
+    },
   });
 
   if (response.status === 404) {

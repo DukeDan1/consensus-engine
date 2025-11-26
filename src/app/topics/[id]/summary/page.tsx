@@ -1,5 +1,5 @@
 import Link from "next/link";
-import axios from "axios";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { redirectIfLoggedOut } from "@/app/lib/commonFunctions";
 
@@ -26,8 +26,11 @@ type TopicSummaryResponse = {
 async function fetchTopicSummary(id: string): Promise<TopicSummaryResponse | null> {
     const base = process.env.NEXTJS_APP_BASE_URL ?? "";
     const url = `${base}/api/topics/${encodeURIComponent(id)}/summary`;
-    const res = await axios.get(url, { headers: { "Cache-Control": "no-store" } }).catch(() => null);
-    return res?.data ?? null;
+    const incomingHeaders = await headers();
+    const res = await fetch(url, { headers: { "Cache-Control": "no-store", cookie: incomingHeaders.get("cookie") ?? "" } }).catch(() => null);
+    if (!res) return null;
+    const data = await res.json();
+    return data;
 }
 
 function renderColumn(label: string, items: SummaryColumn[], topicId: string, tone: "success" | "danger" | "secondary") {
