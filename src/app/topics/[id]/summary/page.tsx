@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { redirectIfLoggedOut } from "@/app/lib/commonFunctions";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +67,6 @@ function renderColumn(label: string, items: SummaryColumn[], topicId: string, to
 }
 
 export default async function TopicSummaryPage({ params }: any ) {
-    await redirectIfLoggedOut();
     const { id } = await Promise.resolve(params);
     const summary = await fetchTopicSummary(id);
     if (!summary) {

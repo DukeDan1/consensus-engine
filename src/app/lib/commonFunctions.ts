@@ -7,12 +7,6 @@ export async function redirectIfLoggedIn() {
     }
 }
 
-export async function redirectIfLoggedOut() {
-    if (!(await isLoggedIn())) {
-        redirect("/login?unauthed=true");
-    }
-}
-
 export async function isLoggedIn(): Promise<boolean> {
     const session = await getServerSession();
     return !!session?.user;

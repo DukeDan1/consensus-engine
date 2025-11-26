@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { redirectIfLoggedOut } from "@/app/lib/commonFunctions";
 import { headers } from "next/headers";
 export const dynamic = "force-dynamic"; // render server-side on each request
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
@@ -65,7 +64,6 @@ async function fetchTopicBundle(
 }
 
 export default async function TopicPage({ params, searchParams }: any) {
-  await redirectIfLoggedOut();
   const incomingHeaders = await headers();
   const { id } = await Promise.resolve(params);
   const resolvedSearchParams = await Promise.resolve(searchParams);

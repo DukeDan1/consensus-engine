@@ -2,8 +2,6 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import FactCard from "@/app/components/topics/FactCard";
-import { redirectIfLoggedOut } from "@/app/lib/commonFunctions";
-
 export const dynamic = "force-dynamic";
 
 type FactsResponse = {
@@ -44,7 +42,6 @@ async function fetchTopicTitle(id: string): Promise<TopicMeta | null> {
 }
 
 export default async function TopicFactsPage({ params }: any) {
-    await redirectIfLoggedOut();
     const { id } = await Promise.resolve(params);
 
     const [facts, topicMeta] = await Promise.all([fetchFacts(id), fetchTopicTitle(id)]);
