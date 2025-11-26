@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import mongoose from "mongoose";
-import { timeAgo } from "@/app/lib/commonFunctions";
+import { timeAgo, buildBaseUrl } from "@/app/lib/commonFunctions";
 import ProfileHoverCard from "@/app/profile/ProfileHoverCard";
 
 const RECENT_LIMIT = 10;
@@ -86,17 +86,11 @@ function truncateText(text: string, limit = 200): string {
 
 async function buildProfileApiUrl(userId: string, limit: number): Promise<string> {
   const headersList = await headers();
-  const getHeader = (name: string) => {
-    const value = (headersList as unknown as { get?: (_key: string) => string | null }).get?.(name);
-    return value ?? null;
-  };
-
-  const protocol = getHeader("x-forwarded-proto") ?? "http";
-  const host = getHeader("x-forwarded-host") ?? getHeader("host");
-  if (!host) {
+  const base = buildBaseUrl(headersList);
+  if (!base) {
     throw new Error("Unable to resolve host for profile request");
   }
-  return `${protocol}://${host}/api/profile/${userId}?limit=${limit}`;
+  return `${base}/api/profile/${userId}?limit=${limit}`;
 }
 
 export default async function UserProfilePage({ params }: any ) {
