@@ -21,21 +21,19 @@ type TopicMeta = {
     };
 };
 
-async function fetchFacts(id: string): Promise<FactsResponse | null> {
+async function fetchFacts(id: string, cookieHeader: string): Promise<FactsResponse | null> {
     const base = process.env.NEXTJS_APP_BASE_URL ?? "";
     const url = `${base}/api/topics/${encodeURIComponent(id)}/facts`;
-    const incomingHeaders = await headers();
-    const res = await fetch(url, { headers: { "Cache-Control": "no-store", cookie: incomingHeaders.get("cookie") ?? "" } }).catch(() => null);
+    const res = await fetch(url, { headers: { "Cache-Control": "no-store", cookie: cookieHeader } }).catch(() => null);
     if (!res || !res.ok) return null;
     const data = await res.json();
     return data;
 }
 
-async function fetchTopicTitle(id: string): Promise<TopicMeta | null> {
+async function fetchTopicTitle(id: string, cookieHeader: string): Promise<TopicMeta | null> {
     const base = process.env.NEXTJS_APP_BASE_URL ?? "";
     const url = `${base}/api/topics/${encodeURIComponent(id)}?num_arguments=1&ordering=relevant`;
-    const incomingHeaders = await headers();
-    const res = await fetch(url, { headers: { "Cache-Control": "no-store", cookie: incomingHeaders.get("cookie") ?? "" } }).catch(() => null);
+    const res = await fetch(url, { headers: { "Cache-Control": "no-store", cookie: cookieHeader } }).catch(() => null);
     if (!res) return null;
     const data = await res.json();
     return { topic: { id: data.topic?.id ?? id, title: data.topic?.title ?? "" } };
@@ -43,8 +41,10 @@ async function fetchTopicTitle(id: string): Promise<TopicMeta | null> {
 
 export default async function TopicFactsPage({ params }: any) {
     const { id } = await Promise.resolve(params);
+    const incomingHeaders = await headers();
+    const cookieHeader = incomingHeaders.get("cookie") ?? "";
 
-    const [facts, topicMeta] = await Promise.all([fetchFacts(id), fetchTopicTitle(id)]);
+    const [facts, topicMeta] = await Promise.all([fetchFacts(id, cookieHeader), fetchTopicTitle(id, cookieHeader)]);
     if (!facts || !topicMeta) {
         return notFound();
     }
