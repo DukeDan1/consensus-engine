@@ -27,7 +27,7 @@ async function fetchTopicSummary(id: string): Promise<TopicSummaryResponse | nul
     const url = `${base}/api/topics/${encodeURIComponent(id)}/summary`;
     const incomingHeaders = await headers();
     const res = await fetch(url, { headers: { "Cache-Control": "no-store", cookie: incomingHeaders.get("cookie") ?? "" } }).catch(() => null);
-    if (!res) return null;
+    if (!res || !res.ok) return null;
     const data = await res.json();
     return data;
 }
