@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import mongoose from "mongoose";
-import { timeAgo } from "@/app/lib/commonFunctions";
+import { timeAgo, buildBaseUrl } from "@/app/lib/commonFunctions";
 import ProfileHoverCard from "@/app/profile/ProfileHoverCard";
 
 const RECENT_LIMIT = 10;
@@ -84,30 +84,24 @@ function truncateText(text: string, limit = 200): string {
   return `${text.slice(0, Math.max(0, limit - 1))}…`;
 }
 
-async function buildProfileApiUrl(userId: string, limit: number): Promise<string> {
-  const headersList = await headers();
-  const getHeader = (name: string) => {
-    const value = (headersList as unknown as { get?: (_key: string) => string | null }).get?.(name);
-    return value ?? null;
-  };
-
-  const protocol = getHeader("x-forwarded-proto") ?? "http";
-  const host = getHeader("x-forwarded-host") ?? getHeader("host");
-  if (!host) {
-    throw new Error("Unable to resolve host for profile request");
-  }
-  return `${protocol}://${host}/api/profile/${userId}?limit=${limit}`;
+function buildProfileApiUrl(userId: string, limit: number, headersList: Headers): string {
+  const base = buildBaseUrl(headersList);
+  return `${base}/api/profile/${userId}?limit=${limit}`;
 }
 
-export default async function UserProfilePage({ params }: any ) {
+export default async function UserProfilePage({ params }: any) {
   const { userId } = await Promise.resolve(params);
+  const requestHeaders = await headers();
 
   if (!mongoose.isValidObjectId(userId)) {
     notFound();
   }
 
-  const response = await fetch(await buildProfileApiUrl(userId, RECENT_LIMIT), {
+  const response = await fetch(buildProfileApiUrl(userId, RECENT_LIMIT, requestHeaders), {
     cache: "no-store",
+    headers: {
+      cookie: requestHeaders.get("cookie") ?? "",
+    },
   });
 
   if (response.status === 404) {

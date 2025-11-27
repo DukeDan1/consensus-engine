@@ -1,15 +1,30 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 
+/**
+ * Build the base URL for server-side API requests from request headers.
+ * Uses x-forwarded-proto and x-forwarded-host headers (set by reverse proxies)
+ * or falls back to the host header and NEXTJS_APP_BASE_URL env variable.
+ *
+ * @param requestHeaders - The incoming request headers (from next/headers)
+ * @returns The base URL string (e.g., "https://example.com")
+ * @throws Error if unable to resolve the base URL
+ */
+export function buildBaseUrl(requestHeaders: Headers): string {
+    const protocol = requestHeaders.get("x-forwarded-proto") ?? "http";
+    const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+    if (host) {
+        return `${protocol}://${host}`;
+    }
+    if (process.env.NEXTJS_APP_BASE_URL) {
+        return process.env.NEXTJS_APP_BASE_URL;
+    }
+    throw new Error("Unable to resolve base URL: no host header or NEXTJS_APP_BASE_URL set");
+}
+
 export async function redirectIfLoggedIn() {
     if (await isLoggedIn()) {
         redirect("/topics");
-    }
-}
-
-export async function redirectIfLoggedOut() {
-    if (!(await isLoggedIn())) {
-        redirect("/login?unauthed=true");
     }
 }
 
