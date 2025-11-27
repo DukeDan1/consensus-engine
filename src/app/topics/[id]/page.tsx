@@ -7,6 +7,7 @@ import ArgumentCard from "@/app/components/ArgumentCard";
 import FactCard from "@/app/components/topics/FactCard";
 import OntologyBadgeList from "@/app/components/ontology/OntologyBadgeList";
 import TopicDiscussionControls from "@/app/components/topics/TopicDiscussionControls";
+import { buildBaseUrl } from "@/app/lib/commonFunctions";
 
 function normalizeCategoryParams(value: string | string[] | undefined): string[] {
   if (!value) return [];
@@ -28,9 +29,7 @@ async function fetchTopicBundle(
   filters: { argumentCategories?: string[]; commentCategories?: string[] },
   requestHeaders: Headers
 ): Promise<TopicApiResponse | null> {
-  const protocol = requestHeaders.get("x-forwarded-proto") ?? "http";
-  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
-  const base = host ? `${protocol}://${host}` : process.env.NEXTJS_APP_BASE_URL ?? "";
+  const base = buildBaseUrl(requestHeaders);
 
   const params = new URLSearchParams({
     num_arguments: String(numArguments),
