@@ -84,24 +84,23 @@ function truncateText(text: string, limit = 200): string {
   return `${text.slice(0, Math.max(0, limit - 1))}…`;
 }
 
-async function buildProfileApiUrl(userId: string, limit: number): Promise<string> {
-  const headersList = await headers();
+function buildProfileApiUrl(userId: string, limit: number, headersList: Headers): string {
   const base = buildBaseUrl(headersList);
   return `${base}/api/profile/${userId}?limit=${limit}`;
 }
 
-export default async function UserProfilePage({ params }: any ) {
+export default async function UserProfilePage({ params }: any) {
   const { userId } = await Promise.resolve(params);
+  const requestHeaders = await headers();
 
   if (!mongoose.isValidObjectId(userId)) {
     notFound();
   }
 
-  const headersList = await headers();
-  const response = await fetch(buildProfileApiUrl(userId, RECENT_LIMIT, headersList), {
+  const response = await fetch(buildProfileApiUrl(userId, RECENT_LIMIT, requestHeaders), {
     cache: "no-store",
     headers: {
-      cookie: headersList.get("cookie") ?? "",
+      cookie: requestHeaders.get("cookie") ?? "",
     },
   });
 
