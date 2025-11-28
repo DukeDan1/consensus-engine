@@ -54,6 +54,18 @@ export default function TopicOntologyFilters({
   const [commentSelection, setCommentSelection] = usePreloadedSelection(commentCategoryIds);
   const [submitting, setSubmitting] = useState(false);
 
+  function setLoadingUpdateRouter(params: URLSearchParams) {
+    const qs = params.toString();
+    const target = qs ? `${pathname}?${qs}` : pathname;
+    const current = searchParams?.toString()
+      ? `${pathname}?${searchParams.toString()}`
+      : pathname;
+    if (target === current) return; // nothing to do
+
+    setSubmitting(true);
+    router.push(target);
+  }
+
   function applyFilters() {
     const params = new URLSearchParams(searchParams?.toString() || "");
     params.delete("argumentCategory");
@@ -63,10 +75,7 @@ export default function TopicOntologyFilters({
 
     argumentSelection.forEach((cat) => params.append("argumentCategory", cat.id));
     commentSelection.forEach((cat) => params.append("commentCategory", cat.id));
-
-    setSubmitting(true);
-    const qs = params.toString();
-    router.push(qs ? `${pathname}?${qs}` : pathname);
+    setLoadingUpdateRouter(params);
   }
 
   function resetFilters() {
@@ -74,9 +83,7 @@ export default function TopicOntologyFilters({
     setCommentSelection([]);
     const params = new URLSearchParams(searchParams?.toString() || "");
     ["argumentCategory", "argumentCategories", "commentCategory", "commentCategories"].forEach((key) => params.delete(key));
-    setSubmitting(true);
-    const qs = params.toString();
-    router.push(qs ? `${pathname}?${qs}` : pathname);
+    setLoadingUpdateRouter(params);
   }
 
   useEffect(() => {
