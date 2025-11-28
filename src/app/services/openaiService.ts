@@ -1,15 +1,20 @@
 import OpenAI from "openai";
+import { ArgumentSide } from "@/app/models/argument";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function getAIAnalysisForArgument(argumentText: string, topicName: String) {
+export type AIAnalysisResult = {
+    isFact: boolean;
+    factualPart: string;
+    side: ArgumentSide;
+    aiSummary: string;
+    justification: string;
+};
+
+export async function getAIAnalysisForArgument(argumentText: string, topicName: String): Promise<AIAnalysisResult> {
     const response = await openai.responses.create({
-        prompt: {
-            "id": "pmpt_68f0c016b1448190a6d11717cdd84e7c0142635054d01cbe",
-            "version": "4"
-        },
         input: [
             {
                 role: "developer",
@@ -20,51 +25,58 @@ export async function getAIAnalysisForArgument(argumentText: string, topicName: 
                 content: argumentText 
             }
         ],
+        model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.1",
+        reasoning: {
+            effort: "low"
+        },
+        tool_choice: {
+            type: "function",
+            name: "analyse_argument"
+        },
         store: true,
-        include: []
+        tools: [
+            {
+                type: "function",
+                name: "analyse_argument",
+                description: "Analyse the argument to determine if it is factual, what side it supports and provide a summarised version if the comment contains unncessary detail or verbiage. If the argument does not contain excessive detail, return the original argument as the summary. If the argument is factual but contains opinions in addition to facts, separate out the factual part and return that as well.",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        isFact: {
+                            type: "boolean",
+                            description: "Whether the argument is primarily factual in nature."
+                        },
+                        factualPart: {
+                            type: "string",
+                            description: "The factual part of the argument, if applicable. Empty string if not applicable. Reword the argument to be purely factual."
+                        },
+                        side: {
+                            type: "string",
+                            description: "The side the argument supports: 'for', 'against' or 'neutral'.",
+                            enum: ["for", "against", "neutral"]
+                        },
+                        aiSummary: {
+                            type: "string",
+                            description: "A concise summary of the argument, removing any unnecessary detail or verbiage. Return the original argument if no summarisation is needed."
+                        },
+                        justification: {
+                            type: "string",
+                            description: "The reasoning behind the determinations made. This is user-facing and should be clear, concise and not technical."
+                        }
+                    },
+                    required: ["isFact", "side", "aiSummary", "factualPart", "justification"],
+                    additionalProperties: false,
+                },
+                strict: true
+            }
+        ],
     });
 
     const functionCallItem = response.output.find(item => item.type == "function_call");
     if (!functionCallItem) {
         throw new Error('Failed to get AI analysis for argument');
     }
-    const answer = JSON.parse(functionCallItem.arguments);
 
-    return {
-        isFact: answer.isFact,
-        isOpinion: answer.isOpinion,
-        justification: answer.justification
-    };
-}
-
-export async function extractFactualInformationFromComment(argumentText: string, topicName: String) {
-    const response = await openai.responses.create({
-        prompt: {
-            "id": "pmpt_691321c60ba88194bf7aa1ce08718dfe0e634e3c9603cfdc",
-            "version": "2"
-        },
-        input: [
-            {
-                role: "developer",
-                content: `The comment is made in the context of the topic: "${topicName}".`
-            },
-            { 
-                role: "user", 
-                content: argumentText 
-            }
-        ],
-        store: true,
-        include: []
-    });
-
-    const functionCallItem = response.output.find(item => item.type == "function_call");
-    if (!functionCallItem) {
-        throw new Error('Failed to extract factual information from comment');
-    }
-    const answer = JSON.parse(functionCallItem.arguments);
-
-    return {
-        factualPart: answer.factualPart,
-        justification: answer.justification
-    }
+    const answer = JSON.parse(functionCallItem.arguments) as AIAnalysisResult;
+    return answer;
 }

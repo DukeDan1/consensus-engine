@@ -24,9 +24,9 @@ function isPublicRoute(pathname: string) {
 
 export async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
-  const normalizedPath = pathname !== "/" && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+  const normalisedPath = pathname !== "/" && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
 
-  if (isPublicRoute(normalizedPath)) {
+  if (isPublicRoute(normalisedPath)) {
     return NextResponse.next();
   }
 

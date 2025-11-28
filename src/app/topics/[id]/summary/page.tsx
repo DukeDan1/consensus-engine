@@ -1,24 +1,17 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import SummaryColumnCard, { type SummaryItem } from "./SummaryColumnCard";
 
 export const dynamic = "force-dynamic";
-
-type SummaryColumn = {
-    text: string;
-    argument?: string;
-    stance: "for" | "against" | "neutral" | string;
-    lastUpdatedAt?: string;
-};
 
 type TopicSummaryResponse = {
     topicId: string;
     generatedAt: string;
-    refreshQueued: boolean;
     points: {
-        for: SummaryColumn[];
-        against: SummaryColumn[];
-        neutral: SummaryColumn[];
+        for: SummaryItem[];
+        against: SummaryItem[];
+        neutral: SummaryItem[];
     };
 };
 
@@ -30,40 +23,6 @@ async function fetchTopicSummary(id: string): Promise<TopicSummaryResponse | nul
     if (!res || !res.ok) return null;
     const data = await res.json();
     return data;
-}
-
-function renderColumn(label: string, items: SummaryColumn[], topicId: string, tone: "success" | "danger" | "secondary") {
-    return (
-        <div className="col-12 col-lg-4">
-            <div className={`card border-${tone} h-100`}>
-                <div className={`card-header text-bg-${tone} text-white`}>{label}</div>
-                <div className="card-body">
-                    {items.length === 0 ? (
-                        <p className="text-muted mb-0">No points captured yet.</p>
-                    ) : (
-                        <ul className="list-unstyled mb-0">
-                            {items.map((item, idx) => (
-                                <li key={`${item.argument ?? idx}-${label}`} className="mb-3 pb-3 border-bottom">
-                                    <p className="mb-2">{item.text}</p>
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <small className="text-muted">
-                                            AI refreshed {item.lastUpdatedAt ? new Date(item.lastUpdatedAt).toLocaleString() : "recently"}
-                                        </small>
-                                        <Link
-                                            href={`/topics/${topicId}?ordering=relevant${item.argument ? `#argument-${item.argument}` : ""}`}
-                                            className="btn btn-outline-secondary btn-sm"
-                                        >
-                                            Discuss
-                                        </Link>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
 }
 
 export default async function TopicSummaryPage({ params }: any ) {
@@ -111,16 +70,10 @@ export default async function TopicSummaryPage({ params }: any ) {
                 </div>
             </div>
 
-            {summary.refreshQueued && (
-                <div className="alert alert-warning" role="status">
-                    Refreshing summary in the background based on the latest discussion. Reload in a moment for updates.
-                </div>
-            )}
-
             <div className="row g-3">
-                {renderColumn("For", summary.points.for, id, "success")}
-                {renderColumn("Against", summary.points.against, id, "danger")}
-                {renderColumn("Neutral", summary.points.neutral, id, "secondary")}
+                <SummaryColumnCard label="For" items={summary.points.for} topicId={id} tone="success" />
+                <SummaryColumnCard label="Against" items={summary.points.against} topicId={id} tone="danger" />
+                <SummaryColumnCard label="Neutral" items={summary.points.neutral} topicId={id} tone="secondary" />
             </div>
         </div>
     );

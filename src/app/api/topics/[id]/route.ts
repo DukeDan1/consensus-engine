@@ -120,11 +120,11 @@ export async function GET(
     },
     arguments: argumentsList.map(a => {
       const rawSide = (a as any).side as string;
-      const normalizedSide = rawSide === 'pro' ? 'for' : (rawSide === 'con' ? 'against' : rawSide);
+      const normalisedSide = rawSide === 'pro' ? 'for' : (rawSide === 'con' ? 'against' : rawSide);
       const commentList = commentsByArgument[a._id.toString()] || [];
       return ({
       id: a._id,
-      side: normalizedSide,
+      side: normalisedSide,
       body: a.body,
       createdBy: a.createdBy,
       upvoteCount: a.upvoteCount,
