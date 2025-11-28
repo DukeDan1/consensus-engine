@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { dbConnect } from "@/app/lib/mongoose";
 import { Argument } from "@/app/models/argument";
 import { Topic } from "@/app/models/topic";
-import { getAIAnalysisForArgument, extractFactualInformationFromComment } from "@/app/services/openaiService";
+import { getAIAnalysisForArgument } from "@/app/services/openaiService";
 import { Fact } from "@/app/models/facts";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
@@ -74,24 +74,26 @@ export async function POST(req: Request) {
                     await Argument.findByIdAndUpdate(created._id, { ontologyCategories }).exec();
                 }
 
-                const analysis = await getAIAnalysisForArgument(created.body, topic?.title || "");
-                let factual = {} as {factualPart?: string, justification?: string};
-                if (analysis.isFact) {
-                    factual = await extractFactualInformationFromComment(created.body, topic?.title || "");
-                }
+                const analysis = await getAIAnalysisForArgument(trimmed, topic?.title || "");
 
-                await Argument.findByIdAndUpdate(created._id, { aiAnalysis: analysis }).exec();
+                await Argument.findByIdAndUpdate(created._id, { 
+                    side: analysis.side,
+                    aiAnalysis: {
+                        isFact: analysis.isFact,
+                        aiSummary: analysis.aiSummary,
+                        justification: analysis.justification,
+                    },
+                 });
 
-                if (analysis?.isFact && factual?.factualPart) {
+                if (analysis?.isFact && analysis?.factualPart) {
                     // Ensure we don't duplicate a fact for the same source argument
                     const existing = await Fact.findOne({ sourceArgument: created._id }).lean();
                     if (!existing) {
                         await Fact.create({
                             linkedArguments: [created._id],
                             topic: topicObjId,
-                            text: factual.factualPart,
+                            text: analysis.factualPart,
                             sourceArgument: created._id,
-                            aiJustification: factual.justification || "",
                         });
                     }
                 }

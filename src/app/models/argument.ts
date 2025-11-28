@@ -16,8 +16,8 @@ export interface IArgument extends Document {
   isRemoved: boolean;
   aiAnalysis?: {
     isFact: boolean;
-    isOpinion: boolean;
     justification: string;
+    aiSummary: string;
   };
   ontologyCategories: Array<{
     id: string;
@@ -40,8 +40,8 @@ const ArgumentSchema = new Schema<IArgument>({
   isRemoved: { type: Boolean, default: false, index: true },
   aiAnalysis: {
     isFact: { type: Boolean },
-    isOpinion: { type: Boolean },
-    justification: { type: String }
+    justification: { type: String },
+    aiSummary: { type: String },
   },
   ontologyCategories: {
     type: [

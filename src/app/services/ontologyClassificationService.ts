@@ -42,7 +42,6 @@ export type ClassificationResult = Array<{
   similarity: number;
   // present if LLM confirmation is enabled
   confidence?: number; // 0..1
-  reason?: string;
 }>;
 
 export type OntologyAssignment = {
@@ -322,27 +321,59 @@ export async function classifyTextToOntology(
       similarity: Number(c.similarity.toFixed(4)),
     })),
     instructions:
-      "Select 0..N topics that best describe input_text. Prefer specific over general. If none apply, return []. Return JSON: { selections: [{ id, confidence (0..1), reason? }] }.",
+      "Select 0..N topics that best describe input_text. Prefer specific over general. If none apply, return []. Return JSON: { selections: [{ id, confidence (0..1) }] }.",
   } as const;
 
   const resp = await openai.responses.create({
     model: responsesModel,
     input: [
-      { role: "system", content: "You are a precise classifier for an ontology of news/media topics. Return strict JSON only with no preamble or commentary." },
+      { role: "system", content: "You are a precise classifier for an ontology of debate/discussion topics. Return strict JSON only with no preamble or commentary." },
       { role: "user", content: JSON.stringify(payload) },
     ],
     reasoning: {
       effort: "none"
-    }
+    },
+    tool_choice: {
+      type: "function",
+      name: "classify_ontology",
+    },
+    store: true,
+    tools: [
+      {
+        type: "function",
+        name: "classify_ontology",
+        description: "Classify the input text to the most relevant ontology categories from the provided candidates.",
+        parameters: {
+          type: "object",
+          properties: {
+            selections: {
+              type: "array",
+              description: "The selected ontology categories with confidence scores.",
+              items: {
+                type: "object",
+                properties: {
+                  id: { type: "string", description: "The ontology category ID." },
+                  confidence: { type: "number", description: "Confidence score between 0 and 1." },
+                },
+                required: ["id", "confidence"],
+              },
+            },
+          },
+          required: ["selections"],
+        },
+        strict: true,
+      }
+    ],
   });
 
-  let selections: Array<{ id: string; confidence: number; reason?: string }> = [];
+  let selections: Array<{ id: string; confidence: number; }> = [];
   try {
-    const jsonText = (resp as any).output_text
-      || (resp.output?.[0] as any)?.content?.[0]?.text
-      || "{}";
-    const parsed = JSON.parse(jsonText);
-    if (parsed && Array.isArray(parsed.selections)) selections = parsed.selections;
+    const functionCallItem = resp.output.find(item => item.type == "function_call");
+    if (!functionCallItem) {
+        throw new Error('Failed to get AI analysis for argument');
+    }
+    const answer = JSON.parse(functionCallItem.arguments);
+    if (answer && Array.isArray(answer.selections)) selections = answer.selections;
   } catch {
     selections = [];
   }
@@ -353,7 +384,7 @@ export async function classifyTextToOntology(
   for (const sel of selections) {
     const c = byId.get(sel.id);
     if (!c) continue;
-    results.push({ id: c.id, label: c.label, description: c.description, similarity: c.similarity, confidence: sel.confidence, reason: sel.reason });
+    results.push({ id: c.id, label: c.label, description: c.description, similarity: c.similarity, confidence: sel.confidence, });
   }
 
   // If LLM returns nothing, fall back to top 3 candidates (optional safety)
