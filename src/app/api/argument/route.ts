@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { dbConnect } from "@/app/lib/mongoose";
-import { Argument } from "@/app/models/argument";
+import { Argument, ArgumentSide } from "@/app/models/argument";
 import { Topic } from "@/app/models/topic";
 import { getAIAnalysisForArgument } from "@/app/services/openaiService";
 import { Fact } from "@/app/models/facts";
@@ -13,7 +13,7 @@ import { classifyTextToOntology, classificationToAssignments } from "@/app/servi
 type Body = {
     topicId: string;
     body: string;
-    side?: "for" | "against" | "neutral" | "pro" | "con"; // accept legacy values, normalize below
+    side?: ArgumentSide;
 };
 
 export async function POST(req: Request) {
@@ -31,9 +31,6 @@ export async function POST(req: Request) {
 
     const payload: Body = await req.json();
     let { topicId, body, side = "neutral" } = payload || ({} as Body);
-    // Normalize legacy values
-    if (side === "pro") side = "for" as any;
-    if (side === "con") side = "against" as any;
 
     if (!topicId || typeof body !== "string") {
         return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
@@ -51,7 +48,7 @@ export async function POST(req: Request) {
         const topicObjId = new mongoose.Types.ObjectId(topicId);
         const created = await Argument.create({
             topic: topicObjId,
-            side: side as "for" | "against" | "neutral",
+            side: side as ArgumentSide,
             body: trimmed,
             createdBy: user._id,
             upvoteCount: 0,

@@ -32,7 +32,7 @@ export type OntologyCategory = {
 };
 
 export type ClassificationCandidate = OntologyCategory & {
-  similarity: number; // cosine similarity (0..1 is typical for normalized)
+  similarity: number; // cosine similarity (0..1 is typical for normalised)
 };
 
 export type ClassificationResult = Array<{
@@ -60,7 +60,7 @@ if (!g.__ontologyIndexCache) {
     ready: false as boolean,
     readyPromise: null as Promise<void> | null,
     categories: [] as OntologyCategory[],
-    // normalized embeddings matrix: number[][] where each row is unit-length
+    // normalised embeddings matrix: number[][] where each row is unit-length
     vectors: [] as number[][],
     embedModel: DEFAULT_EMBED_MODEL as string,
   };
@@ -70,7 +70,7 @@ const cache = g.__ontologyIndexCache as {
   ready: boolean;
   readyPromise: Promise<void> | null;
   categories: OntologyCategory[];
-  vectors: number[][]; // normalized
+  vectors: number[][]; // normalised
   embedModel: string;
 };
 
@@ -83,7 +83,7 @@ async function fileExists(p: string): Promise<boolean> {
   }
 }
 
-function normalizeLabel(raw: string | undefined | null): string | undefined {
+function normaliseLabel(raw: string | undefined | null): string | undefined {
   return typeof raw === "string" ? raw.trim() : undefined;
 }
 
@@ -102,7 +102,7 @@ function l2norm(vec: number[]): number {
   return Math.sqrt(vec.reduce((s, v) => s + v * v, 0));
 }
 
-function normalizeVec(vec: number[]): number[] {
+function normaliseVec(vec: number[]): number[] {
   const n = l2norm(vec) + 1e-12;
   return vec.map((v) => v / n);
 }
@@ -133,15 +133,15 @@ async function loadOntologyFromFile(): Promise<OntologyCategory[]> {
 
   if (Array.isArray(data)) {
     for (const item of data) {
-      const id = normalizeLabel((item as any).id) || normalizeLabel((item as any).topicId) || extractMedtopId(normalizeLabel((item as any).label));
+      const id = normaliseLabel((item as any).id) || normaliseLabel((item as any).topicId) || extractMedtopId(normaliseLabel((item as any).label));
       const label = cleanOntologyLabel(
-        normalizeLabel((item as any).label) || normalizeLabel((item as any).name) || id || undefined
+        normaliseLabel((item as any).label) || normaliseLabel((item as any).name) || id || undefined
       );
       if (!id || !label) continue;
       categories.push({
         id,
         label,
-        description: normalizeLabel((item as any).description) || normalizeLabel((item as any).definition) || undefined,
+        description: normaliseLabel((item as any).description) || normaliseLabel((item as any).definition) || undefined,
         synonyms: Array.isArray((item as any).synonyms) ? (item as any).synonyms : undefined,
       });
     }
@@ -150,15 +150,15 @@ async function loadOntologyFromFile(): Promise<OntologyCategory[]> {
     const arr = (data as any).topics || (data as any).categories || [];
     if (Array.isArray(arr)) {
       for (const item of arr) {
-        const id = normalizeLabel((item as any).id) || normalizeLabel((item as any).topicId) || extractMedtopId(normalizeLabel((item as any).label));
+        const id = normaliseLabel((item as any).id) || normaliseLabel((item as any).topicId) || extractMedtopId(normaliseLabel((item as any).label));
         const label = cleanOntologyLabel(
-          normalizeLabel((item as any).label) || normalizeLabel((item as any).name) || id || undefined
+          normaliseLabel((item as any).label) || normaliseLabel((item as any).name) || id || undefined
         );
         if (!id || !label) continue;
         categories.push({
           id,
           label,
-          description: normalizeLabel((item as any).description) || normalizeLabel((item as any).definition) || undefined,
+          description: normaliseLabel((item as any).description) || normaliseLabel((item as any).definition) || undefined,
           synonyms: Array.isArray((item as any).synonyms) ? (item as any).synonyms : undefined,
         });
       }
@@ -240,11 +240,11 @@ async function buildIndex(): Promise<void> {
     embeddings.push(...vecs);
   }
 
-  // Normalize for cosine similarity via dot product
-  const normalized = embeddings.map(normalizeVec);
+  // Normalise for cosine similarity via dot product
+  const normalised = embeddings.map(normaliseVec);
 
   cache.categories = categories;
-  cache.vectors = normalized;
+  cache.vectors = normalised;
   cache.ready = true;
 }
 
@@ -263,7 +263,7 @@ async function ensureReady(): Promise<void> {
 async function embedQuery(text: string, model = DEFAULT_EMBED_MODEL): Promise<number[]> {
   const res = await openai.embeddings.create({ model, input: [text] });
   const vec = res.data[0].embedding as unknown as number[];
-  return normalizeVec(vec);
+  return normaliseVec(vec);
 }
 
 function topKSimilar(queryVec: number[], k: number): { idx: number; sim: number }[] {
