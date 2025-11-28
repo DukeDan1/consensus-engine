@@ -9,7 +9,7 @@ import OntologyBadgeList from "@/app/components/ontology/OntologyBadgeList";
 import TopicDiscussionControls from "@/app/components/topics/TopicDiscussionControls";
 import { buildBaseUrl } from "@/app/lib/commonFunctions";
 
-function normalizeCategoryParams(value: string | string[] | undefined): string[] {
+function normaliseCategoryParams(value: string | string[] | undefined): string[] {
   if (!value) return [];
   const values = Array.isArray(value) ? value : [value];
   return Array.from(
@@ -70,14 +70,14 @@ export default async function TopicPage({ params, searchParams }: any) {
   const numArgs = Math.max(1, Math.min(50, parseInt(resolvedSearchParams?.num_arguments ?? "10", 10) || 10));
   const argumentCategoryIds = Array.from(
     new Set([
-      ...normalizeCategoryParams(resolvedSearchParams?.argumentCategory),
-      ...normalizeCategoryParams(resolvedSearchParams?.argumentCategories),
+      ...normaliseCategoryParams(resolvedSearchParams?.argumentCategory),
+      ...normaliseCategoryParams(resolvedSearchParams?.argumentCategories),
     ])
   );
   const commentCategoryIds = Array.from(
     new Set([
-      ...normalizeCategoryParams(resolvedSearchParams?.commentCategory),
-      ...normalizeCategoryParams(resolvedSearchParams?.commentCategories),
+      ...normaliseCategoryParams(resolvedSearchParams?.commentCategory),
+      ...normaliseCategoryParams(resolvedSearchParams?.commentCategories),
     ])
   );
 
