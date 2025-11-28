@@ -98,7 +98,7 @@ export async function GET(
     }
   }
 
-  //  derived facts for this topic (limit reasonable number)
+  // Fetch derived facts for this topic (limit reasonable number)
   const facts = await Fact.find({ topic: topic._id })
     .sort({ createdAt: -1 })
     .limit(100)
