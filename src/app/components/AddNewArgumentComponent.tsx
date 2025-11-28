@@ -54,7 +54,7 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
 
         setTimeout(() => {
             router.refresh();
-        }, 15000);
+        }, 10000);
     }
 
     return (

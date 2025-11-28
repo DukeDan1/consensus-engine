@@ -356,10 +356,12 @@ export async function classifyTextToOntology(
                   confidence: { type: "number", description: "Confidence score between 0 and 1." },
                 },
                 required: ["id", "confidence"],
+                additionalProperties: false,
               },
             },
           },
           required: ["selections"],
+          additionalProperties: false,
         },
         strict: true,
       }

@@ -61,10 +61,11 @@ export async function getAIAnalysisForArgument(argumentText: string, topicName: 
                         },
                         justification: {
                             type: "string",
-                            description: "The reasoning behind the determinations made."
+                            description: "The reasoning behind the determinations made. This is user-facing and should be clear, concise and not technical."
                         }
                     },
-                    required: ["isFact", "side", "aiSummary", "factualPart", "justification"]
+                    required: ["isFact", "side", "aiSummary", "factualPart", "justification"],
+                    additionalProperties: false,
                 },
                 strict: true
             }

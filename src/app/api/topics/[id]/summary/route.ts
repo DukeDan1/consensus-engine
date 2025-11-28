@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
-import { getTopicSummaryWithRefresh } from "@/app/services/topicSummaryService";
+import { getTopicSummary } from "@/app/services/topicSummaryService";
 
 export const dynamic = "force-dynamic";
 
@@ -16,11 +16,10 @@ export async function GET(_request: NextRequest, ctx: any) {
 
     const topicObjectId = new mongoose.Types.ObjectId(id);
     try {
-        const summary = await getTopicSummaryWithRefresh(topicObjectId);
+        const summary = await getTopicSummary(topicObjectId);
         return NextResponse.json({
             topicId: id,
             generatedAt: summary.generatedAt,
-            refreshQueued: summary.refreshQueued,
             points: summary.points,
         });
     } catch (err) {
