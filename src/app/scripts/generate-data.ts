@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import { OpenAI } from "openai";
 import { classifyTextToOntology, classificationToAssignments } from "../services/ontologyClassificationService";
+import { Tool } from "openai/resources/responses/responses.js";
 
 
 const openai = new OpenAI({
@@ -131,22 +132,8 @@ const dataTool = {
     },
     required: ["topicData"],
   },
-};
-
-const topicTool = {
-  type: "function",
-  name: "generate_topic_data",
-  description: "Generate a debate topic about a random subject.",
-  parameters: {
-    type: "object",
-    properties: {
-      topicName: {
-        type: "string",
-        description: "The name of the debate topic to generate data for.",
-      },
-    },
-  },
-};
+  strict: true,
+} as Tool;
 
 function slugify(value: string): string {
   return value
@@ -162,16 +149,33 @@ async function classify(text: string): Promise<SeedOntologyCategory[]> {
 }
 
 async function generateTopicName(): Promise<string> {
-  const input = [
-    { role: "developer", content: "You are an AI assistant that can generate debate topic names. Use the generate_topic_data tool to generate a random debate topic name. The topic will be debated by people with diverse opinions. An example topic name might be 'Should we implement a universal basic income?'." },
-    { role: "user", content: "Generate a debate topic name." },
-  ];
-
   const response = await openai.responses.create({
     model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.1",
     reasoning: { effort: "none" },
-    tools: [topicTool],
-    input,
+    tools: [{
+      type: "function",
+      name: "generate_topic_data",
+      description: "Generate a debate topic about a random subject.",
+      parameters: {
+        type: "object",
+        properties: {
+          topicName: {
+            type: "string",
+            description: "The name of the debate topic to generate data for.",
+          },
+          additionalProperties: false,
+        },
+      },
+      strict: true,
+    }],
+    input: [
+      { role: "developer", content: "You are an AI assistant that can generate debate topic names. Use the generate_topic_data tool to generate a random debate topic name. The topic will be debated by people with diverse opinions. An example topic name might be 'Should we implement a universal basic income?'." },
+      { role: "user", content: "Generate a debate topic name." },
+    ],
+    tool_choice: {
+      type: "function",
+      name: "generate_topic_data",
+    },
   });
 
   for (const item of response.output) {
@@ -194,15 +198,17 @@ async function generateTopic(users: SeedUser[], existingKeys: Set<string>): Prom
 
   if (!topicKey) return null;
 
-  const input = [
-    { role: "developer", content: "You are an AI assistant that can generate debate topic data. Use the generate_topic_data tool to generate data about a random subject." },
-    { role: "user", content: `Generate debate topic data for the topic: "${topicName}". Include concise AI summaries for each argument.` },
-  ];
-
   const response = await openai.responses.create({
-    model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5",
+    model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.1",
     tools: [dataTool],
-    input,
+    input: [
+      { role: "developer", content: "You are an AI assistant that can generate debate topic data. Use the generate_topic_data tool to generate data about a random subject." },
+      { role: "user", content: `Generate debate topic data for the topic: "${topicName}". Include concise AI summaries for each argument.` },
+    ],
+    tool_choice: {
+      type: "function",
+      name: "generate_topic_data",
+    },
   });
 
   for (const item of response.output) {
