@@ -198,7 +198,7 @@ async function generateTopicNames(numberOfTopics: number): Promise<Array<string>
     }],
     input: [
       { role: "developer", content: "You are an AI assistant that can generate debate topic questions. Use the generate_topic_names tool to generate unique debate topic questions. The topic will be debated by people with diverse opinions. An example topic question might be 'Should we implement a universal basic income?'." },
-      { role: "user", content: "Generate " + numberOfTopics + " debate topic questions." },
+      { role: "user", content: "Generate " + (numberOfTopics+1) + " debate topic questions." },
     ],
     tool_choice: {
       type: "function",
@@ -212,7 +212,9 @@ async function generateTopicNames(numberOfTopics: number): Promise<Array<string>
   for (const item of response.output) {
     if (item.type === "function_call") {
       const data = JSON.parse(item.arguments);
-      return data.topicNames?.map((t: any) => t.topicName) || [];
+      const names = data.topicNames?.map((t: any) => t.topicName) || [];
+      // Ignore first element since this is almost always the same every time
+      return names.slice(1);
     }
   }
   return [];
@@ -386,8 +388,8 @@ export async function main() {
   const newTopics: SeedTopic[] = [];
 
   // Run generation tasks concurrently with a small worker pool to avoid overwhelming APIs/IO.
-  const concurrency = Math.min(5, Math.max(1, numberOfTopics));
-  const queue = Array.from({ length: numberOfTopics }, (_, i) => i);
+  const concurrency = Math.min(5, Math.max(1, topics.length ));
+  const queue = Array.from({ length: topics.length }, (_, i) => i);
   const workers = Array.from({ length: concurrency }, () =>
     (async () => {
       while (true) {
