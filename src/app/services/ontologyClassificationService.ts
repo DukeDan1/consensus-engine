@@ -177,6 +177,31 @@ async function embedBatch(texts: string[], model = DEFAULT_EMBED_MODEL): Promise
   return res.data.map((r) => r.embedding as unknown as number[]);
 }
 
+export async function generateOntologyEmbeddingsSnapshot(): Promise<{
+  model: string;
+  generatedAt: string;
+  categories: OntologyCategory[];
+  embeddings: number[][];
+}> {
+  const categories = await loadOntologyFromFile();
+  const texts = categories.map((c) => buildSearchText(c));
+  const batchSize = 128;
+  const embeddings: number[][] = [];
+
+  for (let i = 0; i < texts.length; i += batchSize) {
+    const chunk = texts.slice(i, i + batchSize);
+    const vecs = await embedBatch(chunk, DEFAULT_EMBED_MODEL);
+    embeddings.push(...vecs.map((v) => normaliseVec(v)));
+  }
+
+  return {
+    model: DEFAULT_EMBED_MODEL,
+    generatedAt: new Date().toISOString(),
+    categories,
+    embeddings,
+  };
+}
+
 async function loadPrecomputedEmbeddings(): Promise<{ categories: OntologyCategory[]; vectors: number[][] } | null> {
   try {
     if (!(await fileExists(EMBEDDINGS_PATH))) {
