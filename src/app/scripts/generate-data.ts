@@ -1,5 +1,13 @@
+/**
+ * Script to generate seed data for debate topics, arguments, comments, and ontology classifications.
+ * Uses OpenAI's Responses API to create realistic debate data.
+ * Saves the generated data to population_data.json.
+ * 
+ * Usage: npm run generate-data -- number_topics=5
+ */
 import fs from "node:fs/promises";
 import path from "node:path";
+import readline from "node:readline";
 import dotenv from "dotenv";
 dotenv.config();
 import { OpenAI } from "openai";
@@ -109,9 +117,13 @@ const dataTool = {
                       upvoteCount: { type: "integer" },
                       downvoteCount: { type: "integer" },
                     },
+                    required: ["body", "upvoteCount", "downvoteCount"],
+                    additionalProperties: false
                   },
                 },
               },
+              required: ["side", "body", "aiSummary", "aiJustification", "comments"],
+              additionalProperties: false
             },
           },
           facts: {
@@ -125,12 +137,17 @@ const dataTool = {
                 sourceArgumentIndex: { type: "integer" },
                 linkedArgumentIndexes: { type: "array", items: { type: "integer" } },
               },
+              required: ["text", "sourceArgumentIndex", "linkedArgumentIndexes", "aiJustification"],
+              additionalProperties: false,
             },
           },
         },
+        required: ["title", "arguments", "facts", "description", "tags"],
+        additionalProperties: false
       },
     },
     required: ["topicData"],
+    additionalProperties: false,
   },
   strict: true,
 } as Tool;
@@ -148,50 +165,62 @@ async function classify(text: string): Promise<SeedOntologyCategory[]> {
   return classificationToAssignments(results, 5);
 }
 
-async function generateTopicName(): Promise<string> {
+async function generateTopicNames(numberOfTopics: number): Promise<Array<string>> {
   const response = await openai.responses.create({
     model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.1",
     reasoning: { effort: "none" },
     tools: [{
       type: "function",
-      name: "generate_topic_data",
-      description: "Generate a debate topic about a random subject.",
+      name: "generate_topic_names",
+      description: "Generate unique debate topics about a subject. The topic will be debated by people with diverse opinions. It should be a realistic topic that people might actually debate.",
       parameters: {
         type: "object",
         properties: {
-          topicName: {
-            type: "string",
-            description: "The name of the debate topic to generate data for.",
+          topicNames: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                topicName: {
+                  type: "string",
+                  description: "The unique name of the debate topic. This should be posed as a question that invites debate.",
+                },
+              },
+              required: ["topicName"],
+              additionalProperties: false,
+            },
           },
-          additionalProperties: false,
         },
+        required: ["topicNames"],
+        additionalProperties: false,
       },
       strict: true,
     }],
     input: [
-      { role: "developer", content: "You are an AI assistant that can generate debate topic names. Use the generate_topic_data tool to generate a random debate topic name. The topic will be debated by people with diverse opinions. An example topic name might be 'Should we implement a universal basic income?'." },
-      { role: "user", content: "Generate a debate topic name." },
+      { role: "developer", content: "You are an AI assistant that can generate debate topic questions. Use the generate_topic_names tool to generate unique debate topic questions. The topic will be debated by people with diverse opinions. An example topic question might be 'Should we implement a universal basic income?'." },
+      { role: "user", content: "Generate " + numberOfTopics + " debate topic questions." },
     ],
     tool_choice: {
       type: "function",
-      name: "generate_topic_data",
+      name: "generate_topic_names",
     },
+    store: true,
+    temperature: 0.9,
+    top_p: 0.9,
   });
 
   for (const item of response.output) {
     if (item.type === "function_call") {
       const data = JSON.parse(item.arguments);
-      return data.topicName;
+      return data.topicNames?.map((t: any) => t.topicName) || [];
     }
   }
-  throw new Error("Failed to get topic name from OpenAI response");
+  return [];
 }
 
-async function generateTopic(users: SeedUser[], existingKeys: Set<string>): Promise<SeedTopic | null> {
-  let topicName = "";
+async function generateTopic(users: SeedUser[], existingKeys: Set<string>, topicName: string): Promise<SeedTopic | null> {
   let topicKey = "";
   for (let attempt = 0; attempt < 5; attempt++) {
-    topicName = await generateTopicName();
     topicKey = topicName.toLowerCase().replace(/\s+/g, "_");
     if (!existingKeys.has(topicKey)) break;
   }
@@ -200,6 +229,7 @@ async function generateTopic(users: SeedUser[], existingKeys: Set<string>): Prom
 
   const response = await openai.responses.create({
     model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.1",
+    reasoning: { effort: "low" },
     tools: [dataTool],
     input: [
       { role: "developer", content: "You are an AI assistant that can generate debate topic data. Use the generate_topic_data tool to generate data about a random subject." },
@@ -209,6 +239,7 @@ async function generateTopic(users: SeedUser[], existingKeys: Set<string>): Prom
       type: "function",
       name: "generate_topic_data",
     },
+    store: true,
   });
 
   for (const item of response.output) {
@@ -294,7 +325,56 @@ async function savePopulation(data: PopulationData) {
   console.log(`✅ Saved updated seed data to ${populationPath}`);
 }
 
-async function main() {
+async function generateTopicEntry(
+  topicName: string,
+  users: SeedUser[],
+  existingKeys: Set<string>
+): Promise<SeedTopic | null> {
+  if (!users.length) {
+    throw new Error("population_data.json is missing users; add users before generating topics.");
+  }
+
+  const topic = await generateTopic(users, existingKeys, topicName);
+  if (!topic) {
+    console.warn("⚠️ No topics generated for", topicName);
+    return null;
+  }
+
+  existingKeys.add(topic.key);
+  const [enrichedTopic] = await enrichWithOntology([topic]);
+  return enrichedTopic;
+}
+
+export async function main() {
+  const args = process.argv.slice(2);
+  const argMap: Record<string, string> = {};
+  for (const arg of args) {
+    const [key, value] = arg.split("=");
+    argMap[key] = value;
+  }
+  const numberOfTopics = parseInt(argMap["number_topics"] || "3", 10);
+  const topics = await generateTopicNames(numberOfTopics);
+  console.log("Generated Topic Names:");
+  topics.forEach((t, i) => {
+    console.log(`${i + 1}. ${t}`);
+  });
+  console.log("\nAre these acceptable? Y/N");
+
+  const userResponse: string = await new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    rl.question("", (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+
+  if (userResponse.toLowerCase() !== "y") {
+    console.log("Aborting topic data generation.");
+    process.exit(0);
+  }
 
   const population = await loadPopulation();
   const users = population.users;
@@ -303,24 +383,40 @@ async function main() {
   }
 
   const existingKeys = new Set(population.topics.map((t) => t.key));
-  const NUMBER_OF_TOPICS_TO_GENERATE = 3;
-  const generated: SeedTopic[] = [];
-  for (let i = 0; i < NUMBER_OF_TOPICS_TO_GENERATE; i++) {
-    const topic = await generateTopic(users, existingKeys);
-    if (topic) {
-      generated.push(topic);
-      existingKeys.add(topic.key);
-    }
-  }
+  const newTopics: SeedTopic[] = [];
 
-  if (!generated.length) {
-    console.warn("⚠️ No topics generated.");
+  // Run generation tasks concurrently with a small worker pool to avoid overwhelming APIs/IO.
+  const concurrency = Math.min(5, Math.max(1, numberOfTopics));
+  const queue = Array.from({ length: numberOfTopics }, (_, i) => i);
+  const workers = Array.from({ length: concurrency }, () =>
+    (async () => {
+      while (true) {
+        const idx = queue.shift();
+        if (idx === undefined) return;
+        const attempt = idx + 1;
+        console.log(`🌀 Generating topic ${attempt} of ${numberOfTopics}...`);
+        try {
+          console.log(`🔍 Topic: ${topics[idx]}`);
+          const generated = await generateTopicEntry(topics[idx], users, existingKeys);
+          if (generated) {
+            newTopics.push(generated);
+          }
+          console.log(`✅ Finished topic task ${attempt}`);
+        } catch (err) {
+          console.error(`❌ Topic task ${attempt} failed:`, err);
+        }
+      }
+    })()
+  );
+
+  await Promise.all(workers);
+
+  if (!newTopics.length) {
+    console.warn("⚠️ No new topics generated.");
     return;
   }
 
-  const enriched = await enrichWithOntology(generated);
-
-  population.topics = [...population.topics, ...enriched];
+  population.topics = [...population.topics, ...newTopics];
   await savePopulation(population);
 }
 
