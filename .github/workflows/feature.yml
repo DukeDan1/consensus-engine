@@ -82,7 +82,7 @@ jobs:
         with:
           name: Vitest
           path: reports/junit.xml
-          reporter: junit
+          reporter: java-junit
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
