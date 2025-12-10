@@ -52,7 +52,7 @@ export async function handleForgotPassword(
   await injectedDeps.sendEmail(
     user.email,
     'Password reset',
-    `<html><body><p>Hi ${user.name || 'User'},</p><p>Here\'s your password reset link:</p><p><a href="${resetLink}">Reset password</a></p><p>If you did not request this, please ignore this email.</p></body></html>`,
+    `<html><body><p>Hi ${user.name || 'User'},</p><p>Here's your password reset link:</p><p><a href="${resetLink}">Reset password</a></p><p>If you did not request this, please ignore this email.</p></body></html>`,
     `Hi ${user.name || 'User'}, here's your password reset link: ${resetLink}\n\nIf you did not request this, please ignore this email.`
   );
 
