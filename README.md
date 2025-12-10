@@ -1,49 +1,46 @@
-# consensus-engine
+# Consensus Engine
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Overview
+The project builds an online consensus management platform that structures debates, reduces misinformation, and helps users reach agreement through AI-assisted mediation. It uses LLMs for neutral moderation, argument summarisation, conflict detection, and guidance toward compromise. Users can tag evidence from credible sources, browse ongoing discussions, and view final consensus outcomes with supporting references. The system runs on Next.js/React with a MongoDB backend for arguments, evidence, and consensus data.
 
-## Getting Started
+## Core capabilities
+- Structured debates with topics, arguments, comments, votes, and ontology tags for consistent categorisation
+- AI assistance for summarisation, conflict detection, neutrality checks, and guidance toward compromise via OpenAI
+- Evidence tagging with source links and visibility into supporting references for consensus outcomes
+- User accounts and profiles to participate in discussions and track contributions
+- Pre-computed ontology embeddings to speed classification and reduce API calls
 
-First, run the development server:
+## Tech stack
+- Next.js (App Router) + React + TypeScript
+- MongoDB with Mongoose for persistence
+- OpenAI API for AI-assisted moderation and summarisation
+- Vitest for unit tests, ESLint for linting
+- Bootstrap/Bootswatch UI, NextAuth-based authentication, Azure Communication Email for outbound email
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Getting started
+1) Install Node.js 22+ and npm.
+2) Install dependencies: `npm install` (or `npm ci`).
+3) Create `.env.local` with at least:
+	- `MONGODB_URI` — MongoDB connection string
+	- `OPENAI_API_KEY` — OpenAI key for AI features
+	- `AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING` — required if email delivery is enabled
+	- Optional: `OPENAI_RESPONSES_MODEL` to override the default model
+4) Run the app: `npm run dev` and open http://localhost:3000.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project scripts
+- `npm run dev` — start the dev server
+- `npm run build` / `npm run start` — production build and serve
+- `npm run lint` — lint `src/app/**/*.{js,ts,tsx}`
+- `npm run test` — run unit tests
+- `npm run test:ci` — run tests with coverage and JUnit report to `reports/junit.xml`
+- `npm run populate` — seed the database (requires `MONGODB_URI`)
+- `npm run generate-data` — generate sample data fixtures
+- `npm run generate-embeddings` — rebuild ontology embeddings after category changes
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Data and embeddings
+The ontology classification service categorizes topics and arguments. Embeddings are pre-computed and checked into the repo to avoid runtime generation.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Ontology Embeddings
-
-This project uses an ontology classification service to categorize topics and arguments. To improve efficiency, embeddings are pre-computed rather than generated at runtime.
-
-### Generating Embeddings
-
-When the ontology categories change (in `ontology_categories.json`), you must regenerate the embeddings:
+To regenerate embeddings after updating `ontology_categories.json`:
 
 ```bash
 npm run generate-embeddings
@@ -52,13 +49,29 @@ npm run generate-embeddings
 This will:
 1. Read categories from `ontology_categories.json`
 2. Generate embeddings using the OpenAI API
-3. Save the embeddings to `ontology_embeddings.json`
+3. Save them to `ontology_embeddings.json`
 
-**Note:** You need to set `OPENAI_API_KEY` in your `.env` file to run this script.
+**Note:** set `OPENAI_API_KEY` before running the script. If the embeddings file is missing or invalid, the service falls back to runtime generation.
 
-### How It Works
+## Testing and CI
+- `npm run test` / `npm run test:ci` use Vitest (jsdom) with coverage. CI publishes JUnit results from `reports/junit.xml` and coverage to Codecov.
+- `npm run lint` enforces the TypeScript/Next.js style guide.
 
-- The `ontologyClassificationService` first tries to load pre-computed embeddings from `ontology_embeddings.json`
-- If the file doesn't exist or is invalid, it falls back to generating embeddings at runtime
-- The pre-computed embeddings file should be committed to the repository
-- This approach significantly reduces API calls and improves server startup time
+## Project layout (high level)
+- `src/app` — App Router pages, components, API routes, services, models, and scripts
+- `src/app/services` — domain services (auth, email, ontology, OpenAI, OTP, password)
+- `src/app/models` — Mongoose schemas for topics, arguments, comments, votes, users
+- `public` — static assets
+- `ontology_categories.json` / `ontology_embeddings.json` — ontology data used by the classifier
+
+## Environment variables
+- `MONGODB_URI`: MongoDB connection string for application data.
+- `OPENAI_API_KEY`: OpenAI API key enabling AI summarisation, moderation, and embeddings.
+- `OPENAI_RESPONSES_MODEL` (optional): Override the default model used for AI responses (defaults to `gpt-5.1`).
+- `AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING`: Azure Communication Services connection string for sending email.
+- `NEXTAUTH_SECRET`: Secret used by NextAuth for signing/encrypting auth tokens.
+- `NEXTAUTH_URL`: Base URL for NextAuth callbacks (e.g., `http://localhost:3000`).
+- `NEXTJS_APP_BASE_URL`: Base URL used by the frontend for links/emails.
+- `NODE_ENV`: Node environment (`development`, `production`, etc.).
+- `DATABASE_URL`: (Optional/legacy) Prisma-style connection string; not used by the current Mongo-backed app.
+- `EMAIL_SENDER_ADDRESS`: Email address used as the sender for outbound emails.
