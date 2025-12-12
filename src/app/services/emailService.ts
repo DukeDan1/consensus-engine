@@ -2,7 +2,7 @@ import { EmailClient, EmailMessage } from "@azure/communication-email";
 
 export async function sendEmail(to: string, subject: string, htmlContent: string, plainTextContent: string): Promise<any> {
     const message: EmailMessage = {
-        senderAddress: "DoNotReply@m.dukedan.uk",
+        senderAddress: process.env.EMAIL_SENDER_ADDRESS || "DoNotReply@m.dukedan.uk",
         content: {
             subject,
             plainText: plainTextContent,

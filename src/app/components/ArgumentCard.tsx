@@ -153,7 +153,8 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
 
                             <div className="d-flex align-items-center gap-2 align-self-end">
                                 <button
-                                    className="badge bg-success-subtle text-success"
+                                    type="button"
+                                    className="badge bg-success-subtle text-success border-0 shadow-none"
                                     onClick={() => sendVote(1)}
                                     disabled={voting}
                                     aria-label="Upvote"
@@ -162,7 +163,8 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                                     {upvotes}
                                 </button>
                                 <button
-                                    className="badge bg-danger-subtle text-danger"
+                                    type="button"
+                                    className="badge bg-danger-subtle text-danger border-0 shadow-none"
                                     onClick={() => sendVote(-1)}
                                     disabled={voting}
                                     aria-label="Downvote"

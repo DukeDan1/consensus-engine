@@ -20,7 +20,7 @@ export default function LogoutButton() {
 
 	return (
 		<>
-			<button onClick={handleLogout} disabled={loading} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600">
+			<button onClick={handleLogout} disabled={loading} className="dropdown-item text-danger">
 				{loading ? "Logging out..." : "Log out"}
 			</button>
 		</>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="26" failures="0" errors="0" time="1.259">
+    <testsuite name="src/app/api/__tests__/apiRoutes.test.ts" timestamp="2025-12-12T13:42:02.429Z" hostname="Daniels-MacBook-Air.local" tests="12" failures="0" errors="0" skipped="0" time="0.017429208">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/argument &gt; rejects unauthenticated requests" time="0.004687667">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/argument &gt; creates an argument and schedules background work" time="0.0035355">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/comment &gt; validates payload" time="0.000669292">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/comment &gt; creates a comment" time="0.000666333">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/topics &gt; returns paginated topics" time="0.001241625">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/topics &gt; requires authentication" time="0.000493291">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/topics &gt; creates a topic and queues classification" time="0.001001791">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/top-topics &gt; returns aggregated topics" time="0.000447041">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/vote &gt; validates payload" time="0.000802042">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/vote &gt; records a vote and updates counts" time="0.001226584">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/auth &gt; returns an existing user" time="0.000835125">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/auth &gt; creates a user when missing" time="0.000607583">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/api/__tests__/authRoutes.test.ts" timestamp="2025-12-12T13:42:02.431Z" hostname="Daniels-MacBook-Air.local" tests="14" failures="0" errors="0" skipped="0" time="0.00721475">
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="register &gt; rejects missing fields" time="0.001053041">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="register &gt; rejects invalid email" time="0.000528875">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="register &gt; blocks duplicate emails" time="0.000554875">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="register &gt; creates user and sends welcome email" time="0.00195925">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="forgot password &gt; requires an email" time="0.000281709">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="forgot password &gt; returns 404 when user is missing" time="0.000138125">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="forgot password &gt; creates reset code and emails link" time="0.000452083">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="reset password &gt; requires token and password" time="0.000189292">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="reset password &gt; rejects unknown token" time="0.000132083">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="reset password &gt; rejects expired token" time="0.000155875">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="reset password &gt; updates password and marks token used" time="0.000355375">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="user by email &gt; validates input" time="0.000199833">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="user by email &gt; returns 404 when missing" time="0.00013875">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="user by email &gt; returns user when found" time="0.000192291">
+        </testcase>
+    </testsuite>
+</testsuites>

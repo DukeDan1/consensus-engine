@@ -16,7 +16,7 @@ import { cleanOntologyLabel } from "@/app/lib/ontologyUtils";
 
 // Models (override via env if desired)
 const DEFAULT_EMBED_MODEL = process.env.OPENAI_EMBED_MODEL || "text-embedding-3-large";
-const DEFAULT_RESPONSES_MODEL = process.env.OPENAI_RESPONSES_MODEL || "gpt-5.1";
+const DEFAULT_RESPONSES_MODEL = process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2";
 
 // File locations
 const ONTOLOGY_PATH = path.resolve(process.cwd(), "ontology_categories.json");
