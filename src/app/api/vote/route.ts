@@ -16,12 +16,20 @@ type Body = {
 export async function POST(req: Request) {
     await dbConnect();
 
+    const execIfSupported = async <T = any>(maybeQuery: any): Promise<T> => {
+        if (!maybeQuery) return maybeQuery;
+        if (typeof maybeQuery.exec === "function") {
+            return maybeQuery.exec();
+        }
+        return maybeQuery;
+    };
+
     const session = await getServerSession();
     if (!session?.user?.email) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await User.findOne({ email: session.user.email }).exec();
+    const user = await execIfSupported(User.findOne({ email: session.user.email }));
     if (!user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -43,11 +51,13 @@ export async function POST(req: Request) {
         }
 
         try {
-            await Vote.findOneAndUpdate(
-                { user: user._id, targetType, targetId: targetObjectId },
-                { $set: { value } },
-                { upsert: true, new: false, setDefaultsOnInsert: true }
-            ).exec();
+            await execIfSupported(
+                Vote.findOneAndUpdate(
+                    { user: user._id, targetType, targetId: targetObjectId },
+                    { $set: { value } },
+                    { upsert: true, new: false, setDefaultsOnInsert: true }
+                )
+            );
         } catch (err: any) {
             // Handle duplicate key race: another concurrent upsert may have won — fall back to counting
             if (err?.code === 11000) {
@@ -58,22 +68,26 @@ export async function POST(req: Request) {
         }
 
         // Recount votes for the target
-        const upCount = await Vote.countDocuments({ targetType, targetId: targetObjectId, value: 1 }).exec();
-        const downCount = await Vote.countDocuments({ targetType, targetId: targetObjectId, value: -1 }).exec();
+        const upCount = await execIfSupported<number>(Vote.countDocuments({ targetType, targetId: targetObjectId, value: 1 }));
+        const downCount = await execIfSupported<number>(Vote.countDocuments({ targetType, targetId: targetObjectId, value: -1 }));
 
         // If this is an Argument, update its cached counts/score
         if (targetType === "Argument") {
-            await Argument.findByIdAndUpdate(targetObjectId, {
-                upvoteCount: upCount,
-                downvoteCount: downCount,
-                score: upCount - downCount,
-            }).exec();
+            await execIfSupported(
+                Argument.findByIdAndUpdate(targetObjectId, {
+                    upvoteCount: upCount,
+                    downvoteCount: downCount,
+                    score: upCount - downCount,
+                })
+            );
         } else if (targetType === "Comment") {
-            await Comment.findByIdAndUpdate(targetObjectId, {
-                upvoteCount: upCount,
-                downvoteCount: downCount,
-                score: upCount - downCount,
-            }).exec();
+            await execIfSupported(
+                Comment.findByIdAndUpdate(targetObjectId, {
+                    upvoteCount: upCount,
+                    downvoteCount: downCount,
+                    score: upCount - downCount,
+                })
+            );
         }
 
         return NextResponse.json({ upvoteCount: upCount, downvoteCount: downCount });
