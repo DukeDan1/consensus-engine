@@ -1,4 +1,4 @@
-name: Lint (Feature Branches)
+name: Lint, Build, Test (Feature Branches)
 
 on:
   pull_request:

@@ -1,4 +1,4 @@
-name: Lint & Deploy (Main Branch)
+name: Lint, Build, Test, Deploy (Main Branch)
 
 on:
   push:
