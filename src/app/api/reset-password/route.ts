@@ -40,7 +40,7 @@ export async function handleResetPassword(
 
   const hash = await injectedDeps.hashPassword(newPassword);
   await injectedDeps.userModel.updateOne(
-    { _id: resetToken.user },
+    { _id: resetToken.user._id },
     { $set: { passwordHash: hash } }
   );
 
