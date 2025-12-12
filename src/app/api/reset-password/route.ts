@@ -39,8 +39,12 @@ export async function handleResetPassword(
   }
 
   const hash = await injectedDeps.hashPassword(newPassword);
+  const userId = typeof resetToken.user === 'string' ? resetToken.user : resetToken.user?._id;
+  if (!userId) {
+    return { status: 400, body: { error: 'Invalid reset token' } };
+  }
   await injectedDeps.userModel.updateOne(
-    { _id: resetToken.user._id },
+    { _id: userId },
     { $set: { passwordHash: hash } }
   );
 
