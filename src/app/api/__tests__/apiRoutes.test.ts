@@ -461,6 +461,7 @@ describe('POST /api/vote', () => {
     mockVoteCountDocuments
       .mockReturnValueOnce(execResult(3))
       .mockReturnValueOnce(execResult(1));
+    mockArgumentFindByIdAndUpdate.mockReturnValue(execResult(undefined));
 
     const req = new Request('http://localhost/api/vote', {
       method: 'POST',
