@@ -67,7 +67,7 @@ This will:
 ## Environment variables
 - `MONGODB_URI`: MongoDB connection string for application data.
 - `OPENAI_API_KEY`: OpenAI API key enabling AI summarisation, moderation, and embeddings.
-- `OPENAI_RESPONSES_MODEL` (optional): Override the default model used for AI responses (defaults to `gpt-5.1`).
+- `OPENAI_RESPONSES_MODEL` (optional): Override the default model used for AI responses (defaults to `gpt-5.2`).
 - `AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING`: Azure Communication Services connection string for sending email.
 - `NEXTAUTH_SECRET`: Secret used by NextAuth for signing/encrypting auth tokens.
 - `NEXTAUTH_URL`: Base URL for NextAuth callbacks (e.g., `http://localhost:3000`).

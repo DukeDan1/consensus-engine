@@ -167,7 +167,7 @@ async function classify(text: string): Promise<SeedOntologyCategory[]> {
 
 async function generateTopicNames(numberOfTopics: number): Promise<Array<string>> {
   const response = await openai.responses.create({
-    model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.1",
+    model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
     reasoning: { effort: "none" },
     tools: [{
       type: "function",
@@ -230,7 +230,7 @@ async function generateTopic(users: SeedUser[], existingKeys: Set<string>, topic
   if (!topicKey) return null;
 
   const response = await openai.responses.create({
-    model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.1",
+    model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
     reasoning: { effort: "low" },
     tools: [dataTool],
     input: [

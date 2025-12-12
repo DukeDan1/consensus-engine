@@ -25,7 +25,7 @@ export async function getAIAnalysisForArgument(argumentText: string, topicName: 
                 content: argumentText 
             }
         ],
-        model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.1",
+        model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
         reasoning: {
             effort: "low"
         },
