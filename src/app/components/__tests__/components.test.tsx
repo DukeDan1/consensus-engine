@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
-import { vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Basic mocks for Next.js primitives
 const pushMock = vi.fn();
@@ -287,7 +287,7 @@ describe('CreateNewTopic', () => {
 
 describe('OntologyCategoryPicker', () => {
   it('adds and removes categories from selection', async () => {
-    mockFetch({ categories: [{ id: 'c1', label: 'Health' }] });
+    mockFetch({ categories: [{ id: 'c1', label: 'Health' }, { id: 'c2', label: 'Science' }] });
     const onChange = vi.fn();
     render(<OntologyCategoryPicker selected={[]} onChange={onChange} />);
 
@@ -296,5 +296,10 @@ describe('OntologyCategoryPicker', () => {
     await waitFor(() => expect(global.fetch).toHaveBeenCalled());
     fireEvent.click(screen.getByRole('button', { name: /health/i }));
     expect(onChange).toHaveBeenCalledWith([expect.objectContaining({ id: 'c1' })]);
+    expect(onChange).not.toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ id: 'c2' })]));
+    // Simulate removing category
+    render(<OntologyCategoryPicker selected={[{ id: 'c1', label: 'Health' }]} onChange={onChange} />);
+    fireEvent.click(screen.getByRole('button', { name: /remove health/i }));
+    expect(onChange).toHaveBeenCalledWith([]);
   });
 });
