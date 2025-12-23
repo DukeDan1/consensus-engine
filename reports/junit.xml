@@ -1,59 +1,175 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="26" failures="0" errors="0" time="1.259">
-    <testsuite name="src/app/api/__tests__/apiRoutes.test.ts" timestamp="2025-12-12T13:42:02.429Z" hostname="Daniels-MacBook-Air.local" tests="12" failures="0" errors="0" skipped="0" time="0.017429208">
-        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/argument &gt; rejects unauthenticated requests" time="0.004687667">
+<testsuites name="vitest tests" tests="80" failures="0" errors="0" time="1.528">
+    <testsuite name="src/app/__tests__/pages.test.tsx" timestamp="2025-12-23T13:49:10.030Z" hostname="Daniels-MacBook-Air.local" tests="8" failures="0" errors="0" skipped="0" time="0.122500916">
+        <testcase classname="src/app/__tests__/pages.test.tsx" name="App Router pages &gt; renders the home page with navigation links" time="0.072057834">
         </testcase>
-        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/argument &gt; creates an argument and schedules background work" time="0.0035355">
+        <testcase classname="src/app/__tests__/pages.test.tsx" name="App Router pages &gt; renders the login page and redirects if already authed" time="0.008405709">
         </testcase>
-        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/comment &gt; validates payload" time="0.000669292">
+        <testcase classname="src/app/__tests__/pages.test.tsx" name="App Router pages &gt; renders the registration page" time="0.006010625">
         </testcase>
-        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/comment &gt; creates a comment" time="0.000666333">
+        <testcase classname="src/app/__tests__/pages.test.tsx" name="App Router pages &gt; renders the forgot-password page" time="0.005232167">
         </testcase>
-        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/topics &gt; returns paginated topics" time="0.001241625">
+        <testcase classname="src/app/__tests__/pages.test.tsx" name="App Router pages &gt; renders the reset-password page" time="0.005667375">
         </testcase>
-        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/topics &gt; requires authentication" time="0.000493291">
+        <testcase classname="src/app/__tests__/pages.test.tsx" name="App Router pages &gt; renders the topics page shell" time="0.007824333">
         </testcase>
-        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/topics &gt; creates a topic and queues classification" time="0.001001791">
+        <testcase classname="src/app/__tests__/pages.test.tsx" name="App Router pages &gt; renders the topic facts page with data" time="0.01548375">
         </testcase>
-        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/top-topics &gt; returns aggregated topics" time="0.000447041">
-        </testcase>
-        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/vote &gt; validates payload" time="0.000802042">
-        </testcase>
-        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/vote &gt; records a vote and updates counts" time="0.001226584">
-        </testcase>
-        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/auth &gt; returns an existing user" time="0.000835125">
-        </testcase>
-        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/auth &gt; creates a user when missing" time="0.000607583">
+        <testcase classname="src/app/__tests__/pages.test.tsx" name="App Router pages &gt; returns notFound when facts or meta missing" time="0.000962333">
         </testcase>
     </testsuite>
-    <testsuite name="src/app/api/__tests__/authRoutes.test.ts" timestamp="2025-12-12T13:42:02.431Z" hostname="Daniels-MacBook-Air.local" tests="14" failures="0" errors="0" skipped="0" time="0.00721475">
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="register &gt; rejects missing fields" time="0.001053041">
+    <testsuite name="src/app/api/__tests__/apiRoutes.test.ts" timestamp="2025-12-23T13:49:10.031Z" hostname="Daniels-MacBook-Air.local" tests="41" failures="0" errors="0" skipped="0" time="0.078025291">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/argument &gt; rejects unauthenticated requests" time="0.012535584">
         </testcase>
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="register &gt; rejects invalid email" time="0.000528875">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/argument &gt; validates required payload fields" time="0.0013005">
         </testcase>
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="register &gt; blocks duplicate emails" time="0.000554875">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/argument &gt; rejects invalid stance" time="0.0006075">
         </testcase>
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="register &gt; creates user and sends welcome email" time="0.00195925">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/argument &gt; creates an argument and schedules background work" time="0.002715417">
         </testcase>
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="forgot password &gt; requires an email" time="0.000281709">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/argument &gt; handles cast errors from persistence layer" time="0.001283292">
+            <system-err>
+Create argument error { name: &apos;CastError&apos; }
+
+            </system-err>
         </testcase>
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="forgot password &gt; returns 404 when user is missing" time="0.000138125">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/comment &gt; validates payload" time="0.000784459">
         </testcase>
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="forgot password &gt; creates reset code and emails link" time="0.000452083">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/comment &gt; creates a comment" time="0.000964375">
         </testcase>
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="reset password &gt; requires token and password" time="0.000189292">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/topics &gt; returns paginated topics" time="0.00149175">
         </testcase>
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="reset password &gt; rejects unknown token" time="0.000132083">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/topics &gt; requires authentication" time="0.000703833">
         </testcase>
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="reset password &gt; rejects expired token" time="0.000155875">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/topics &gt; creates a topic and queues classification" time="0.0011835">
         </testcase>
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="reset password &gt; updates password and marks token used" time="0.000355375">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/top-topics &gt; returns aggregated topics" time="0.001017708">
         </testcase>
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="user by email &gt; validates input" time="0.000199833">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/vote &gt; validates payload" time="0.001647">
         </testcase>
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="user by email &gt; returns 404 when missing" time="0.00013875">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/vote &gt; rejects unauthenticated users" time="0.000648375">
         </testcase>
-        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="user by email &gt; returns user when found" time="0.000192291">
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/vote &gt; returns 404 when user is missing" time="0.000634792">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/vote &gt; records a vote and updates counts" time="0.002705">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/vote &gt; updates comment vote counts" time="0.001239542">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/auth &gt; returns an existing user" time="0.001626333">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/auth &gt; rejects missing identifiers" time="0.00142175">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/auth &gt; handles phone-based lookup" time="0.002879667">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/auth &gt; creates a user when missing" time="0.001138791">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/auth/login &gt; validates email" time="0.000945125">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/auth/login &gt; logs successful request and updates history" time="0.001798291">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/auth/profile &gt; returns static profile message" time="0.000668">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/auth/user-by-email &gt; requires email" time="0.003116708">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/auth/user-by-email &gt; returns id when found" time="0.002028959">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/ontology/categories &gt; filters by search term" time="0.00124475">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/ontology/categories &gt; filters by ids" time="0.001336458">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/profile/[userId] &gt; rejects invalid id" time="0.007573292">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/profile/[userId] &gt; returns profile data" time="0.001965875">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/topics/[id] &gt; validates id" time="0.001432583">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/topics/[id] &gt; returns topic details with comments and facts" time="0.001841042">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/topics/[id]/facts &gt; rejects bad id" time="0.001012042">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/topics/[id]/facts &gt; returns facts list" time="0.001319167">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="GET /api/topics/[id]/summary &gt; returns summary" time="0.001736834">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/user/update &gt; requires auth" time="0.000930917">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/user/update &gt; applies allowed updates" time="0.001065583">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/user/[id] &gt; requires auth" time="0.002576958">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="POST /api/user/[id] &gt; updates allowed fields" time="0.002110583">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="auth [...nextauth] config &gt; authorizes new user with consent" time="0.001150375">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="auth [...nextauth] config &gt; rejects without consent" time="0.000695833">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/apiRoutes.test.ts" name="auth [...nextauth] config &gt; creates missing user on signIn callback" time="0.000766458">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/api/__tests__/authRoutes.test.ts" timestamp="2025-12-23T13:49:10.033Z" hostname="Daniels-MacBook-Air.local" tests="14" failures="0" errors="0" skipped="0" time="0.005993625">
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="register &gt; rejects missing fields" time="0.001062917">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="register &gt; rejects invalid email" time="0.000233542">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="register &gt; blocks duplicate emails" time="0.000434208">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="register &gt; creates user and sends welcome email" time="0.001537667">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="forgot password &gt; requires an email" time="0.000229208">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="forgot password &gt; returns 404 when user is missing" time="0.000131166">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="forgot password &gt; creates reset code and emails link" time="0.000400833">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="reset password &gt; requires token and password" time="0.000174334">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="reset password &gt; rejects unknown token" time="0.000131458">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="reset password &gt; rejects expired token" time="0.000145792">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="reset password &gt; updates password and marks token used" time="0.00031575">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="user by email &gt; validates input" time="0.000125625">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="user by email &gt; returns 404 when missing" time="0.000101625">
+        </testcase>
+        <testcase classname="src/app/api/__tests__/authRoutes.test.ts" name="user by email &gt; returns user when found" time="0.000151209">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/components/__tests__/components.test.tsx" timestamp="2025-12-23T13:49:10.034Z" hostname="Daniels-MacBook-Air.local" tests="17" failures="0" errors="0" skipped="0" time="0.190979458">
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="AddNewArgumentComponent &gt; opens form, submits text, and triggers router" time="0.080184708">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="AddNewCommentComponent &gt; posts a reply and refreshes" time="0.013743542">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="ArgumentCard &gt; renders argument content and comments" time="0.010754041">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="UI atoms &gt; renders ontology badges" time="0.00152975">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="UI atoms &gt; renders search loading spinner" time="0.002585708">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="UI atoms &gt; renders interactive card as link" time="0.003292583">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="Topic filters &gt; submits search criteria" time="0.007738083">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="Topic filters &gt; applies ontology filters to URL" time="0.010916125">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="TopicsBrowser &gt; renders fetched topics and pagination" time="0.011924708">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="Topic discussion controls &gt; toggles filters and argument form" time="0.007293334">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="Header &gt; shows initials when no image provided" time="0.003061292">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="ProfileHoverCard &gt; renders stats and quote" time="0.002072834">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="SummaryColumnCard &gt; shows AI generated badge and discuss link" time="0.005132708">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="Topic primitives &gt; renders fact card with source link" time="0.005008458">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="Topic primitives &gt; renders topic card stats" time="0.002431125">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="CreateNewTopic &gt; opens form and submits new topic" time="0.015572584">
+        </testcase>
+        <testcase classname="src/app/components/__tests__/components.test.tsx" name="OntologyCategoryPicker &gt; adds and removes categories from selection" time="0.006356416">
         </testcase>
     </testsuite>
 </testsuites>
