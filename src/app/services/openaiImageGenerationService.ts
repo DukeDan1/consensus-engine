@@ -123,7 +123,7 @@ export async function generateProfileImage(promptArgs: ProfilePromptArgs): Promi
         prompt: prompt,
         n: 1,
         size: "1024x1024",
-        quality: "low",
+        quality: "standard",
     });
     return response?.data?.[0]?.b64_json || "";
 }
