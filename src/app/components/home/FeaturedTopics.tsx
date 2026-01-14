@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import TopicCard from "@/app/components/topics/TopicCard";
+import TopTopicCard from "@/app/components/topics/TopicCard";
 
 type TopicItem = {
   _id: string;
@@ -75,7 +75,7 @@ export default function FeaturedTopics() {
   return (
     <div className="row g-3">
       {topics.map((topic) => (
-        <TopicCard key={topic._id} topic={topic} />
+        <TopTopicCard key={topic._id} topic={topic} />
       ))}
     </div>
   );
