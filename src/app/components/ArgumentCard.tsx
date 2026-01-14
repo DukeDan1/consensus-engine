@@ -63,7 +63,7 @@ function EvidenceList({ evidence }: { evidence?: any[] }) {
                             key={`${url}-${idx}`}
                             href={url}
                             target="_blank"
-                            rel="noopenernoreferrer"
+                            rel="noopener noreferrer"
                             className="badge text-bg-secondary text-decoration-none"
                             title={label}
                         >

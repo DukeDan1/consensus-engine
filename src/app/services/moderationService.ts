@@ -242,7 +242,15 @@ export function moderationToVisibility(params: {
 
   // Strict behavior for low-trust: default to hidden on suspicious signals.
   const strict = shouldApplyStrictPostingRules(userTrustTier);
-  const suspicious = relaxedComments
+  const strictSuspicious = strict && (
+    moderation.spamLikelihood >= 40 ||
+    moderation.trollingLikelihood >= 45 ||
+    moderation.illegalOrHarmfulLikelihood >= 30 ||
+    moderation.quality <= 35 ||
+    moderation.offTopicLikelihood >= 55
+  );
+
+  const suspicious = strictSuspicious || (relaxedComments
     ? (moderation.spamLikelihood >= 70 ||
       moderation.trollingLikelihood >= 70 ||
       moderation.illegalOrHarmfulLikelihood >= 40 ||
@@ -251,7 +259,7 @@ export function moderationToVisibility(params: {
       moderation.trollingLikelihood >= 55 ||
       moderation.illegalOrHarmfulLikelihood >= 40 ||
       moderation.quality <= 25 ||
-      moderation.offTopicLikelihood >= 65);
+      moderation.offTopicLikelihood >= 65));
 
   if (moderation.decision === 'review') {
     return { status: 'hidden', rankPenalty: -25 };
@@ -263,6 +271,10 @@ export function moderationToVisibility(params: {
     : (moderation.spamLikelihood >= 35 || moderation.trollingLikelihood >= 40 || moderation.quality < 40);
 
   if (suspicious) {
+    return { status: 'hidden', rankPenalty: -25 };
+  }
+
+  if (strict && borderline) {
     return { status: 'hidden', rankPenalty: -25 };
   }
 

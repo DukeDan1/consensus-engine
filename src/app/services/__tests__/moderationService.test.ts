@@ -108,3 +108,77 @@ describe('moderationService.moderateUserGeneratedText', () => {
     expect(result.model).toBe('heuristic');
   });
 });
+
+describe('moderationService.moderationToVisibility', () => {
+  it('keeps borderline content visible for trusted users', async () => {
+    const { moderationToVisibility } = await loadModerationService();
+
+    const result = moderationToVisibility({
+      moderation: {
+        decision: 'allow',
+        severity: 'low',
+        categories: [],
+        spamLikelihood: 38,
+        trollingLikelihood: 30,
+        offTopicLikelihood: 50,
+        illegalOrHarmfulLikelihood: 10,
+        quality: 39,
+        shortReason: 'ok',
+        recommendedTrustDelta: 0,
+      },
+      userTrustTier: 'trusted',
+      contentType: 'argument',
+    });
+
+    expect(result.status).toBe('visible');
+    expect(result.rankPenalty).toBe(-5);
+  });
+
+  it('hides borderline content for strict (low-trust) users', async () => {
+    const { moderationToVisibility } = await loadModerationService();
+
+    const result = moderationToVisibility({
+      moderation: {
+        decision: 'allow',
+        severity: 'low',
+        categories: [],
+        spamLikelihood: 38,
+        trollingLikelihood: 30,
+        offTopicLikelihood: 50,
+        illegalOrHarmfulLikelihood: 10,
+        quality: 39,
+        shortReason: 'ok',
+        recommendedTrustDelta: 0,
+      },
+      userTrustTier: 'low',
+      contentType: 'argument',
+    });
+
+    expect(result.status).toBe('hidden');
+    expect(result.rankPenalty).toBe(-25);
+  });
+
+  it('treats lower thresholds as suspicious for strict users', async () => {
+    const { moderationToVisibility } = await loadModerationService();
+
+    const result = moderationToVisibility({
+      moderation: {
+        decision: 'allow',
+        severity: 'medium',
+        categories: [],
+        spamLikelihood: 42,
+        trollingLikelihood: 20,
+        offTopicLikelihood: 30,
+        illegalOrHarmfulLikelihood: 5,
+        quality: 80,
+        shortReason: 'ok',
+        recommendedTrustDelta: 0,
+      },
+      userTrustTier: 'low',
+      contentType: 'argument',
+    });
+
+    expect(result.status).toBe('hidden');
+    expect(result.rankPenalty).toBe(-25);
+  });
+});

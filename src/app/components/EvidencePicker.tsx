@@ -4,10 +4,10 @@ import type { EvidenceItem } from "@/app/lib/evidence";
 type Props = {
   evidence: EvidenceItem[];
   evidenceLink: string;
-  onEvidenceLinkChange: (value: string) => void;
+  onEvidenceLinkChange: (_value: string) => void;
   onAddLink: () => void;
-  onFileChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onRemove: (index: number) => void;
+  onFileChange: (_e: ChangeEvent<HTMLInputElement>) => void;
+  onRemove: (_index: number) => void;
   maxItems: number;
   canAddMore: boolean;
   maxLabelWidth?: number;
