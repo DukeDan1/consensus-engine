@@ -83,4 +83,4 @@ TopicSchema.index({ score: -1 });
 TopicSchema.index({ "ontologyCategories.id": 1, createdAt: -1 });
 TopicSchema.index({ "visibility.status": 1, createdAt: -1 });
 
-export const Topic = mongoose.model<ITopic>("Topic", TopicSchema);
+export const Topic = (mongoose.models.Topic as mongoose.Model<ITopic>) || mongoose.model<ITopic>("Topic", TopicSchema);

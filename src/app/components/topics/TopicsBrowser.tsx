@@ -219,7 +219,7 @@ const TopicsBrowser = forwardRef<TopicsBrowserHandle, {}>(function TopicsBrowser
 
       <div className="row g-3">
         {topics.map((t) => (
-          <TopTopicCard key={t._id} topic={t} />
+          <TopTopicCard key={t._id} topic={t} isAuthenticated={true} />
         ))}
       </div>
 
