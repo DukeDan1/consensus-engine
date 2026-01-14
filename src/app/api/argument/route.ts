@@ -11,11 +11,13 @@ import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
 import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
 import { moderateUserGeneratedText, moderationToVisibility } from "@/app/services/moderationService";
 import { applyTrustDelta } from "@/app/services/trustService";
+import { sanitiseEvidence, type EvidenceItemInput } from "@/app/lib/evidence";
 
 type Body = {
     topicId: string;
     body: string;
     side?: ArgumentSide;
+    evidence?: EvidenceItemInput[];
 };
 
 export async function POST(req: Request) {
@@ -32,7 +34,7 @@ export async function POST(req: Request) {
     }
 
     const payload: Body = await req.json();
-    let { topicId, body, side = "neutral" } = payload || ({} as Body);
+    let { topicId, body, side = "neutral", evidence = [] } = payload || ({} as Body);
 
     if (!topicId || typeof body !== "string") {
         return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
@@ -45,6 +47,8 @@ export async function POST(req: Request) {
     if (!["for", "against", "neutral"].includes(side)) {
         return NextResponse.json({ error: "Invalid stance" }, { status: 400 });
     }
+    
+    const safeEvidence = sanitiseEvidence(evidence, 10);
 
     try {
         const topicObjId = new mongoose.Types.ObjectId(topicId);
@@ -60,9 +64,10 @@ export async function POST(req: Request) {
             userTrustScore: user.trustScore,
             userTrustTier: user.trustTier,
             topicTitle: topic.title,
+            evidence: safeEvidence,
         });
 
-        const visibility = moderationToVisibility({ moderation, userTrustTier: user.trustTier });
+        const visibility = moderationToVisibility({ moderation, userTrustTier: user.trustTier, contentType: "argument" });
 
         if (visibility.status === "blocked") {
             if (moderation.recommendedTrustDelta) {
@@ -84,6 +89,7 @@ export async function POST(req: Request) {
             downvoteCount: 0,
             score: 0,
             ontologyCategories: [],
+            evidence: safeEvidence,
             visibility: {
                 status: visibility.status,
                 rankPenalty: visibility.rankPenalty,
@@ -157,6 +163,7 @@ export async function POST(req: Request) {
             createdBy: { _id: (user._id as mongoose.Types.ObjectId).toString(), name: user.name },
             createdAt: created.createdAt?.toISOString?.() ?? new Date().toISOString(),
             ontologyCategories: created.ontologyCategories ?? [],
+            evidence: created.evidence ?? [],
             visibility: created.visibility,
             comments: [],
         });

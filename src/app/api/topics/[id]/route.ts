@@ -6,6 +6,17 @@ import { Argument } from "@/app/models/argument";
 import { Comment } from "@/app/models/comment";
 import { Fact } from "@/app/models/facts";
 import User from "@/app/models/user";
+import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
+
+async function signEvidence(evidence: any[] = []) {
+  return Promise.all(
+    (evidence || []).map(async (ev) => {
+      if (!ev || !ev.url) return ev;
+      const signed = await getSignedReadUrlFromUrl(ev.url).catch(() => ev.url);
+      return { ...ev, url: signed };
+    })
+  );
+}
 
 function parseCategoryFilters(searchParams: URLSearchParams, singularKey: string, pluralKey: string) {
   const values: string[] = [];
@@ -92,6 +103,7 @@ export async function GET(
         commentCategoryFilter.length === 0 ||
         (Array.isArray(c.ontologyCategories) && c.ontologyCategories.some((cat: any) => commentCategoryFilter.includes(cat?.id)))
       ) {
+        const signedEvidence = await signEvidence(c.evidence ?? []);
         (commentsByArgument[key] = commentsByArgument[key] || []).push({
           id: c._id,
           body: c.body,
@@ -101,6 +113,7 @@ export async function GET(
           downvoteCount: c.downvoteCount ?? 0,
           score: c.score ?? ((c.upvoteCount ?? 0) - (c.downvoteCount ?? 0)),
           ontologyCategories: c.ontologyCategories ?? [],
+          evidence: signedEvidence,
           visibility: c.visibility,
         });
       }
@@ -127,10 +140,11 @@ export async function GET(
       createdAt: topic.createdAt,
       updatedAt: topic.updatedAt,
     },
-    arguments: argumentsList.map(a => {
+    arguments: await Promise.all(argumentsList.map(async a => {
       const rawSide = (a as any).side as string;
       const normalisedSide = rawSide === 'pro' ? 'for' : (rawSide === 'con' ? 'against' : rawSide);
       const commentList = commentsByArgument[a._id.toString()] || [];
+      const signedEvidence = await signEvidence(a.evidence ?? []);
       return ({
       id: a._id,
       side: normalisedSide,
@@ -141,11 +155,12 @@ export async function GET(
       score: a.score,
       createdAt: a.createdAt,
   ontologyCategories: a.ontologyCategories ?? [],
+        evidence: signedEvidence,
       visibility: a.visibility,
       comments: commentList,
       commentCount: commentList.length,
       aiAnalysis: a.aiAnalysis,
-    })}),
+    })})),
     facts: facts.map(f => ({
       id: f._id,
       text: f.text,

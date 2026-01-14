@@ -3,12 +3,26 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import EvidencePicker from "@/app/components/EvidencePicker";
+import { useEvidenceAttachments } from "@/app/lib/useEvidenceAttachments";
 
 export default function AddNewCommentComponent({ argumentId }: { argumentId: string }) {
     const [showForm, setShowForm] = useState(false);
     const [text, setText] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const {
+        evidence,
+        evidenceLink,
+        setEvidenceLink,
+        handleAddLink,
+        handleFileChange,
+        handlePaste,
+        removeEvidenceAt,
+        clearEvidence,
+        maxItems,
+        canAddMore,
+    } = useEvidenceAttachments();
     const router = useRouter();
 
     useEffect(() => {
@@ -27,7 +41,7 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
             const res = await fetch("/api/comment", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ argumentId, body }),
+                body: JSON.stringify({ argumentId, body, evidence }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
@@ -57,6 +71,7 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
         }
 
         setText("");
+        clearEvidence();
         setShowForm(false);
         // Refresh the current route so comments re-fetch and include the new one
         router.refresh();
@@ -96,8 +111,20 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
                                     rows={3}
                                     value={text}
                                     onChange={(e) => setText(e.target.value)}
+                                    onPaste={handlePaste}
                                 ></textarea>
                             </div>
+                            <EvidencePicker
+                                evidence={evidence}
+                                evidenceLink={evidenceLink}
+                                onEvidenceLinkChange={setEvidenceLink}
+                                onAddLink={handleAddLink}
+                                onFileChange={handleFileChange}
+                                onRemove={removeEvidenceAt}
+                                maxItems={maxItems}
+                                canAddMore={canAddMore}
+                                maxLabelWidth={280}
+                            />
                             <div className="d-flex gap-2">
                                 <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
                                     {submitting ? "Posting..." : "Post Comment"}

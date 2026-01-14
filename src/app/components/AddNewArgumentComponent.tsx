@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import EvidencePicker from "@/app/components/EvidencePicker";
+import { useEvidenceAttachments } from "@/app/lib/useEvidenceAttachments";
 
 type Props = {
     topicId: string;
@@ -14,6 +16,18 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
     const [text, setText] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const {
+        evidence,
+        evidenceLink,
+        setEvidenceLink,
+        handleAddLink,
+        handleFileChange,
+        handlePaste,
+        removeEvidenceAt,
+        clearEvidence,
+        maxItems,
+        canAddMore,
+    } = useEvidenceAttachments();
     const router = useRouter();
 
     useEffect(() => {
@@ -36,7 +50,7 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
             const res = await fetch("/api/argument", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ topicId, body }),
+                body: JSON.stringify({ topicId, body, evidence }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
@@ -65,6 +79,7 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
         }
 
         setText("");
+        clearEvidence();
         toggleForm(false);
         router.replace(`/topics/${topicId}?ordering=newest`);
         router.refresh();
@@ -114,8 +129,20 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
                                     rows={4}
                                     value={text}
                                     onChange={(e) => setText(e.target.value)}
+                                    onPaste={handlePaste}
                                 ></textarea>
                             </div>
+                            <EvidencePicker
+                                evidence={evidence}
+                                evidenceLink={evidenceLink}
+                                onEvidenceLinkChange={setEvidenceLink}
+                                onAddLink={handleAddLink}
+                                onFileChange={handleFileChange}
+                                onRemove={removeEvidenceAt}
+                                maxItems={maxItems}
+                                canAddMore={canAddMore}
+                                maxLabelWidth={320}
+                            />
                             <div className="d-flex gap-2">
                                 <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
                                     {submitting ? "Posting..." : "Post"}

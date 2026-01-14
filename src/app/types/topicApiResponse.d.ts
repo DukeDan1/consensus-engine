@@ -32,6 +32,13 @@ export type TopicApiResponse = {
       confidence?: number;
       similarity?: number;
     }>;
+    evidence?: Array<{
+      url: string;
+      kind?: 'link' | 'file';
+      fileName?: string;
+      contentType?: string;
+      label?: string;
+    }>;
     comments: Array<{
       id: string;
       body: string;
@@ -46,6 +53,13 @@ export type TopicApiResponse = {
         description?: string;
         confidence?: number;
         similarity?: number;
+      }>;
+      evidence?: Array<{
+        url: string;
+        kind?: 'link' | 'file';
+        fileName?: string;
+        contentType?: string;
+        label?: string;
       }>;
     }>;
     aiAnalysis?: {
