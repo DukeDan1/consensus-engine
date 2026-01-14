@@ -17,6 +17,20 @@ export interface IComment extends Document {
     confidence?: number;
     similarity?: number;
   }>;
+
+  visibility?: {
+    status: 'visible' | 'hidden' | 'needs_review' | 'blocked';
+    rankPenalty?: number;
+    moderatedAt?: Date;
+    reason?: string;
+    categories?: string[];
+    spamLikelihood?: number;
+    trollingLikelihood?: number;
+    offTopicLikelihood?: number;
+    illegalOrHarmfulLikelihood?: number;
+    quality?: number;
+    model?: string;
+  };
 }
 
 const CommentSchema = new Schema<IComment>({
@@ -39,10 +53,24 @@ const CommentSchema = new Schema<IComment>({
       }
     ],
     default: [],
-  }
+  },
+  visibility: {
+    status: { type: String, enum: ['visible', 'hidden', 'needs_review', 'blocked'], default: 'visible', index: true },
+    rankPenalty: { type: Number, default: 0 },
+    moderatedAt: { type: Date },
+    reason: { type: String },
+    categories: { type: [String], default: [] },
+    spamLikelihood: { type: Number },
+    trollingLikelihood: { type: Number },
+    offTopicLikelihood: { type: Number },
+    illegalOrHarmfulLikelihood: { type: Number },
+    quality: { type: Number },
+    model: { type: String },
+  },
 }, { timestamps: true });
 
 CommentSchema.index({ argument: 1, createdAt: 1 });
 CommentSchema.index({ "ontologyCategories.id": 1, argument: 1 });
+CommentSchema.index({ argument: 1, "visibility.status": 1, createdAt: -1 });
 
 export const Comment = mongoose.model<IComment>("Comment", CommentSchema);

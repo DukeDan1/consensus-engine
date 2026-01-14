@@ -42,6 +42,22 @@ export interface IUser extends Document {
     timestamp: Date;
     userAgent?: string;
   }> | undefined;
+
+  // Moderation / reputation
+  trustScore?: number;
+  trustTier?: 'low' | 'new' | 'standard' | 'trusted' | 'high';
+  trustUpdatedAt?: Date;
+  trustEvents?: Array<{
+    ts: Date;
+    delta: number;
+    reason: string;
+    meta?: Record<string, unknown>;
+  }>;
+
+  // TODO possible extension - lightweight anti-spam rate limiting
+  lastPostAt?: Date;
+  postWindowStartAt?: Date;
+  postsInWindow?: number;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -89,6 +105,27 @@ const UserSchema = new Schema<IUser>(
         userAgent: String,
       },
     ],
+
+    trustScore: { type: Number, default: 50, min: 0, max: 100, index: true },
+    trustTier: {
+      type: String,
+      enum: ['low', 'new', 'standard', 'trusted', 'high'],
+      default: 'new',
+      index: true,
+    },
+    trustUpdatedAt: { type: Date },
+    trustEvents: [
+      {
+        ts: { type: Date, default: Date.now },
+        delta: { type: Number, default: 0 },
+        reason: { type: String, default: '' },
+        meta: { type: Schema.Types.Mixed, default: {} },
+      },
+    ],
+
+    lastPostAt: { type: Date },
+    postWindowStartAt: { type: Date },
+    postsInWindow: { type: Number, default: 0 },
   },
   { timestamps: true, strict: true }
 );

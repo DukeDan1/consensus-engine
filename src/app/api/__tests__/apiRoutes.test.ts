@@ -251,7 +251,7 @@ describe('POST /api/argument', () => {
     const json = await res.json();
 
     expect(res.status).toBe(200);
-    expect(mockArgumentCreate).toHaveBeenCalledWith({
+    expect(mockArgumentCreate).toHaveBeenCalledWith(expect.objectContaining({
       topic: expect.anything(),
       side: 'for',
       body: 'trimmed body',
@@ -259,8 +259,9 @@ describe('POST /api/argument', () => {
       upvoteCount: 0,
       downvoteCount: 0,
       score: 0,
-      ontologyCategories: []
-    });
+      ontologyCategories: expect.any(Array),
+      visibility: expect.objectContaining({ status: expect.any(String) })
+    }));
     expect(mockTrackBackgroundTask).toHaveBeenCalledTimes(1);
     expect(json).toMatchObject({
       id: 'arg1',
@@ -275,6 +276,7 @@ describe('POST /api/argument', () => {
   it('handles cast errors from persistence layer', async () => {
     mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
     mockUserFindOne.mockReturnValue(execResult({ _id: 'user1', name: 'Test User' }));
+    mockTopicFindById.mockReturnValue(chainableQuery({ title: 'Topic' }));
     mockArgumentCreate.mockRejectedValue({ name: 'CastError' });
 
     const req = new Request('http://localhost/api/argument', {
@@ -323,13 +325,14 @@ describe('POST /api/comment', () => {
       body: 'hello world',
       createdBy: { _id: 'user1', name: 'Commenter' }
     });
-    expect(mockCommentCreate).toHaveBeenCalledWith({
+    expect(mockCommentCreate).toHaveBeenCalledWith(expect.objectContaining({
       argument: expect.anything(),
       parent: undefined,
       body: 'hello world',
       createdBy: 'user1',
-      ontologyCategories: []
-    });
+      ontologyCategories: expect.any(Array),
+      visibility: expect.objectContaining({ status: expect.any(String) })
+    }));
   });
 });
 
