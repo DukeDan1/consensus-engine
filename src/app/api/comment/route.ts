@@ -6,6 +6,8 @@ import User from "@/app/models/user";
 import mongoose from "mongoose";
 import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
 import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
+import { moderateUserGeneratedText, moderationToVisibility } from "@/app/services/moderationService";
+import { applyTrustDelta } from "@/app/services/trustService";
 
 type Body = {
     argumentId: string;
@@ -42,13 +44,56 @@ export async function POST(req: Request) {
         const argObjId = new mongoose.Types.ObjectId(argumentId);
         const parentObjId = parentId ? new mongoose.Types.ObjectId(parentId) : undefined;
 
+        const moderation = await moderateUserGeneratedText({
+            text: trimmed,
+            contentType: "comment",
+            userTrustScore: user.trustScore,
+            userTrustTier: user.trustTier,
+        });
+
+        const visibility = moderationToVisibility({ moderation, userTrustTier: user.trustTier });
+
+        if (visibility.status === "blocked") {
+            if (moderation.recommendedTrustDelta) {
+                await applyTrustDelta({
+                    userId: user._id,
+                    delta: moderation.recommendedTrustDelta,
+                    reason: "moderation:comment_blocked",
+                    meta: { categories: moderation.categories, severity: moderation.severity },
+                });
+            }
+            return NextResponse.json({ error: "Content blocked by moderation", reason: moderation.shortReason }, { status: 403 });
+        }
+
         const created = await Comment.create({
             argument: argObjId,
             parent: parentObjId,
             body: trimmed,
             createdBy: user._id,
             ontologyCategories: [],
+            visibility: {
+                status: visibility.status,
+                rankPenalty: visibility.rankPenalty,
+                moderatedAt: new Date(),
+                reason: moderation.shortReason,
+                categories: moderation.categories,
+                spamLikelihood: moderation.spamLikelihood,
+                trollingLikelihood: moderation.trollingLikelihood,
+                offTopicLikelihood: moderation.offTopicLikelihood,
+                illegalOrHarmfulLikelihood: moderation.illegalOrHarmfulLikelihood,
+                quality: moderation.quality,
+                model: moderation.model,
+            },
         });
+
+        if (moderation.recommendedTrustDelta) {
+            await applyTrustDelta({
+                userId: user._id,
+                delta: moderation.recommendedTrustDelta,
+                reason: "moderation:comment",
+                meta: { categories: moderation.categories, severity: moderation.severity },
+            });
+        }
 
         const backgroundTask = (async () => {
             try {
@@ -75,6 +120,7 @@ export async function POST(req: Request) {
             upvoteCount: 0,
             downvoteCount: 0,
             ontologyCategories: created.ontologyCategories ?? [],
+            visibility: created.visibility,
         });
     } catch (err: any) {
         console.error("Create comment error", err);

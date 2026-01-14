@@ -41,7 +41,13 @@ export default function CreateNewTopic({ onCreated, onOpenChange }: Props) {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error || "Failed to create topic");
+        const reason = data?.reason || data?.error || "Failed to create topic";
+        if (res.status === 403) {
+          toast.error(`Blocked: ${reason}`);
+        } else {
+          toast.error(reason);
+        }
+        return;
       }
       const data = await res.json();
       const created: CreatedTopic = {
@@ -60,6 +66,7 @@ export default function CreateNewTopic({ onCreated, onOpenChange }: Props) {
       onCreated?.(created);
     } catch (err: any) {
       setError(err?.message || "Failed to create topic");
+      toast.error(err?.message || "Failed to create topic");
     } finally {
       setSubmitting(false);
     }

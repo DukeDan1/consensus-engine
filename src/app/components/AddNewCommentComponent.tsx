@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 export default function AddNewCommentComponent({ argumentId }: { argumentId: string }) {
     const [showForm, setShowForm] = useState(false);
@@ -28,12 +29,29 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ argumentId, body }),
             });
+            const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                throw new Error("Failed to add comment");
+                const reason = data?.reason || data?.error || "Failed to add comment";
+                if (res.status === 403) {
+                    toast.error(`Blocked: ${reason}`);
+                } else {
+                    toast.error(reason);
+                }
+                return;
+            }
+
+            const status = data?.visibility?.status;
+            const reason = data?.visibility?.reason || data?.reason;
+            if (status === "hidden" || status === "needs_review") {
+                toast.info(reason ? `Submitted for review: ${reason}` : "Submitted for review. It may be hidden until cleared.", { autoClose: 15000 });
+            } else if (status === "visible") {
+                toast.success("Comment posted");
             }
         } catch (err) {
             // ignore network errors here; you can add toast/snackbar handling
             console.error("Submit comment failed", err);
+            toast.error("Unable to post right now. Please try again.");
+            return;
         } finally {
             setSubmitting(false);
         }

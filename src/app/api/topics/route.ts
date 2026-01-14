@@ -6,6 +6,8 @@ import User from "@/app/models/user";
 import { getServerSession } from "next-auth";
 import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
 import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
+import { moderateUserGeneratedText, moderationToVisibility } from "@/app/services/moderationService";
+import { applyTrustDelta } from "@/app/services/trustService";
 
 function slugify(input: string) {
   const base = input
@@ -40,7 +42,7 @@ export async function GET(request: NextRequest) {
   const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get("pageSize") || "15", 10) || 15));
   const categoryFilter = parseCategoryFilters(searchParams);
 
-  const match: Record<string, any> = { isActive: true };
+  const match: Record<string, any> = { isActive: true, "visibility.status": { $nin: ["blocked", "hidden"] } };
 
   // Build a case-insensitive OR filter across title and creator
   const or: any[] = [];
@@ -164,6 +166,28 @@ export async function POST(request: NextRequest) {
     slug = slugify(title);
   }
 
+  const moderation = await moderateUserGeneratedText({
+    text: `${title}\n\n${description}`.trim(),
+    contentType: "topic",
+    userTrustScore: creator.trustScore,
+    userTrustTier: creator.trustTier,
+    topicTitle: title,
+  });
+
+  const visibility = moderationToVisibility({ moderation, userTrustTier: creator.trustTier });
+
+  if (visibility.status === "blocked") {
+    if (moderation.recommendedTrustDelta) {
+      await applyTrustDelta({
+        userId: creator._id,
+        delta: moderation.recommendedTrustDelta,
+        reason: "moderation:topic_blocked",
+        meta: { categories: moderation.categories, severity: moderation.severity },
+      });
+    }
+    return NextResponse.json({ error: "Topic blocked by moderation", reason: moderation.shortReason }, { status: 403 });
+  }
+
   const doc = await Topic.create({
     title,
     description,
@@ -171,7 +195,28 @@ export async function POST(request: NextRequest) {
     createdBy: creator._id,
     isActive: true,
     slug,
+    visibility: {
+      status: visibility.status,
+      moderatedAt: new Date(),
+      reason: moderation.shortReason,
+      categories: moderation.categories,
+      spamLikelihood: moderation.spamLikelihood,
+      trollingLikelihood: moderation.trollingLikelihood,
+      offTopicLikelihood: moderation.offTopicLikelihood,
+      illegalOrHarmfulLikelihood: moderation.illegalOrHarmfulLikelihood,
+      quality: moderation.quality,
+      model: moderation.model,
+    },
   });
+
+  if (moderation.recommendedTrustDelta) {
+    await applyTrustDelta({
+      userId: creator._id,
+      delta: moderation.recommendedTrustDelta,
+      reason: "moderation:topic",
+      meta: { categories: moderation.categories, severity: moderation.severity },
+    });
+  }
 
   const backgroundTask = (async () => {
     try {
@@ -204,6 +249,7 @@ export async function POST(request: NextRequest) {
       downvoteCount: 0,
       totalVotes: 0,
       creatorName: creator.name || "Unknown",
+      visibility: visibility.status,
     },
     { status: 201 }
   );

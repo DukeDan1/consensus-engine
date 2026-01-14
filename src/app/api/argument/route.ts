@@ -9,6 +9,8 @@ import User from "@/app/models/user";
 import mongoose from "mongoose";
 import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
 import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
+import { moderateUserGeneratedText, moderationToVisibility } from "@/app/services/moderationService";
+import { applyTrustDelta } from "@/app/services/trustService";
 
 type Body = {
     topicId: string;
@@ -46,6 +48,33 @@ export async function POST(req: Request) {
 
     try {
         const topicObjId = new mongoose.Types.ObjectId(topicId);
+
+        const topic = await Topic.findById(topicObjId).select({ title: 1 }).lean().exec();
+        if (!topic) {
+            return NextResponse.json({ error: "Topic not found" }, { status: 404 });
+        }
+
+        const moderation = await moderateUserGeneratedText({
+            text: trimmed,
+            contentType: "argument",
+            userTrustScore: user.trustScore,
+            userTrustTier: user.trustTier,
+            topicTitle: topic.title,
+        });
+
+        const visibility = moderationToVisibility({ moderation, userTrustTier: user.trustTier });
+
+        if (visibility.status === "blocked") {
+            if (moderation.recommendedTrustDelta) {
+                await applyTrustDelta({
+                    userId: user._id,
+                    delta: moderation.recommendedTrustDelta,
+                    reason: "moderation:argument_blocked",
+                    meta: { categories: moderation.categories, severity: moderation.severity },
+                });
+            }
+            return NextResponse.json({ error: "Content blocked by moderation", reason: moderation.shortReason }, { status: 403 });
+        }
         const created = await Argument.create({
             topic: topicObjId,
             side: side as ArgumentSide,
@@ -55,9 +84,29 @@ export async function POST(req: Request) {
             downvoteCount: 0,
             score: 0,
             ontologyCategories: [],
+            visibility: {
+                status: visibility.status,
+                rankPenalty: visibility.rankPenalty,
+                moderatedAt: new Date(),
+                reason: moderation.shortReason,
+                categories: moderation.categories,
+                spamLikelihood: moderation.spamLikelihood,
+                trollingLikelihood: moderation.trollingLikelihood,
+                offTopicLikelihood: moderation.offTopicLikelihood,
+                illegalOrHarmfulLikelihood: moderation.illegalOrHarmfulLikelihood,
+                quality: moderation.quality,
+                model: moderation.model,
+            },
         });
 
-        const topic = await Topic.findById(topicObjId).select({ title: 1 }).lean().exec();
+        if (moderation.recommendedTrustDelta) {
+            await applyTrustDelta({
+                userId: user._id,
+                delta: moderation.recommendedTrustDelta,
+                reason: "moderation:argument",
+                meta: { categories: moderation.categories, severity: moderation.severity },
+            });
+        }
         
         // Track background AI processing for graceful shutdown
         const backgroundTask = (async () => {
@@ -108,6 +157,7 @@ export async function POST(req: Request) {
             createdBy: { _id: (user._id as mongoose.Types.ObjectId).toString(), name: user.name },
             createdAt: created.createdAt?.toISOString?.() ?? new Date().toISOString(),
             ontologyCategories: created.ontologyCategories ?? [],
+            visibility: created.visibility,
             comments: [],
         });
     } catch (err: any) {

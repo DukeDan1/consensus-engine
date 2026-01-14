@@ -58,7 +58,11 @@ export async function GET(
     ? { score: -1, createdAt: -1 }
     : { createdAt: -1 };
 
-  const argumentQuery: Record<string, any> = { topic: topic._id, isRemoved: false };
+  const argumentQuery: Record<string, any> = {
+    topic: topic._id,
+    isRemoved: false,
+    "visibility.status": { $nin: ["blocked", "hidden"] },
+  };
   if (argumentCategoryFilter.length) {
     argumentQuery["ontologyCategories.id"] = { $in: argumentCategoryFilter };
   }
@@ -73,7 +77,11 @@ export async function GET(
   const argumentIds = argumentsList.map(a => a._id);
   const commentsByArgument: Record<string, any[]> = {};
   if (argumentIds.length) {
-    const comments = await Comment.find({ argument: { $in: argumentIds }, isRemoved: false })
+    const comments = await Comment.find({
+      argument: { $in: argumentIds },
+      isRemoved: false,
+      "visibility.status": { $nin: ["blocked", "hidden"] },
+    })
       .sort({ createdAt: -1 })
       .limit(500)
       .populate({ path: "createdBy", select: "name" })
@@ -93,6 +101,7 @@ export async function GET(
           downvoteCount: c.downvoteCount ?? 0,
           score: c.score ?? ((c.upvoteCount ?? 0) - (c.downvoteCount ?? 0)),
           ontologyCategories: c.ontologyCategories ?? [],
+          visibility: c.visibility,
         });
       }
     }
@@ -132,6 +141,7 @@ export async function GET(
       score: a.score,
       createdAt: a.createdAt,
   ontologyCategories: a.ontologyCategories ?? [],
+      visibility: a.visibility,
       comments: commentList,
       commentCount: commentList.length,
       aiAnalysis: a.aiAnalysis,

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 type Props = {
     topicId: string;
@@ -37,9 +38,28 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ topicId, body }),
             });
-            if (!res.ok) throw new Error("Failed to add argument");
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                const reason = data?.reason || data?.error || "Failed to add argument";
+                if (res.status === 403) {
+                    toast.error(`Blocked: ${reason}`);
+                } else {
+                    toast.error(reason);
+                }
+                return;
+            }
+
+            const status = data?.visibility?.status;
+            const reason = data?.visibility?.reason || data?.reason;
+            if (status === "hidden" || status === "needs_review") {
+                toast.info(reason ? `Submitted for review: ${reason}` : "Submitted for review. It may be hidden until cleared.", { autoClose: 15000 });
+            } else if (status === "visible") {
+                toast.success("Posted successfully");
+            }
         } catch (err) {
             console.error("Submit argument failed", err);
+            toast.error("Unable to post right now. Please try again.");
+            return;
         } finally {
             setSubmitting(false);
         }
