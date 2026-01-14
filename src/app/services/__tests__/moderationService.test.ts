@@ -1,0 +1,110 @@
+import { describe, it, expect, vi, afterEach } from 'vitest';
+
+const mockResponsesCreate = vi.fn();
+
+vi.mock('openai', () => {
+  return {
+    default: class MockOpenAI {
+      responses = { create: mockResponsesCreate };
+      constructor() {}
+    },
+  };
+});
+
+type ModerationModule = typeof import('@/app/services/moderationService');
+
+async function loadModerationService(env?: Record<string, string | undefined>): Promise<ModerationModule> {
+  vi.resetModules();
+  delete process.env.MODERATION_ENABLED;
+  delete process.env.OPENAI_API_KEY;
+  delete process.env.OPENAI_MODERATION_MODEL;
+  delete process.env.OPENAI_RESPONSES_MODEL;
+
+  if (env) {
+    Object.entries(env).forEach(([key, value]) => {
+      if (value !== undefined) {
+        process.env[key] = value;
+      }
+    });
+  }
+  return import('@/app/services/moderationService');
+}
+
+afterEach(() => {
+  mockResponsesCreate.mockReset();
+  delete process.env.MODERATION_ENABLED;
+  delete process.env.OPENAI_API_KEY;
+  delete process.env.OPENAI_MODERATION_MODEL;
+  delete process.env.OPENAI_RESPONSES_MODEL;
+  vi.clearAllMocks();
+});
+
+describe('moderationService.moderateUserGeneratedText', () => {
+  it('returns allow when moderation is disabled', async () => {
+    const { moderateUserGeneratedText } = await loadModerationService({ MODERATION_ENABLED: 'false' });
+
+    const result = await moderateUserGeneratedText({ text: 'hello world', contentType: 'argument' });
+
+    expect(result.decision).toBe('allow');
+    expect(result.model).toBe('disabled');
+    expect(result.shortReason).toBe('Moderation disabled.');
+  });
+
+  it('falls back to heuristic when no OpenAI key and flags spammy text for review', async () => {
+    const { moderateUserGeneratedText } = await loadModerationService({});
+
+    const result = await moderateUserGeneratedText({
+      text: 'buy now!!!!! http://a.com http://b.com aaaaa',
+      contentType: 'argument',
+    });
+
+    expect(result.decision).toBe('review');
+    expect(result.categories).toContain('spam');
+    expect(result.model).toBe('heuristic');
+  });
+
+  it('uses OpenAI response when present', async () => {
+    mockResponsesCreate.mockResolvedValueOnce({
+      output: [
+        {
+          type: 'function_call',
+          name: 'moderate_content',
+          arguments: JSON.stringify({
+            decision: 'block',
+            severity: 'high',
+            categories: ['illegal'],
+            spamLikelihood: 1,
+            trollingLikelihood: 2,
+            offTopicLikelihood: 3,
+            illegalOrHarmfulLikelihood: 80,
+            quality: 10,
+            shortReason: 'bad',
+            recommendedTrustDelta: -5,
+          }),
+        },
+      ],
+    });
+
+    const { moderateUserGeneratedText } = await loadModerationService({ OPENAI_API_KEY: 'test-key' });
+
+    const result = await moderateUserGeneratedText({ text: 'content', contentType: 'argument' });
+
+    expect(result.decision).toBe('block');
+    expect(result.severity).toBe('high');
+    expect(result.categories).toEqual(['illegal']);
+    expect(result.illegalOrHarmfulLikelihood).toBe(80);
+    expect(result.shortReason).toBe('bad');
+    expect(result.model).toBe('gpt-5.2');
+    expect(mockResponsesCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to heuristic when OpenAI returns no function call', async () => {
+    mockResponsesCreate.mockResolvedValueOnce({ output: [] });
+    const { moderateUserGeneratedText } = await loadModerationService({ OPENAI_API_KEY: 'key' });
+
+    const result = await moderateUserGeneratedText({ text: 'hi there', contentType: 'comment' });
+
+    expect(result.decision).toBe('allow');
+    expect(result.model).toBe('heuristic');
+  });
+});

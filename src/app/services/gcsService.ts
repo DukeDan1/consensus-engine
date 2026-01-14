@@ -117,30 +117,39 @@ export async function getSignedReadUrlFromUrl(objectUrl: string, expiresInSecond
   const client = getStorage();
   if (!client) throw new Error('Google Storage is not configured');
 
+  let parsedUrl: URL;
   try {
-    const url = new URL(objectUrl);
-    const host = url.host;
-    let objectPath = url.pathname.replace(/^\//, '');
+    parsedUrl = new URL(objectUrl);
+  } catch (err) {
+    console.warn('getSignedReadUrlFromUrl: invalid URL, returning original', { objectUrl, err });
+    return objectUrl;
+  }
 
-    if (host.includes('storage.googleapis.com')) {
-      // Path form: /<bucket>/<object>
-      const [bucketInUrl, ...rest] = objectPath.split('/');
-      if (bucketInUrl !== bucketName) return objectUrl; // different bucket
-      objectPath = rest.join('/');
-    } else if (host === 'storage.cloud.google.com') {
-      // Path form: /<bucket>/<object>
-      const [bucketInUrl, ...rest] = objectPath.split('/');
-      if (bucketInUrl !== bucketName) return objectUrl;
-      objectPath = rest.join('/');
-    } else {
-      // Could be a bare object path
-      if (objectPath.startsWith(bucketName + '/')) {
-        objectPath = objectPath.slice(bucketName.length + 1);
-      } else {
-        return objectUrl; // not a GCS URL we recognize
-      }
+  const host = parsedUrl.host;
+  let objectPath = parsedUrl.pathname.replace(/^\//, '');
+
+  if (host.includes('storage.googleapis.com')) {
+    const [bucketInUrl, ...rest] = objectPath.split('/');
+    if (bucketInUrl !== bucketName) {
+      console.warn('getSignedReadUrlFromUrl: different bucket in URL, returning original', { objectUrl, bucketInUrl });
+      return objectUrl;
     }
+    objectPath = rest.join('/');
+  } else if (host === 'storage.cloud.google.com') {
+    const [bucketInUrl, ...rest] = objectPath.split('/');
+    if (bucketInUrl !== bucketName) {
+      console.warn('getSignedReadUrlFromUrl: different bucket in cloud console URL, returning original', { objectUrl, bucketInUrl });
+      return objectUrl;
+    }
+    objectPath = rest.join('/');
+  } else if (objectPath.startsWith(bucketName + '/')) {
+    objectPath = objectPath.slice(bucketName.length + 1);
+  } else {
+    console.warn('getSignedReadUrlFromUrl: non-GCS URL, returning original', { objectUrl, host });
+    return objectUrl;
+  }
 
+  try {
     const bucket = client.bucket(bucketName);
     const file = bucket.file(objectPath);
     const [signedUrl] = await file.getSignedUrl({
@@ -150,7 +159,7 @@ export async function getSignedReadUrlFromUrl(objectUrl: string, expiresInSecond
     });
     return signedUrl;
   } catch (err) {
-    console.error('Failed to sign read URL', err);
+    console.error('getSignedReadUrlFromUrl: failed to sign read URL', { objectUrl, objectPath, err });
     return objectUrl;
   }
 }
