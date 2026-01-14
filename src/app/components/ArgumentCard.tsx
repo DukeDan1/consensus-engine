@@ -51,7 +51,7 @@ function EvidenceList({ evidence }: { evidence?: any[] }) {
                                     style={{ maxWidth: 160, maxHeight: 120, objectFit: "cover" }}
                                 />
                                 <div className="small text-muted mt-1">
-                                    <a href={url} target="_blank" rel="noreferrer" className="text-decoration-none">
+                                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
                                         Open in new tab
                                     </a>
                                 </div>
@@ -63,7 +63,7 @@ function EvidenceList({ evidence }: { evidence?: any[] }) {
                             key={`${url}-${idx}`}
                             href={url}
                             target="_blank"
-                            rel="noreferrer"
+                            rel="noopenernoreferrer"
                             className="badge text-bg-secondary text-decoration-none"
                             title={label}
                         >

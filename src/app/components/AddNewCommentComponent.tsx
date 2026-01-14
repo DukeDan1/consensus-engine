@@ -119,9 +119,7 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
         const files = Array.from(e.clipboardData?.files ?? []);
         if (!files.length) return;
         e.preventDefault();
-        for (const file of files) {
-            await handleFileUpload(file);
-        }
+        await Promise.all(files.map((file) => handleFileUpload(file)));
     }
 
     return (
