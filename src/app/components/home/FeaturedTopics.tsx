@@ -14,7 +14,6 @@ type TopicItem = {
 
 type ApiResponse = {
   topics: TopicItem[];
-  total: number;
 };
 
 export default function FeaturedTopics() {
@@ -26,13 +25,13 @@ export default function FeaturedTopics() {
     async function fetchTopics() {
       try {
         setLoading(true);
-        const res = await fetch("/api/topics?page=1&pageSize=6", { cache: "no-store" });
+        const res = await fetch("/api/top-topics", { cache: "no-store" });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           throw new Error(data?.error || "Failed to fetch topics");
         }
         const data: ApiResponse = await res.json();
-        setTopics(data.topics);
+        setTopics((data.topics || []).slice(0, 6));
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to load topics";
         setError(message);
@@ -75,7 +74,7 @@ export default function FeaturedTopics() {
   return (
     <div className="row g-3">
       {topics.map((topic) => (
-        <TopTopicCard key={topic._id} topic={topic} />
+        <TopTopicCard key={topic._id} topic={topic} isAuthenticated={false} />
       ))}
     </div>
   );

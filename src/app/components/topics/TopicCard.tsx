@@ -16,13 +16,14 @@ type TopicListItem = {
 
 type Props = {
   topic: TopicListItem;
+  isAuthenticated?: boolean;
 };
 
-export default function TopTopicCard({ topic }: Props) {
+export default function TopTopicCard({ topic, isAuthenticated }: Props) {
   return (
     <div className="col-12 col-md-6 col-lg-4" key={topic._id}>
       <InteractiveCard
-        href={`/topics/${topic._id}`}
+        href={isAuthenticated ? `/topics/${topic._id}` : '/register'}
         className="text-decoration-none text-reset"
         cardClassName="card h-100 shadow-sm card-hover"
       >

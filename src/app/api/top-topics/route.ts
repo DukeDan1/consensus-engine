@@ -12,6 +12,12 @@ export async function GET() {
       .collection("topics")
       .aggregate([
         {
+          $match: {
+            isActive: true,
+            "visibility.status": { $nin: ["blocked", "hidden"] },
+          },
+        },
+        {
           $project: {
             title: 1,
             description: 1,
@@ -19,6 +25,7 @@ export async function GET() {
             createdAt: 1,
             upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
             downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
+            ontologyCategories: { $ifNull: ["$ontologyCategories", []] },
           },
         },
         {
@@ -30,7 +37,7 @@ export async function GET() {
           $sort: { totalVotes: -1, createdAt: -1 },
         },
         {
-          $limit: 50, // tweak as you like
+          $limit: 6,
         },
         {
           $lookup: {
@@ -53,6 +60,7 @@ export async function GET() {
             upvoteCount: 1,
             downvoteCount: 1,
             totalVotes: 1,
+            ontologyCategories: 1,
             creatorName: {
               $ifNull: ["$creator.name", "Unknown"],
             },

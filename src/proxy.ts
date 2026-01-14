@@ -15,6 +15,7 @@ const PUBLIC_API_PREFIXES = [
   "/api/register",
   "/api/forgot-password",
   "/api/reset-password",
+  "/api/top-topics"
 ];
 
 function isPublicRoute(pathname: string) {

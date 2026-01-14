@@ -105,7 +105,7 @@ describe('FeaturedTopics', () => {
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
-        '/api/topics?page=1&pageSize=6',
+        '/api/top-topics',
         { cache: 'no-store' }
       );
     });
