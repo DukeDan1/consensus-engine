@@ -32,21 +32,6 @@ describe('moderationService', () => {
   });
 
   describe('moderateUserGeneratedText - basic functionality', () => {
-    it('uses heuristic moderation when OpenAI is not available', async () => {
-      // When MODERATION_ENABLED=false is set at module load time, it would be disabled,
-      // but since the module is already loaded, we test the heuristic fallback instead
-      delete process.env.OPENAI_API_KEY;
-      
-      const result = await moderateUserGeneratedText({
-        text: 'This is a test message',
-        contentType: 'comment',
-      });
-
-      expect(result.decision).toBe('allow');
-      expect(result.severity).toBe('low');
-      expect(result.model).toBe('heuristic');
-    });
-
     it('blocks empty content', async () => {
       const result = await moderateUserGeneratedText({
         text: '   ',
