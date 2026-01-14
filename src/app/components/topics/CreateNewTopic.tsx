@@ -43,8 +43,10 @@ export default function CreateNewTopic({ onCreated, onOpenChange }: Props) {
         const data = await res.json().catch(() => ({}));
         const reason = data?.reason || data?.error || "Failed to create topic";
         if (res.status === 403) {
+          setError(`Blocked: ${reason}`);
           toast.error(`Blocked: ${reason}`);
         } else {
+          setError(reason);
           toast.error(reason);
         }
         return;
