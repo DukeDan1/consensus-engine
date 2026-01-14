@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
 import { Fact } from "@/app/models/facts";
+import { Topic } from "@/app/models/topic";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,11 @@ export async function GET(_request: NextRequest, ctx: any) {
 
     try {
         const topicObjectId = new mongoose.Types.ObjectId(id);
+        const topic = await Topic.findById(topicObjectId).select({ isActive: 1, visibility: 1 }).lean();
+        const visibilityStatus = topic?.visibility?.status;
+        if (!topic || topic.isActive === false || (visibilityStatus && ["hidden", "blocked", "needs_review"].includes(visibilityStatus))) {
+            return NextResponse.json({ error: "Topic not found" }, { status: 404 });
+        }
         const facts = await Fact.find({ topic: topicObjectId })
             .sort({ createdAt: -1 })
             .limit(200)

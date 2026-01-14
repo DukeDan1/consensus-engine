@@ -3,6 +3,9 @@ import { headers } from "next/headers";
 import mongoose from "mongoose";
 import { timeAgo, buildBaseUrl } from "@/app/lib/commonFunctions";
 import ProfileHoverCard from "@/app/profile/ProfileHoverCard";
+import AdminUserActions from "@/app/profile/AdminUserActions";
+import ProfileHeaderClient from "@/app/profile/ProfileHeaderClient";
+import ProfileBioCard from "@/app/profile/ProfileBioCard";
 
 const RECENT_LIMIT = 10;
 
@@ -11,6 +14,11 @@ type ProfileApiResponse = {
     id: string;
     name?: string | null;
     nickname?: string | null;
+    bio?: string | null;
+    avatarUrl?: string | null;
+    email?: string | null;
+    canViewEmail?: boolean;
+    isSuspended?: boolean;
     createdAt?: string | null;
   };
   recentArguments: Array<{
@@ -68,17 +76,6 @@ function getDisplayName(user: { name?: string | null; nickname?: string | null; 
   );
 }
 
-function getInitials(source?: string | null): string {
-  if (!source) return "U";
-  const trimmed = source.trim();
-  if (!trimmed) return "U";
-  const parts = trimmed.split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? "" : "";
-  const initials = (first + last || first).toUpperCase();
-  return initials || "U";
-}
-
 function truncateText(text: string, limit = 200): string {
   if (text.length <= limit) return text;
   return `${text.slice(0, Math.max(0, limit - 1))}…`;
@@ -119,8 +116,10 @@ export default async function UserProfilePage({ params }: any) {
     nickname: data.user?.nickname ?? null,
   });
 
-  const initialsSource = data.user?.name || data.user?.nickname || displayName;
-  const initials = getInitials(initialsSource);
+  const isSuspended = !!data.user?.isSuspended;
+  const avatarUrl = data.user?.avatarUrl ?? null;
+  const email = data.user?.email ?? null;
+  const canViewEmail = !!data.user?.canViewEmail;
 
   const memberSinceDate = data.user?.createdAt ? new Date(data.user.createdAt) : null;
   const memberSince = memberSinceDate
@@ -168,18 +167,20 @@ export default async function UserProfilePage({ params }: any) {
 
   return (
     <div className="container py-4 py-md-5">
-      <div className="bg-body-secondary border rounded-4 p-4 p-md-5 d-flex flex-column flex-md-row align-items-center gap-4 mb-4">
-        <div
-          className="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-          style={{ width: 88, height: 88, fontSize: "2rem", fontWeight: 700 }}
-          aria-hidden="true"
-        >
-          {initials}
-        </div>
-        <div className="text-center text-md-start">
-          <h1 className="h3 mb-1">{displayName}</h1>
-          {memberSince && <p className="text-muted small mb-0">Member since {memberSince}</p>}
-        </div>
+      <ProfileHeaderClient
+        userId={data.user.id}
+        displayName={displayName}
+        memberSince={memberSince}
+        avatarUrl={avatarUrl}
+        email={email}
+        canViewEmail={canViewEmail}
+        isSuspended={isSuspended}
+      />
+      <div className="mb-4">
+        <AdminUserActions userId={data.user.id} initialSuspended={isSuspended} displayName={displayName} />
+      </div>
+      <div className="mb-4">
+        <ProfileBioCard userId={data.user.id} initialBio={data.user?.bio ?? null} />
       </div>
 
       <div className="row g-4">

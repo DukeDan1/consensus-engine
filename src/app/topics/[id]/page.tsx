@@ -1,32 +1,25 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { headers } from "next/headers";
+import { getServerSession } from "next-auth";
 export const dynamic = "force-dynamic"; // render server-side on each request
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
 import ArgumentCard from "@/app/components/ArgumentCard";
 import FactCard from "@/app/components/topics/FactCard";
 import OntologyBadgeList from "@/app/components/ontology/OntologyBadgeList";
 import TopicDiscussionControls from "@/app/components/topics/TopicDiscussionControls";
+import TopicAdminActions from "@/app/components/topics/TopicAdminActions";
+import UserIdentity from "@/app/components/users/UserIdentity";
 import { buildBaseUrl } from "@/app/lib/commonFunctions";
-
-function normaliseCategoryParams(value: string | string[] | undefined): string[] {
-  if (!value) return [];
-  const values = Array.isArray(value) ? value : [value];
-  return Array.from(
-    new Set(
-      values
-        .flatMap((entry) => entry.split(","))
-        .map((entry) => entry.trim())
-        .filter(Boolean)
-    )
-  );
-}
+import { dbConnect } from "@/app/lib/mongoose";
+import User from "@/app/models/user";
 
 async function fetchTopicBundle(
   id: string,
   ordering: "relevant" | "newest",
   numArguments: number,
-  filters: { argumentCategories?: string[]; commentCategories?: string[] },
+  filters: { argumentQuery?: string; commentQuery?: string },
+  includeModeration: boolean,
   requestHeaders: Headers
 ): Promise<TopicApiResponse | null> {
   const base = buildBaseUrl(requestHeaders);
@@ -35,8 +28,15 @@ async function fetchTopicBundle(
     num_arguments: String(numArguments),
     ordering,
   });
-  filters?.argumentCategories?.forEach((categoryId) => params.append("argumentCategory", categoryId));
-  filters?.commentCategories?.forEach((categoryId) => params.append("commentCategory", categoryId));
+  if (includeModeration) {
+    params.set("includeModeration", "1");
+  }
+  if (filters?.argumentQuery) {
+    params.set("argumentQuery", filters.argumentQuery);
+  }
+  if (filters?.commentQuery) {
+    params.set("commentQuery", filters.commentQuery);
+  }
   const url = `${base}/api/topics/${encodeURIComponent(id)}?${params.toString()}`;
   let res: { data: TopicApiResponse } | null = null;
 
@@ -68,23 +68,27 @@ export default async function TopicPage({ params, searchParams }: any) {
   const resolvedSearchParams = await Promise.resolve(searchParams);
   const ordering = (resolvedSearchParams?.ordering === "newest" ? "newest" : "relevant") as "relevant" | "newest";
   const numArgs = Math.max(1, Math.min(50, parseInt(resolvedSearchParams?.num_arguments ?? "10", 10) || 10));
-  const argumentCategoryIds = Array.from(
-    new Set([
-      ...normaliseCategoryParams(resolvedSearchParams?.argumentCategory),
-      ...normaliseCategoryParams(resolvedSearchParams?.argumentCategories),
-    ])
-  );
-  const commentCategoryIds = Array.from(
-    new Set([
-      ...normaliseCategoryParams(resolvedSearchParams?.commentCategory),
-      ...normaliseCategoryParams(resolvedSearchParams?.commentCategories),
-    ])
-  );
+  const argumentQuery = typeof resolvedSearchParams?.argumentQuery === "string"
+    ? resolvedSearchParams.argumentQuery.trim()
+    : "";
+  const commentQuery = typeof resolvedSearchParams?.commentQuery === "string"
+    ? resolvedSearchParams.commentQuery.trim()
+    : "";
+
+  const session = await getServerSession();
+  let isAdmin = false;
+  if (session?.user?.email) {
+    await dbConnect();
+    const adminUser = await User.findOne({ email: session.user.email }).select({ isAdmin: 1 }).lean();
+    isAdmin = !!adminUser?.isAdmin;
+  }
+  const moderatorRequested = resolvedSearchParams?.moderator === "1";
+  const moderatorMode = isAdmin && moderatorRequested;
 
   const data = await fetchTopicBundle(id, ordering, numArgs, {
-    argumentCategories: argumentCategoryIds,
-    commentCategories: commentCategoryIds,
-  }, incomingHeaders);
+    argumentQuery,
+    commentQuery,
+  }, moderatorMode, incomingHeaders);
   if (!data) return notFound();
 
   const t = data.topic;
@@ -108,7 +112,20 @@ export default async function TopicPage({ params, searchParams }: any) {
       <div className="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3 mb-3">
         <div>
           <h1 className="h4 mb-1">{t.title}</h1>
-          <small className="text-muted">Started by {t.createdBy?.name ?? "Unknown"}</small>
+          <div className="d-flex align-items-center gap-2 text-muted small">
+            <span>Started by</span>
+            <UserIdentity
+              userId={t.createdBy?._id}
+              name={t.createdBy?.name}
+              nickname={t.createdBy?.nickname}
+              avatarUrl={t.createdBy?.avatarUrl ?? undefined}
+              createdAt={t.createdBy?.createdAt}
+              size={24}
+              className="small text-muted"
+              nameClassName="author-link text-muted"
+              fallbackLabel="Unknown"
+            />
+          </div>
         </div>
         <div className="d-flex flex-wrap gap-2">
           <Link href={`/topics/${id}/summary`} className="btn btn-outline-primary btn-sm">
@@ -126,8 +143,9 @@ export default async function TopicPage({ params, searchParams }: any) {
                 query: {
                   ordering: "relevant",
                   num_arguments: String(numArgs),
-                  ...(argumentCategoryIds.length ? { argumentCategory: argumentCategoryIds } : {}),
-                  ...(commentCategoryIds.length ? { commentCategory: commentCategoryIds } : {}),
+                  ...(argumentQuery ? { argumentQuery } : {}),
+                  ...(commentQuery ? { commentQuery } : {}),
+                  ...(moderatorMode ? { moderator: "1" } : {}),
                 },
               }}
               className={`btn btn-outline-secondary ${data.meta.ordering === "relevant" ? "active" : ""}`}
@@ -140,8 +158,9 @@ export default async function TopicPage({ params, searchParams }: any) {
                 query: {
                   ordering: "newest",
                   num_arguments: String(numArgs),
-                  ...(argumentCategoryIds.length ? { argumentCategory: argumentCategoryIds } : {}),
-                  ...(commentCategoryIds.length ? { commentCategory: commentCategoryIds } : {}),
+                  ...(argumentQuery ? { argumentQuery } : {}),
+                  ...(commentQuery ? { commentQuery } : {}),
+                  ...(moderatorMode ? { moderator: "1" } : {}),
                 },
               }}
               className={`btn btn-outline-secondary ${data.meta.ordering === "newest" ? "active" : ""}`}
@@ -149,6 +168,25 @@ export default async function TopicPage({ params, searchParams }: any) {
               New
             </Link>
           </div>
+          {isAdmin && (
+            <Link
+              href={{
+                pathname: `/topics/${id}`,
+                query: {
+                  ordering,
+                  num_arguments: String(numArgs),
+                  ...(argumentQuery ? { argumentQuery } : {}),
+                  ...(commentQuery ? { commentQuery } : {}),
+                  ...(moderatorMode ? {} : { moderator: "1" }),
+                },
+              }}
+              className={`btn btn-sm ${moderatorMode ? "btn-warning" : "btn-outline-warning"}`}
+            >
+              <i className="fa-solid fa-shield-halved me-1" aria-hidden></i>
+              {moderatorMode ? "Moderator mode on" : "Moderator mode"}
+            </Link>
+          )}
+          <TopicAdminActions topicId={t.id} topicTitle={t.title} enabled={moderatorMode} />
         </div>
       </div>
 
@@ -158,8 +196,8 @@ export default async function TopicPage({ params, searchParams }: any) {
       <div className="mb-4">
         <TopicDiscussionControls
           topicId={t.id}
-          argumentCategoryIds={argumentCategoryIds}
-          commentCategoryIds={commentCategoryIds}
+          argumentQuery={argumentQuery}
+          commentQuery={commentQuery}
         />
       </div>
 
@@ -190,7 +228,7 @@ export default async function TopicPage({ params, searchParams }: any) {
             <h5 className="mb-3">Arguments</h5>
           </div>
           {data.arguments.map((a) => (
-            <ArgumentCard argument={a} key={a.id} />
+            <ArgumentCard argument={a} key={a.id} moderatorMode={moderatorMode} />
           ))}
         </div>
       )}

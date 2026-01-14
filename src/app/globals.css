@@ -50,3 +50,47 @@ body {
   text-decoration: none;
   text-decoration-color: var(--bs-primary);
 }
+
+.user-tooltip {
+  --bs-tooltip-max-width: 320px;
+  --bs-tooltip-bg: #1f2937;
+  --bs-tooltip-color: #f9fafb;
+}
+
+.user-tooltip .tooltip-inner {
+  max-width: 320px;
+  text-align: left;
+  padding: 0.75rem;
+}
+
+.user-tooltip-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-tooltip-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-tooltip-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  font-weight: 600;
+  color: #f9fafb;
+}
+
+.user-tooltip-name {
+  font-weight: 600;
+}
+
+.user-tooltip-meta {
+  font-size: 0.85rem;
+  color: #d1d5db;
+}

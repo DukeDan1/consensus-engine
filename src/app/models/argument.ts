@@ -110,4 +110,4 @@ ArgumentSchema.index({ topic: 1, side: 1, createdAt: -1 });
 ArgumentSchema.index({ "ontologyCategories.id": 1, topic: 1 });
 ArgumentSchema.index({ topic: 1, "visibility.status": 1, score: -1, createdAt: -1 });
 
-export const Argument = mongoose.model<IArgument>("Argument", ArgumentSchema);
+export const Argument = (mongoose.models.Argument as mongoose.Model<IArgument>) || mongoose.model<IArgument>("Argument", ArgumentSchema);

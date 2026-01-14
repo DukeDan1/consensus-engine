@@ -51,7 +51,7 @@ export default function TopicFilters({
             setSelectedCategories(next);
           }}
           label="Filter by ontology categories"
-          helperText="Pick one or more categories to narrow debates"
+          helperText="Includes categories detected in topics, arguments, and comments"
         />
       </div>
       <div className="col-12 col-md-3 d-grid">

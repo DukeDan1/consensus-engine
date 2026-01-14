@@ -16,6 +16,8 @@ export interface IUser extends Document {
   phone?: string;
   name?: string;        // full legal name
   nickname?: string;    // casual display name
+  bio?: string;
+  avatarUrl?: string;
   address?: {
     line1?: string;
     line2?: string;
@@ -44,6 +46,9 @@ export interface IUser extends Document {
   }> | undefined;
 
   // Moderation / reputation
+  isAdmin?: boolean;
+  isSuspended?: boolean;
+  suspendedAt?: Date;
   trustScore?: number;
   trustTier?: 'low' | 'new' | 'standard' | 'trusted' | 'high';
   trustUpdatedAt?: Date;
@@ -66,6 +71,8 @@ const UserSchema = new Schema<IUser>(
     phone: { type: String, required: false, unique: true, sparse: true },
     name: { type: String },
     nickname: { type: String },
+    bio: { type: String, maxlength: 1000 },
+    avatarUrl: { type: String },
     address: {
       line1: { type: String },
       line2: { type: String },
@@ -107,6 +114,9 @@ const UserSchema = new Schema<IUser>(
     ],
 
     trustScore: { type: Number, default: 50, min: 0, max: 100, index: true },
+    isAdmin: { type: Boolean, default: false, index: true },
+    isSuspended: { type: Boolean, default: false, index: true },
+    suspendedAt: { type: Date },
     trustTier: {
       type: String,
       enum: ['low', 'new', 'standard', 'trusted', 'high'],

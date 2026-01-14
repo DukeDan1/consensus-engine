@@ -28,6 +28,10 @@ The project builds an online consensus management platform that structures debat
 	- `GOOGLE_STORAGE_BUCKET_NAME` and `GOOGLE_SERVICE_ACCOUNT_KEY` if you want to enable Google Cloud Storage for file uploads. Without this, the file upload functionality will not work. Set up a Google Cloud project, create a storage bucket, and generate a service account key JSON file for authentication. Ensure that the service account has appropriate permissions to access the storage bucket and populate the environment variable `GOOGLE_SERVICE_ACCOUNT_KEY` with the content of the JSON key file.
 4) Run the app: `npm run dev` and open http://localhost:3000.
 
+## Deployment
+See `README.cloud.md` for instructions on deploying to Google Cloud Run using GitHub Actions.
+This application can also be deployed to other platforms that support Next.js, such as Vercel.
+
 ## Project scripts
 - `npm run dev` — start the dev server
 - `npm run build` / `npm run start` — production build and serve
@@ -37,6 +41,19 @@ The project builds an online consensus management platform that structures debat
 - `npm run populate` — seed the database (requires `MONGODB_URI`)
 - `npm run generate-data` — generate sample data fixtures
 - `npm run generate-embeddings` — rebuild ontology embeddings after category changes
+- `npm run set-admin -- <userId|email>` — promote a user to admin (sets `isAdmin=true`)
+
+## Admin users
+Admins have access to the moderation queue and can delete any topic, argument, or comment. They can also view and manage content that is held for review or flagged as spam by the moderation system.
+
+### Add an admin user
+You can promote a user via the CLI script (requires `MONGODB_URI`):
+
+```bash
+npm run set-admin -- user@example.com
+# or
+npm run set-admin -- 64f0c2a7a3b5c2a123456789
+```
 
 ## Data and embeddings
 The ontology classification service categorizes topics and arguments. Embeddings are pre-computed and checked into the repo to avoid runtime generation.

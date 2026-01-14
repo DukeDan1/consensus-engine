@@ -12,7 +12,8 @@
     "test:ci": "vitest run --coverage --reporter=junit --outputFile=reports/junit.xml",
     "populate": "tsx src/app/scripts/populate.ts",
     "generate-embeddings": "tsx src/app/scripts/generate-embeddings.ts",
-    "generate-data": "tsx src/app/scripts/generate-data.ts"
+    "generate-data": "tsx src/app/scripts/generate-data.ts",
+    "set-admin": "tsx src/app/scripts/setAdmin.ts"
   },
   "dependencies": {
     "@azure/communication-email": "^1.1.0",
@@ -36,7 +37,8 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-toastify": "^11.0.5",
-    "typescript-eslint": "^8.48.0"
+    "typescript-eslint": "^8.48.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.28.3",

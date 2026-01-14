@@ -2,18 +2,18 @@
 
 import { useMemo, useState } from "react";
 import AddNewArgumentComponent from "@/app/components/AddNewArgumentComponent";
-import TopicOntologyFilters from "@/app/components/topics/TopicOntologyFilters";
+import TopicContentFilters from "@/app/components/topics/TopicContentFilters";
 
 export default function TopicDiscussionControls({
   topicId,
-  argumentCategoryIds,
-  commentCategoryIds,
+  argumentQuery,
+  commentQuery,
 }: {
   topicId: string;
-  argumentCategoryIds: string[];
-  commentCategoryIds: string[];
+  argumentQuery: string;
+  commentQuery: string;
 }) {
-  const [showFilters, setShowFilters] = useState(() => argumentCategoryIds.length > 0 || commentCategoryIds.length > 0);
+  const [showFilters, setShowFilters] = useState(() => Boolean(argumentQuery) || Boolean(commentQuery));
   const [argumentFormOpen, setArgumentFormOpen] = useState(false);
   const filtersPanelId = useMemo(() => `topic-discussion-filters-${topicId}`, [topicId]);
   const controlsShouldStack = argumentFormOpen || showFilters;
@@ -37,7 +37,7 @@ export default function TopicDiscussionControls({
       </div>
       {showFilters && (
         <div id={filtersPanelId} className="mt-3">
-          <TopicOntologyFilters argumentCategoryIds={argumentCategoryIds} commentCategoryIds={commentCategoryIds} />
+          <TopicContentFilters argumentQuery={argumentQuery} commentQuery={commentQuery} />
         </div>
       )}
     </div>

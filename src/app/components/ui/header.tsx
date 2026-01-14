@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import LogoutButton from '../LogoutButton';
 import Image from 'next/image';
+import HeaderSearch from './HeaderSearch';
 
 interface HeaderProps {
   title: string;
@@ -58,7 +59,14 @@ export default function Header({ title }: HeaderProps) {
           className={`navbar-collapse ${navOpen ? 'd-block' : 'd-none'} d-md-flex`}
           style={{ width: '100%' }}
         >
-          <ul className="navbar-nav ms-auto align-items-center gap-1">
+          {session && (
+            <div className="w-100 d-md-flex justify-content-md-end my-2 my-md-0 order-md-1 me-3">
+              <div className="w-100" style={{ maxWidth: 420 }}>
+                <HeaderSearch />
+              </div>
+            </div>
+          )}
+          <ul className="navbar-nav ms-md-auto align-items-center gap-1 order-md-2">
             {!session ? (
               <>
                 <li className="nav-item">
@@ -121,6 +129,13 @@ export default function Header({ title }: HeaderProps) {
                       Profile
                     </Link>
                   </li>
+                  {session.user?.isAdmin && (
+                    <li>
+                      <Link className="dropdown-item" href="/moderation" onClick={closeMenu}>
+                        Moderation
+                      </Link>
+                    </li>
+                  )}
                   <li><hr className="dropdown-divider" /></li>
                   <li className="px-3 py-1">
                     <LogoutButton />

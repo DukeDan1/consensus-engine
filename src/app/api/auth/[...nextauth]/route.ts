@@ -8,6 +8,8 @@ import { getConnectedMongoClient } from '@/app/lib/mongodbClient';
 import { findUserByEmailOrPhone, createUser } from '@/app/services/authService';
 import { hashPassword, comparePassword } from '@/app/services/passwordService';
 import { dbConnect } from '@/app/lib/mongoose';
+import User from '@/app/models/user';
+import { getSignedReadUrlFromUrl } from '@/app/services/gcsService';
 
 // Extend the Session user type to include 'id'
 declare module 'next-auth' {
@@ -17,7 +19,17 @@ declare module 'next-auth' {
       name?: string | null;
       email?: string | null;
       image?: string | null;
+      avatarUrl?: string | null;
+      isAdmin?: boolean;
     };
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id?: string;
+    isAdmin?: boolean;
+    avatarUrl?: string | null;
   }
 }
 
@@ -57,7 +69,15 @@ const handler = NextAuth({
           if (!valid) return null;
         }
 
-        return { id: user._id.toString(), email: user.email, name: user.name };
+        if (user.isSuspended) return null;
+
+        return {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          avatarUrl: user.avatarUrl ?? null,
+          isAdmin: !!user.isAdmin,
+        };
       },
     }),
   ],
@@ -74,6 +94,8 @@ const handler = NextAuth({
             name: user.name ?? undefined,
             authProvider: 'password',
           });
+        } else if (existing.isSuspended) {
+          return false;
         }
       }
 
@@ -82,11 +104,37 @@ const handler = NextAuth({
 
     async jwt({ token, user }) {
       if (user?.id) token.id = user.id;
+      if (typeof (user as { isAdmin?: boolean } | undefined)?.isAdmin === 'boolean') {
+        token.isAdmin = (user as { isAdmin?: boolean }).isAdmin;
+      }
+      if (typeof (user as { avatarUrl?: string | null } | undefined)?.avatarUrl === 'string') {
+        token.avatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
+      }
+      if (typeof token.isAdmin !== 'boolean' && token.id) {
+        await dbConnect();
+        const dbUser = await User.findById(token.id).select({ isAdmin: 1 }).lean();
+        token.isAdmin = !!dbUser?.isAdmin;
+      }
+      if (token.id && typeof token.avatarUrl === 'undefined') {
+        await dbConnect();
+        const dbUser = await User.findById(token.id).select({ avatarUrl: 1 }).lean();
+        token.avatarUrl = dbUser?.avatarUrl ?? null;
+      }
       return token;
     },
 
     async session({ session, token }) {
       if (token?.id && session.user) session.user.id = typeof token.id === 'string' ? token.id : String(token.id);
+      if (session.user) {
+        session.user.isAdmin = typeof token.isAdmin === 'boolean' ? token.isAdmin : undefined;
+        session.user.avatarUrl = typeof token.avatarUrl === 'string' ? token.avatarUrl : null;
+        const avatarUrl = session.user.avatarUrl;
+        if (avatarUrl) {
+          session.user.image = await getSignedReadUrlFromUrl(avatarUrl).catch(() => avatarUrl);
+        } else {
+          session.user.image = null;
+        }
+      }
       return session;
     },
   },

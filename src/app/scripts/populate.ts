@@ -69,6 +69,7 @@ type SeedUser = {
   name?: string;
   email?: string;
   nickname?: string;
+  avatarUrl?: string;
 };
 
 type PopulationData = {
@@ -106,7 +107,7 @@ async function upsertUsers(users: SeedUser[]): Promise<Map<string, mongoose.Type
   for (const user of users) {
     const doc = await User.findOneAndUpdate(
       { email: user.email },
-      { $setOnInsert: { name: user.name, nickname: user.nickname, email: user.email } },
+      { $setOnInsert: { name: user.name, nickname: user.nickname, email: user.email, avatarUrl: user.avatarUrl } },
       { upsert: true, new: true }
     ).exec();
     map.set(user.key, doc._id);
