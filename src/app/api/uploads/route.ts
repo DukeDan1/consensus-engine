@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Buffer } from "buffer";
-import { uploadFileToBucket } from "@/app/services/gcsService";
+import { deleteFileFromUrl, uploadFileToBucket } from "@/app/services/gcsService";
 
 export const runtime = "nodejs";
 
@@ -41,5 +41,25 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("Upload via backend failed", err);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const payload = await req.json().catch(() => ({}));
+    const url = typeof payload?.url === "string" ? payload.url : "";
+    if (!url) {
+      return NextResponse.json({ error: "A file URL is required" }, { status: 400 });
+    }
+
+    const result = await deleteFileFromUrl(url);
+    if (!result.deleted) {
+      return NextResponse.json({ error: "Invalid file URL" }, { status: 400 });
+    }
+
+    return NextResponse.json({ deleted: true });
+  } catch (err) {
+    console.error("Delete via backend failed", err);
+    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
   }
 }

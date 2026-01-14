@@ -68,8 +68,24 @@ export function useEvidenceAttachments(options: Options = {}) {
     }
   }
 
-  function removeEvidenceAt(index: number) {
+  async function removeEvidenceAt(index: number) {
+    const item = evidence[index];
     setEvidence((prev) => prev.filter((_, i) => i !== index));
+    if (item?.kind !== "file") return;
+    try {
+      const res = await fetch("/api/uploads", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: item.url }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || "Delete failed");
+      }
+    } catch (err: any) {
+      console.error("File delete failed", err);
+      toast.error(err?.message || "Failed to delete file");
+    }
   }
 
   async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {

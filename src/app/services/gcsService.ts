@@ -117,37 +117,20 @@ export async function getSignedReadUrlFromUrl(objectUrl: string, expiresInSecond
   const client = getStorage();
   if (!client) throw new Error('Google Storage is not configured');
 
-  let parsedUrl: URL;
-  try {
-    parsedUrl = new URL(objectUrl);
-  } catch (err) {
-    console.warn('getSignedReadUrlFromUrl: invalid URL, returning original', { objectUrl, err });
+  const parseResult = parseGcsObjectUrl(objectUrl);
+  if (parseResult.error === 'invalid') {
+    console.warn('getSignedReadUrlFromUrl: invalid URL, returning original', { objectUrl, err: parseResult.err });
     return objectUrl;
   }
-
-  const host = parsedUrl.host;
-  let objectPath = parsedUrl.pathname.replace(/^\//, '');
-
-  if (host.includes('storage.googleapis.com')) {
-    const [bucketInUrl, ...rest] = objectPath.split('/');
-    if (bucketInUrl !== bucketName) {
-      console.warn('getSignedReadUrlFromUrl: different bucket in URL, returning original', { objectUrl, bucketInUrl });
-      return objectUrl;
-    }
-    objectPath = rest.join('/');
-  } else if (host === 'storage.cloud.google.com') {
-    const [bucketInUrl, ...rest] = objectPath.split('/');
-    if (bucketInUrl !== bucketName) {
-      console.warn('getSignedReadUrlFromUrl: different bucket in cloud console URL, returning original', { objectUrl, bucketInUrl });
-      return objectUrl;
-    }
-    objectPath = rest.join('/');
-  } else if (objectPath.startsWith(bucketName + '/')) {
-    objectPath = objectPath.slice(bucketName.length + 1);
-  } else {
-    console.warn('getSignedReadUrlFromUrl: non-GCS URL, returning original', { objectUrl, host });
+  if (parseResult.error === 'non-gcs') {
+    console.warn('getSignedReadUrlFromUrl: non-GCS URL, returning original', { objectUrl, host: parseResult.host });
     return objectUrl;
   }
+  if (parseResult.error === 'bucket-mismatch') {
+    console.warn('getSignedReadUrlFromUrl: different bucket in URL, returning original', { objectUrl, bucketInUrl: parseResult.bucketInUrl });
+    return objectUrl;
+  }
+  const { objectPath } = parseResult;
 
   try {
     const bucket = client.bucket(bucketName);
@@ -162,4 +145,72 @@ export async function getSignedReadUrlFromUrl(objectUrl: string, expiresInSecond
     console.error('getSignedReadUrlFromUrl: failed to sign read URL', { objectUrl, objectPath, err });
     return objectUrl;
   }
+}
+
+type ParsedGcsUrl =
+  | { objectPath: string; host: string; bucketInUrl: string }
+  | { error: 'invalid'; err: unknown }
+  | { error: 'non-gcs'; host: string }
+  | { error: 'bucket-mismatch'; host: string; bucketInUrl: string };
+
+function parseGcsObjectUrl(objectUrl: string): ParsedGcsUrl {
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(objectUrl);
+  } catch (err) {
+    return { error: 'invalid', err };
+  }
+
+  const host = parsedUrl.hostname.toLowerCase();
+  const rawPath = parsedUrl.pathname.replace(/^\/+/, '');
+  let objectPath = '';
+  let bucketInUrl = '';
+
+  if (host === 'storage.googleapis.com') {
+    const [bucket, ...rest] = rawPath.split('/');
+    bucketInUrl = bucket;
+    objectPath = rest.join('/');
+  } else if (host === 'storage.cloud.google.com') {
+    const parts = rawPath.split('/');
+    if (parts[0] === 'storage' && parts[1] === 'browser' && parts[2] === '_details') {
+      bucketInUrl = parts[3] ?? '';
+      objectPath = parts.slice(4).join('/');
+    } else if (parts[0] === 'storage' && parts[1] === 'browser') {
+      bucketInUrl = parts[2] ?? '';
+      objectPath = parts.slice(3).join('/');
+    } else {
+      bucketInUrl = parts[0] ?? '';
+      objectPath = parts.slice(1).join('/');
+    }
+  } else if (host.endsWith('.storage.googleapis.com')) {
+    bucketInUrl = host.replace('.storage.googleapis.com', '');
+    objectPath = rawPath;
+  } else if (bucketName && rawPath.startsWith(bucketName + '/')) {
+    bucketInUrl = bucketName;
+    objectPath = rawPath.slice(bucketName.length + 1);
+  } else {
+    return { error: 'non-gcs', host };
+  }
+
+  if (!bucketName || bucketInUrl !== bucketName) {
+    return { error: 'bucket-mismatch', host, bucketInUrl };
+  }
+
+  return { objectPath, host, bucketInUrl };
+}
+
+export async function deleteFileFromUrl(objectUrl: string) {
+  if (!bucketName) throw new Error('Missing GOOGLE_STORAGE_BUCKET_NAME');
+  const client = getStorage();
+  if (!client) throw new Error('Google Storage is not configured');
+
+  const parseResult = parseGcsObjectUrl(objectUrl);
+  if ('error' in parseResult) {
+    return { deleted: false, reason: parseResult.error, host: 'host' in parseResult ? parseResult.host : undefined };
+  }
+
+  const bucket = client.bucket(bucketName);
+  const file = bucket.file(parseResult.objectPath);
+  await file.delete({ ignoreNotFound: true });
+  return { deleted: true };
 }
