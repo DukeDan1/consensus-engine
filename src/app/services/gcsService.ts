@@ -118,15 +118,15 @@ export async function getSignedReadUrlFromUrl(objectUrl: string, expiresInSecond
   if (!client) throw new Error('Google Storage is not configured');
 
   const parseResult = parseGcsObjectUrl(objectUrl);
-  if (parseResult.error === 'invalid') {
-    console.warn('getSignedReadUrlFromUrl: invalid URL, returning original', { objectUrl, err: parseResult.err });
-    return objectUrl;
-  }
-  if (parseResult.error === 'non-gcs') {
-    console.warn('getSignedReadUrlFromUrl: non-GCS URL, returning original', { objectUrl, host: parseResult.host });
-    return objectUrl;
-  }
-  if (parseResult.error === 'bucket-mismatch') {
+  if ('error' in parseResult) {
+    if (parseResult.error === 'invalid') {
+      console.warn('getSignedReadUrlFromUrl: invalid URL, returning original', { objectUrl, err: parseResult.err });
+      return objectUrl;
+    }
+    if (parseResult.error === 'non-gcs') {
+      console.warn('getSignedReadUrlFromUrl: non-GCS URL, returning original', { objectUrl, host: parseResult.host });
+      return objectUrl;
+    }
     console.warn('getSignedReadUrlFromUrl: different bucket in URL, returning original', { objectUrl, bucketInUrl: parseResult.bucketInUrl });
     return objectUrl;
   }
