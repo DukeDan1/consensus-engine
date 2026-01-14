@@ -4,7 +4,7 @@ import { uploadFileToBucket } from "@/app/services/gcsService";
 
 export const runtime = "nodejs";
 
-const MAX_FILE_BYTES = 15 * 1024 * 1024; // 15MB hard cap
+const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50MB hard cap
 const allowedPrefixes = ["image/", "application/pdf", "text/", "video/", "audio/"];
 
 export async function POST(req: Request) {
@@ -12,11 +12,11 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     if (!file) {
-      return NextResponse.json({ error: "file is required" }, { status: 400 });
+      return NextResponse.json({ error: "A file is required" }, { status: 400 });
     }
 
     if (file.size > MAX_FILE_BYTES) {
-      return NextResponse.json({ error: "File too large" }, { status: 413 });
+      return NextResponse.json({ error: "The uploaded file is too large" }, { status: 413 });
     }
 
     const contentType = file.type || "application/octet-stream";

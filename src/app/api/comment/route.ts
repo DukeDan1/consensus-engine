@@ -9,28 +9,14 @@ import { classifyTextToOntology, classificationToAssignments } from "@/app/servi
 import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
 import { moderateUserGeneratedText, moderationToVisibility } from "@/app/services/moderationService";
 import { applyTrustDelta } from "@/app/services/trustService";
+import { sanitiseEvidence, type EvidenceItemInput } from "@/app/lib/evidence";
 
 type Body = {
     argumentId: string;
     body: string;
     parentId?: string;
-    evidence?: Array<{ url: string; kind?: 'link' | 'file'; label?: string; fileName?: string; contentType?: string }>;
+    evidence?: EvidenceItemInput[];
 };
-
-function sanitiseEvidence(list: Body['evidence']): Array<{ url: string; kind: 'link' | 'file'; label?: string; fileName?: string; contentType?: string }> {
-    if (!Array.isArray(list)) return [];
-    return list
-        .map((item) => {
-            const url = (item?.url || '').trim();
-            if (!url) return null;
-            const kind = item?.kind === 'file' ? 'file' : 'link';
-            const label = item?.label?.toString().slice(0, 160);
-            const fileName = item?.fileName?.toString().slice(0, 160);
-            const contentType = item?.contentType?.toString().slice(0, 120);
-            return { url, kind, label, fileName, contentType };
-        })
-        .filter(Boolean) as Array<{ url: string; kind: 'link' | 'file'; label?: string; fileName?: string; contentType?: string }>;
-}
 
 export async function POST(req: Request) {
     await dbConnect();
@@ -57,8 +43,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Comment must be 1-5000 characters" }, { status: 400 });
     }
 
-    const evidenceList = Array.isArray(evidence) ? evidence : [];
-    const safeEvidence = sanitiseEvidence(evidenceList).slice(0, 6);
+    const safeEvidence = sanitiseEvidence(evidence, 10);
 
     try {
         const argObjId = new mongoose.Types.ObjectId(argumentId);

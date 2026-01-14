@@ -262,7 +262,7 @@ export function moderationToVisibility(params: {
     ? (moderation.spamLikelihood >= 50 || moderation.trollingLikelihood >= 55 || moderation.offTopicLikelihood >= 70)
     : (moderation.spamLikelihood >= 35 || moderation.trollingLikelihood >= 40 || moderation.quality < 40);
 
-  if ((strict && suspicious) || (!relaxedComments && suspicious) || (relaxedComments && suspicious)) {
+  if (suspicious) {
     return { status: 'hidden', rankPenalty: -25 };
   }
 
