@@ -40,6 +40,11 @@ vi.mock('@/app/components/topics/TopicsBrowser', () => ({
   default: () => <div data-testid="topics-browser">Topics Browser</div>
 }));
 
+vi.mock('@/app/components/home/FeaturedTopics', () => ({
+  __esModule: true,
+  default: () => <div data-testid="featured-topics">Featured Topics</div>
+}));
+
 const mockNotFound = vi.fn();
 const mockHeaders = vi.fn();
 
@@ -75,13 +80,32 @@ describe('App Router pages', () => {
     global.fetch = vi.fn();
   });
 
-  it('renders the home page with navigation links', async () => {
+  it('renders the home page with hero section, features, and featured topics', async () => {
     const { default: Home } = await import('@/app/page');
     await renderServerPage(Home);
 
-    expect(screen.getByRole('heading', { name: /welcome/i })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /log in/i })).toHaveAttribute('href', '/login');
-    expect(screen.getByRole('link', { name: /register/i })).toHaveAttribute('href', '/register');
+    // Hero section
+    expect(screen.getByRole('heading', { name: /welcome to consensus engine/i })).toBeInTheDocument();
+    expect(screen.getByText(/join the conversation and discover what people are debating about/i)).toBeInTheDocument();
+    
+    // Call-to-action buttons
+    const registerLinks = screen.getAllByRole('link', { name: /get started/i });
+    expect(registerLinks[0]).toHaveAttribute('href', '/register');
+    const loginLinks = screen.getAllByRole('link', { name: /log in/i });
+    expect(loginLinks[0]).toHaveAttribute('href', '/login');
+
+    // Features section
+    expect(screen.getByRole('heading', { name: /engage in debates/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /vote on arguments/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /build consensus/i })).toBeInTheDocument();
+
+    // Featured topics section
+    expect(screen.getByRole('heading', { name: /featured debates/i })).toBeInTheDocument();
+    expect(screen.getByTestId('featured-topics')).toBeInTheDocument();
+
+    // Final call-to-action
+    expect(screen.getByRole('heading', { name: /ready to join/i })).toBeInTheDocument();
+    
     expect(redirectIfLoggedIn).toHaveBeenCalledTimes(1);
   });
 
