@@ -54,7 +54,7 @@ export interface IUser extends Document {
     meta?: Record<string, unknown>;
   }>;
 
-  // Lightweight anti-spam rate limiting
+  // TODO possible extension - lightweight anti-spam rate limiting
   lastPostAt?: Date;
   postWindowStartAt?: Date;
   postsInWindow?: number;
