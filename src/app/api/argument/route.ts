@@ -12,6 +12,7 @@ import { classifyTextToOntology, classificationToAssignments } from "@/app/servi
 import { moderateUserGeneratedText, moderationToVisibility } from "@/app/services/moderationService";
 import { applyTrustDelta } from "@/app/services/trustService";
 import { sanitiseEvidence, type EvidenceItemInput } from "@/app/lib/evidence";
+import { deleteEvidenceFiles } from "@/app/services/evidenceCleanupService";
 
 type Body = {
     topicId: string;
@@ -174,4 +175,95 @@ export async function POST(req: Request) {
         }
         return NextResponse.json({ error: "Server error" }, { status: 500 });
     }
+}
+
+export async function DELETE(req: Request) {
+    await dbConnect();
+
+    const session = await getServerSession();
+    if (!session?.user?.email) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await User.findOne({ email: session.user.email }).select({ _id: 1, isAdmin: 1 }).lean();
+    if (!user?._id) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const payload = await req.json().catch(() => ({}));
+    const targetId = payload?.id || payload?.argumentId;
+    if (!targetId || !mongoose.isValidObjectId(targetId)) {
+        return NextResponse.json({ error: "Invalid argument id" }, { status: 400 });
+    }
+
+    const argument = await Argument.findById(targetId).select({ createdBy: 1, evidence: 1, isRemoved: 1 }).lean();
+    if (!argument) {
+        return NextResponse.json({ error: "Argument not found" }, { status: 404 });
+    }
+
+    const ownerId = typeof argument.createdBy?.toString === "function" ? argument.createdBy.toString() : String(argument.createdBy);
+    const userId = typeof user._id?.toString === "function" ? user._id.toString() : String(user._id);
+    const canDelete = user.isAdmin || ownerId === userId;
+    if (!canDelete) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    try {
+        await deleteEvidenceFiles(argument?.evidence ?? []);
+        await Argument.findByIdAndUpdate(targetId, { isRemoved: true, evidence: [] }).exec();
+        return NextResponse.json({ ok: true }, { status: 200 });
+    } catch (err) {
+        console.error("Delete argument failed", err);
+        return NextResponse.json({ error: "Failed to delete argument" }, { status: 500 });
+    }
+}
+
+export async function PATCH(req: Request) {
+    await dbConnect();
+
+    const session = await getServerSession();
+    if (!session?.user?.email) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await User.findOne({ email: session.user.email }).select({ _id: 1, isAdmin: 1 }).lean();
+    if (!user?.isAdmin) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const payload = await req.json().catch(() => ({}));
+    const targetId = payload?.id || payload?.argumentId;
+    const status = payload?.status;
+    if (!targetId || !mongoose.isValidObjectId(targetId)) {
+        return NextResponse.json({ error: "Invalid argument id" }, { status: 400 });
+    }
+    if (status !== "visible") {
+        return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+
+    const existing = await Argument.findById(targetId).select({ isRemoved: 1 }).lean();
+    if (!existing) {
+        return NextResponse.json({ error: "Argument not found" }, { status: 404 });
+    }
+    if (existing.isRemoved) {
+        return NextResponse.json({ error: "Argument is deleted" }, { status: 409 });
+    }
+
+    const updated = await Argument.findByIdAndUpdate(
+        targetId,
+        {
+            $set: {
+                "visibility.status": "visible",
+                "visibility.moderatedAt": new Date(),
+                "visibility.reason": "Restored by moderator",
+                "visibility.rankPenalty": 0,
+            },
+        },
+        { new: true }
+    ).lean();
+
+    return NextResponse.json({
+        id: updated?._id?.toString?.() ?? targetId,
+        visibility: updated?.visibility ?? { status: "visible" },
+    });
 }

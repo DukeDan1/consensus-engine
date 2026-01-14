@@ -1,9 +1,13 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { toast } from "react-toastify";
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
 import AddNewCommentComponent from "@/app/components/AddNewCommentComponent";
 import { timeAgo } from "@/app/lib/commonFunctions";
+import ConfirmModal from "@/app/components/ui/ConfirmModal";
+import UserIdentity from "@/app/components/users/UserIdentity";
 
 function normaliseId(value: unknown): string | undefined {
     if (!value) return undefined;
@@ -17,6 +21,31 @@ function normaliseId(value: unknown): string | undefined {
     return undefined;
 }
 
+type UserSummary = {
+    id?: string;
+    name?: string;
+    nickname?: string;
+    avatarUrl?: string | null;
+    createdAt?: string | Date | null;
+};
+
+function resolveUserSummary(value: any): UserSummary {
+    if (!value) return {};
+    if (typeof value === "string") {
+        return { id: value };
+    }
+    if (typeof value === "object") {
+        return {
+            id: normaliseId(value._id),
+            name: value.name ?? undefined,
+            nickname: value.nickname ?? undefined,
+            avatarUrl: value.avatarUrl ?? null,
+            createdAt: value.createdAt ?? null,
+        };
+    }
+    return {};
+}
+
 function applyHighlight(element: HTMLElement) {
     const prevTransition = element.style.transition;
     const prevBg = element.style.backgroundColor;
@@ -28,6 +57,13 @@ function applyHighlight(element: HTMLElement) {
         element.style.backgroundColor = prevBg || "";
         element.style.transition = prevTransition;
     }, 1200);
+}
+
+function getVisibilityLabel(status?: string) {
+    if (!status || status === "visible") return null;
+    if (status === "needs_review") return "Needs review";
+    if (status === "blocked") return "Blocked";
+    return "Hidden";
 }
 
 function EvidenceList({ evidence }: { evidence?: any[] }) {
@@ -78,15 +114,36 @@ function EvidenceList({ evidence }: { evidence?: any[] }) {
 }
 
 
-export default function ArgumentCard({ argument }: { argument: TopicApiResponse["arguments"][number] }) {
+export default function ArgumentCard({
+    argument,
+    moderatorMode = false,
+}: {
+    argument: TopicApiResponse["arguments"][number];
+    moderatorMode?: boolean;
+}) {
+    const { data: session } = useSession();
+    const router = useRouter();
     const [upvotes, setUpvotes] = useState<number>((argument as any).upvoteCount ?? 0);
     const [downvotes, setDownvotes] = useState<number>((argument as any).downvoteCount ?? 0);
     const [voting, setVoting] = useState<boolean>(false);
     const [commentStates, setCommentStates] = useState(argument.comments?.map((c) => ({ ...c })) ?? []);
+    const [deletingArgument, setDeletingArgument] = useState(false);
+    const [argumentDeleted, setArgumentDeleted] = useState(false);
+    const [showArgumentDelete, setShowArgumentDelete] = useState(false);
+    const [commentDeleteId, setCommentDeleteId] = useState<string | null>(null);
+    const [restoringArgument, setRestoringArgument] = useState(false);
+    const [restoringCommentId, setRestoringCommentId] = useState<string | null>(null);
+    const [argumentVisibility, setArgumentVisibility] = useState(argument.visibility);
+    const [argumentRemoved, setArgumentRemoved] = useState(!!argument.isRemoved);
 
     useEffect(() => {
         setCommentStates(argument.comments?.map((c) => ({ ...c })) ?? []);
     }, [argument.comments]);
+
+    useEffect(() => {
+        setArgumentVisibility(argument.visibility);
+        setArgumentRemoved(!!argument.isRemoved);
+    }, [argument.visibility, argument.isRemoved]);
 
     useEffect(() => {
         if (typeof window === "undefined") return;
@@ -170,13 +227,127 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
         }
     }
 
+    async function handleDeleteArgument() {
+        if (!argument?.id) return;
+        setDeletingArgument(true);
+        try {
+            const res = await fetch("/api/argument", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: argument.id }),
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data?.error || "Failed to delete argument");
+            }
+            setArgumentDeleted(true);
+            toast.success("Argument deleted");
+            router.refresh();
+        } catch (err: any) {
+            toast.error(err?.message || "Unable to delete argument");
+        } finally {
+            setDeletingArgument(false);
+            setShowArgumentDelete(false);
+        }
+    }
+
+    async function handleDeleteComment() {
+        const commentId = commentDeleteId;
+        if (!commentId) return;
+        setCommentStates((prev) => prev.map((comment) => (
+            comment.id === commentId ? { ...comment, deleting: true } as any : comment
+        )));
+
+        try {
+            const res = await fetch("/api/comment", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: commentId }),
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data?.error || "Failed to delete comment");
+            }
+            setCommentStates((prev) => prev.filter((comment) => comment.id !== commentId));
+            toast.success("Comment deleted");
+        } catch (err: any) {
+            console.error("Delete comment error", err);
+            toast.error(err?.message || "Unable to delete comment");
+            setCommentStates((prev) => prev.map((comment) => (
+                comment.id === commentId ? { ...comment, deleting: false } as any : comment
+            )));
+        } finally {
+            setCommentDeleteId(null);
+        }
+    }
+
+    async function handleRestoreArgument() {
+        if (!argument?.id) return;
+        setRestoringArgument(true);
+        try {
+            const res = await fetch("/api/argument", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: argument.id, status: "visible" }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(data?.error || "Failed to restore argument");
+            }
+            setArgumentVisibility(data?.visibility ?? { status: "visible" });
+            setArgumentRemoved(false);
+            toast.success("Argument restored");
+            router.refresh();
+        } catch (err: any) {
+            toast.error(err?.message || "Unable to restore argument");
+        } finally {
+            setRestoringArgument(false);
+        }
+    }
+
+    async function handleRestoreComment(commentId: string) {
+        setRestoringCommentId(commentId);
+        try {
+            const res = await fetch("/api/comment", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: commentId, status: "visible" }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(data?.error || "Failed to restore comment");
+            }
+            setCommentStates((prev) => prev.map((comment) => (
+                comment.id === commentId
+                    ? { ...comment, visibility: data?.visibility ?? { status: "visible" }, isRemoved: false }
+                    : comment
+            )));
+            toast.success("Comment restored");
+        } catch (err: any) {
+            toast.error(err?.message || "Unable to restore comment");
+        } finally {
+            setRestoringCommentId(null);
+        }
+    }
+
     const createdLabel = useMemo(() => {
         if (!argument?.createdAt) return "";
         return timeAgo(argument.createdAt);
     }, [argument.createdAt]);
 
-    const authorId = normaliseId(typeof argument.createdBy === "string" ? argument.createdBy : argument.createdBy?._id);
-    const authorName = argument.createdBy?.name ?? "Anonymous";
+    const author = resolveUserSummary(argument.createdBy);
+    const authorId = author.id;
+    const currentUserId = session?.user?.id;
+    const isAdmin = !!session?.user?.isAdmin;
+    const canModerate = isAdmin && moderatorMode;
+    const ownsArgument = currentUserId && authorId && currentUserId === authorId;
+    const canDeleteArgument = ownsArgument || canModerate;
+    const argumentStatus = argumentVisibility?.status;
+    const argumentStatusLabel = getVisibilityLabel(argumentStatus);
+    const canRestoreArgument = canModerate && !argumentRemoved && argumentStatusLabel;
+    const showArgumentStatus = moderatorMode && (argumentRemoved || !!argumentStatusLabel);
+
+    if (argumentDeleted) return null;
 
     return (
         <>
@@ -184,17 +355,18 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                 <div className="card h-100 shadow-sm">
                     <div className="card-body">
                         <div className="d-flex align-items-start justify-content-between mb-3">
-                            <div>
-                                <div className="fw-semibold">
-                                    {authorId ? (
-                                        <Link href={`/profile/${authorId}`} className="author-link">
-                                            {authorName}
-                                        </Link>
-                                    ) : (
-                                        authorName
-                                    )}
-                                </div>
-                                <small className="text-muted">{createdLabel}</small>
+                            <div className="d-flex flex-column gap-1">
+                                <UserIdentity
+                                    userId={author.id}
+                                    name={author.name}
+                                    nickname={author.nickname}
+                                    avatarUrl={author.avatarUrl ?? undefined}
+                                    createdAt={author.createdAt}
+                                    size={36}
+                                    nameClassName="author-link fw-semibold"
+                                    fallbackLabel="Anonymous"
+                                />
+                                <small className="text-muted d-block">{createdLabel}</small>
                             </div>
 
                             <div className="d-flex align-items-center gap-2 align-self-end">
@@ -220,11 +392,41 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                                 </button>
                                 <span className="badge text-bg-light">
                                     <i className="fa-regular fa-comments me-1" aria-hidden="true"></i>
-                                    {argument.commentCount ?? commentStates.length} replies
+                                    {commentStates.length} replies
                                 </span>
+                                {canDeleteArgument && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-danger btn-sm"
+                                        onClick={() => setShowArgumentDelete(true)}
+                                        disabled={deletingArgument}
+                                        aria-label="Delete argument"
+                                    >
+                                        {deletingArgument ? "Deleting..." : "Delete"}
+                                    </button>
+                                )}
+                                {canRestoreArgument && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-success btn-sm"
+                                        onClick={handleRestoreArgument}
+                                        disabled={restoringArgument}
+                                        aria-label="Restore argument"
+                                    >
+                                        {restoringArgument ? "Restoring..." : "Restore"}
+                                    </button>
+                                )}
                             </div>
 
                         </div>
+                        {showArgumentStatus && (
+                            <div className="mb-2 d-flex flex-wrap gap-2">
+                                {argumentRemoved && <span className="badge text-bg-secondary">Removed</span>}
+                                {argumentStatusLabel && (
+                                    <span className="badge text-bg-warning">{argumentStatusLabel}</span>
+                                )}
+                            </div>
+                        )}
                         <p className="mb-2">{argument.body}</p>
                         <EvidenceList evidence={(argument as any).evidence} />
                         {/* Ontology tags removed as not needed */}
@@ -235,9 +437,16 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                                 <h6 className="mb-2">Comments</h6>
                                 <ul className="list-unstyled mb-0">
                                     {commentStates.map((c) => {
-                                        const commenterId = normaliseId(typeof c.createdBy === "string" ? c.createdBy : c.createdBy?._id);
-                                        const commenterName = c.createdBy?.name ?? "Anonymous";
+                                        const commenter = resolveUserSummary(c.createdBy);
                                         const pending = (c as any).pending;
+                                        const deleting = (c as any).deleting;
+                                        const ownsComment = currentUserId && commenter.id && currentUserId === commenter.id;
+                                        const canDeleteComment = ownsComment || canModerate;
+                                        const commentStatus = c.visibility?.status;
+                                        const commentStatusLabel = getVisibilityLabel(commentStatus);
+                                        const commentRemoved = c.isRemoved;
+                                        const showCommentStatus = moderatorMode && (commentRemoved || !!commentStatusLabel);
+                                        const canRestoreComment = canModerate && !commentRemoved && commentStatusLabel;
                                         return (
                                             <li
                                                 id={`comment-${c.id}`}
@@ -246,18 +455,21 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                                                 style={{ borderLeft: "4px solid #6c757d" }}
                                             >
                                                 <div className="d-flex justify-content-between align-items-start mb-2">
-                                                    <div className="small text-muted fw-semibold">
-                                                        <i className="fa-regular fa-user me-1"></i>
-                                                        {commenterId ? (
-                                                            <Link href={`/profile/${commenterId}`} className="author-link">
-                                                                {commenterName}
-                                                            </Link>
-                                                        ) : (
-                                                            commenterName
-                                                        )}
-                                                        <span className="ms-2 fw-light small">{c.createdAt ? timeAgo(c.createdAt) : ""}</span>
+                                                    <div className="d-flex flex-wrap align-items-center gap-3">
+                                                        <UserIdentity
+                                                            userId={commenter.id}
+                                                            name={commenter.name}
+                                                            nickname={commenter.nickname}
+                                                            avatarUrl={commenter.avatarUrl ?? undefined}
+                                                            createdAt={commenter.createdAt}
+                                                            size={28}
+                                                            className="small text-muted fw-semibold"
+                                                            nameClassName="author-link fw-semibold text-muted"
+                                                            fallbackLabel="Anonymous"
+                                                        />
+                                                        <span className="text-muted small">{c.createdAt ? timeAgo(c.createdAt) : ""}</span>
                                                     </div>
-                                                    <div className="d-flex align-items-center gap-1">
+                                                    <div className="d-flex align-items-center gap-2">
                                                         <button
                                                             className="btn btn-link btn-sm text-success p-0"
                                                             onClick={() => sendCommentVote(c.id, 1)}
@@ -276,8 +488,38 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                                                             <i className="fa-solid fa-thumbs-down me-1" aria-hidden="true"></i>
                                                             {c.downvoteCount ?? 0}
                                                         </button>
+                                                        {canDeleteComment && (
+                                                            <button
+                                                                className="btn btn-link btn-sm text-danger p-0"
+                                                                onClick={() => setCommentDeleteId(c.id)}
+                                                                disabled={deleting}
+                                                                aria-label="Delete comment"
+                                                            >
+                                                                <i className="fa-solid fa-trash me-1" aria-hidden="true"></i>
+                                                                {deleting ? "Deleting..." : "Delete"}
+                                                            </button>
+                                                        )}
+                                                        {canRestoreComment && (
+                                                            <button
+                                                                className="btn btn-link btn-sm text-success p-0"
+                                                                onClick={() => handleRestoreComment(c.id)}
+                                                                disabled={restoringCommentId === c.id}
+                                                                aria-label="Restore comment"
+                                                            >
+                                                                <i className="fa-solid fa-rotate-left me-1" aria-hidden="true"></i>
+                                                                {restoringCommentId === c.id ? "Restoring..." : "Restore"}
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
+                                                {showCommentStatus && (
+                                                    <div className="mb-2 d-flex flex-wrap gap-2">
+                                                        {commentRemoved && <span className="badge text-bg-secondary">Removed</span>}
+                                                        {commentStatusLabel && (
+                                                            <span className="badge text-bg-warning">{commentStatusLabel}</span>
+                                                        )}
+                                                    </div>
+                                                )}
                                                 <div className="ps-2 mb-2">{c.body}</div>
                                                 <div className="ps-2 mb-2">
                                                     <EvidenceList evidence={(c as any).evidence} />
@@ -295,6 +537,28 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                     </div>
                 </div>
             </div>
+            <ConfirmModal
+                isOpen={showArgumentDelete}
+                title="Delete argument"
+                body={<p className="mb-0">Delete this argument? This cannot be undone.</p>}
+                confirmLabel="Delete"
+                confirmVariant="danger"
+                confirmIconClass="fa-solid fa-trash"
+                isBusy={deletingArgument}
+                onCancel={() => setShowArgumentDelete(false)}
+                onConfirm={handleDeleteArgument}
+            />
+            <ConfirmModal
+                isOpen={!!commentDeleteId}
+                title="Delete comment"
+                body={<p className="mb-0">Delete this comment? This cannot be undone.</p>}
+                confirmLabel="Delete"
+                confirmVariant="danger"
+                confirmIconClass="fa-solid fa-trash"
+                isBusy={commentDeleteId ? Boolean(commentStates.find((c) => c.id === commentDeleteId && (c as any).deleting)) : false}
+                onCancel={() => setCommentDeleteId(null)}
+                onConfirm={handleDeleteComment}
+            />
         </>
     );
 }

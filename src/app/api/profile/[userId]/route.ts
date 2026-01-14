@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
+import { getServerSession } from "next-auth";
 import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
 import { Argument } from "@/app/models/argument";
 import { Comment } from "@/app/models/comment";
+import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
 import "@/app/models/topic";
 
 const DEFAULT_LIMIT = 10;
@@ -15,6 +17,10 @@ type UserLean = {
     _id: mongoose.Types.ObjectId;
     name?: string | null;
     nickname?: string | null;
+    bio?: string | null;
+    avatarUrl?: string | null;
+    email?: string | null;
+    isSuspended?: boolean;
     createdAt?: Date | null;
 };
 
@@ -23,6 +29,11 @@ type ProfileResponse = {
         id: string;
         name: string | null;
         nickname: string | null;
+        bio?: string | null;
+        avatarUrl?: string | null;
+        email?: string | null;
+        canViewEmail?: boolean;
+        isSuspended?: boolean;
         createdAt: string | null;
     };
     recentArguments: Array<{
@@ -87,12 +98,26 @@ export async function GET(request: NextRequest, ctx: any) {
     await dbConnect();
 
     const userDoc = (await User.findById(userId)
-        .select({ name: 1, nickname: 1, createdAt: 1 })
+        .select({ name: 1, nickname: 1, bio: 1, avatarUrl: 1, email: 1, createdAt: 1, isSuspended: 1 })
         .lean()
         .exec()) as UserLean | null;
 
     if (!userDoc) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const session = await getServerSession();
+    let viewerUser: { _id?: mongoose.Types.ObjectId; isAdmin?: boolean } | null = null;
+    if (session?.user?.email) {
+        viewerUser = await User.findOne({ email: session.user.email }).select({ _id: 1, isAdmin: 1 }).lean();
+    }
+
+    const viewerId = viewerUser?._id?.toString?.();
+    const canViewEmail = !!viewerUser?.isAdmin || Boolean(viewerId && viewerId === userDoc._id.toString());
+
+    let avatarUrl = userDoc.avatarUrl ?? null;
+    if (avatarUrl) {
+        avatarUrl = await getSignedReadUrlFromUrl(avatarUrl).catch(() => avatarUrl);
     }
 
     const { searchParams } = new URL(request.url);
@@ -168,6 +193,11 @@ export async function GET(request: NextRequest, ctx: any) {
             id: userDoc._id.toString(),
             name: userDoc.name ?? null,
             nickname: userDoc.nickname ?? null,
+            bio: userDoc.bio ?? null,
+            avatarUrl,
+            email: canViewEmail ? userDoc.email ?? null : null,
+            canViewEmail,
+            isSuspended: !!userDoc.isSuspended,
             createdAt: userDoc.createdAt ? userDoc.createdAt.toISOString() : null,
         },
         recentArguments,

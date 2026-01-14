@@ -14,7 +14,7 @@ export async function GET() {
         {
           $match: {
             isActive: true,
-            "visibility.status": { $nin: ["blocked", "hidden"] },
+            "visibility.status": { $nin: ["blocked", "hidden", "needs_review"] },
           },
         },
         {

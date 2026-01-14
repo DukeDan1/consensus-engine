@@ -1,9 +1,17 @@
+type UserSummary = {
+  _id?: string;
+  name?: string;
+  nickname?: string;
+  avatarUrl?: string | null;
+  createdAt?: string | null;
+};
+
 export type TopicApiResponse = {
   topic: {
     id: string;
     title: string;
     description?: string;
-    createdBy?: { _id: string; name?: string };
+    createdBy?: UserSummary;
     ontologyCategories?: Array<{
       id: string;
       label: string;
@@ -19,7 +27,7 @@ export type TopicApiResponse = {
     id: string;
     side?: "for" | "against" | "neutral" | string;
     body: string;
-    createdBy?: { _id: string; name?: string };
+    createdBy?: UserSummary;
     createdAt?: string;
     upvoteCount?: number;
     downvoteCount?: number;
@@ -39,10 +47,22 @@ export type TopicApiResponse = {
       contentType?: string;
       label?: string;
     }>;
+    visibility?: {
+      status?: 'visible' | 'hidden' | 'needs_review' | 'blocked';
+      reason?: string;
+      categories?: string[];
+      spamLikelihood?: number;
+      trollingLikelihood?: number;
+      offTopicLikelihood?: number;
+      illegalOrHarmfulLikelihood?: number;
+      quality?: number;
+      model?: string;
+    };
+    isRemoved?: boolean;
     comments: Array<{
       id: string;
       body: string;
-      createdBy?: { _id: string; name?: string };
+      createdBy?: UserSummary;
       createdAt?: string;
       upvoteCount?: number;
       downvoteCount?: number;
@@ -61,6 +81,18 @@ export type TopicApiResponse = {
         contentType?: string;
         label?: string;
       }>;
+      visibility?: {
+        status?: 'visible' | 'hidden' | 'needs_review' | 'blocked';
+        reason?: string;
+        categories?: string[];
+        spamLikelihood?: number;
+        trollingLikelihood?: number;
+        offTopicLikelihood?: number;
+        illegalOrHarmfulLikelihood?: number;
+        quality?: number;
+        model?: string;
+      };
+      isRemoved?: boolean;
     }>;
     aiAnalysis?: {
       isFact: boolean;

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import User from "@/app/models/user";
 import { dbConnect } from "@/app/lib/mongoose";
+import { updateUserProfileByEmail } from "@/app/services/userProfileService";
 
 export async function POST(req: Request) {
   await dbConnect();
@@ -12,22 +12,6 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-
-  // Only allow specific keys to update
-  const allowedUpdates = ["name", "preferences.theme", "preferences.language", "preferences.notifications"];
-  const update: Record<string, any> = {};
-  for (const key of allowedUpdates) {
-    const value = key.split('.').reduce((obj, k) => obj?.[k], body);
-    if (value !== undefined) {
-      update[key] = value;
-    }
-  }
-
-  const user = await User.findOneAndUpdate(
-    { email: session.user.email },
-    { $set: update },
-    { new: true, runValidators: true }
-  );
-
-  return NextResponse.json(user);
+  const user = await updateUserProfileByEmail(session.user.email, body);
+  return NextResponse.json(user ?? {});
 }

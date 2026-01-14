@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
   const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get("pageSize") || "15", 10) || 15));
   const categoryFilter = parseCategoryFilters(searchParams);
 
-  const match: Record<string, any> = { isActive: true, "visibility.status": { $nin: ["blocked", "hidden"] } };
+  const match: Record<string, any> = { isActive: true, "visibility.status": { $nin: ["blocked", "hidden", "needs_review"] } };
 
   // Build a case-insensitive OR filter across title and creator
   const or: any[] = [];
@@ -68,20 +68,130 @@ export async function GET(request: NextRequest) {
     match.$or = or;
   }
 
-  if (categoryFilter.length) {
-    match["ontologyCategories.id"] = { $in: categoryFilter };
-  }
+  const categoryStages = categoryFilter.length
+    ? [
+        {
+          $lookup: {
+            from: "arguments",
+            let: { topicId: "$_id" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ["$topic", "$$topicId"] },
+                  isRemoved: false,
+                  "visibility.status": { $nin: ["blocked", "hidden", "needs_review"] },
+                },
+              },
+              { $project: { ontologyCategories: 1 } },
+            ],
+            as: "arguments",
+          },
+        },
+        {
+          $lookup: {
+            from: "comments",
+            let: { topicId: "$_id" },
+            pipeline: [
+              {
+                $lookup: {
+                  from: "arguments",
+                  localField: "argument",
+                  foreignField: "_id",
+                  as: "argument",
+                },
+              },
+              { $unwind: "$argument" },
+              {
+                $match: {
+                  $expr: { $eq: ["$argument.topic", "$$topicId"] },
+                  isRemoved: false,
+                  "visibility.status": { $nin: ["blocked", "hidden", "needs_review"] },
+                },
+              },
+              { $project: { ontologyCategories: 1 } },
+            ],
+            as: "comments",
+          },
+        },
+        {
+          $addFields: {
+            topicCategoryIds: {
+              $map: {
+                input: { $ifNull: ["$ontologyCategories", []] },
+                as: "cat",
+                in: "$$cat.id",
+              },
+            },
+            argumentCategoryIds: {
+              $reduce: {
+                input: { $ifNull: ["$arguments", []] },
+                initialValue: [],
+                in: {
+                  $setUnion: [
+                    "$$value",
+                    {
+                      $map: {
+                        input: { $ifNull: ["$$this.ontologyCategories", []] },
+                        as: "cat",
+                        in: "$$cat.id",
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            commentCategoryIds: {
+              $reduce: {
+                input: { $ifNull: ["$comments", []] },
+                initialValue: [],
+                in: {
+                  $setUnion: [
+                    "$$value",
+                    {
+                      $map: {
+                        input: { $ifNull: ["$$this.ontologyCategories", []] },
+                        as: "cat",
+                        in: "$$cat.id",
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+        {
+          $addFields: {
+            allCategoryIds: {
+              $setUnion: ["$topicCategoryIds", "$argumentCategoryIds", "$commentCategoryIds"],
+            },
+          },
+        },
+        {
+          $addFields: {
+            categoryMatch: {
+              $gt: [{ $size: { $setIntersection: ["$allCategoryIds", categoryFilter] } }, 0],
+            },
+          },
+        },
+        { $match: { categoryMatch: true } },
+      ]
+    : [];
 
-  // Count total for pagination
-  const total = await Topic.countDocuments(match).exec();
+  const basePipeline = [{ $match: match }, ...categoryStages];
+
+  const countPipeline = categoryFilter.length ? [...basePipeline, { $count: "count" }] : null;
+  const total = countPipeline
+    ? (await mongoose.connection.collection("topics").aggregate(countPipeline).toArray())[0]?.count ?? 0
+    : await Topic.countDocuments(match).exec();
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const skip = (page - 1) * pageSize;
 
-  // Aggregate to shape output and include vote counts + creator name
   const results = await mongoose.connection
     .collection("topics")
     .aggregate([
-      { $match: match },
+      ...basePipeline,
       { $sort: { createdAt: -1 } },
       { $skip: skip },
       { $limit: pageSize },

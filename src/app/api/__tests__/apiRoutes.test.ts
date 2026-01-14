@@ -13,6 +13,7 @@ const mockArgumentFind = vi.hoisted(() => vi.fn());
 const mockArgumentFindById = vi.hoisted(() => vi.fn());
 const mockTopicFindById = vi.hoisted(() => vi.fn());
 const mockTopicFindOne = vi.hoisted(() => vi.fn());
+const mockTopicFind = vi.hoisted(() => vi.fn());
 const mockTopicCountDocuments = vi.hoisted(() => vi.fn());
 const mockTopicCreate = vi.hoisted(() => vi.fn());
 const mockCommentCreate = vi.hoisted(() => vi.fn());
@@ -28,6 +29,8 @@ const mockGetAIAnalysisForArgument = vi.hoisted(() => vi.fn());
 const mockFactFindOne = vi.hoisted(() => vi.fn());
 const mockFactCreate = vi.hoisted(() => vi.fn());
 const mockFactFind = vi.hoisted(() => vi.fn());
+const mockGetSignedReadUrlFromUrl = vi.hoisted(() => vi.fn());
+const mockDeleteFileFromUrl = vi.hoisted(() => vi.fn());
 const mockFindUserByEmailOrPhone = vi.hoisted(() => vi.fn());
 const mockCreateUser = vi.hoisted(() => vi.fn());
 const mockHashPassword = vi.hoisted(() => vi.fn());
@@ -44,6 +47,7 @@ const mockModel = vi.hoisted(() => vi.fn((name: string, schema: any) => {
 const mockGetOntologyCategories = vi.hoisted(() => vi.fn());
 const mockGetTopicSummary = vi.hoisted(() => vi.fn());
 const mockNextAuth = vi.hoisted(() => vi.fn());
+const mockGenerateProfileImage = vi.hoisted(() => vi.fn());
 const mockCredentialsProvider = vi.hoisted(() => vi.fn((opts) => opts));
 const mockMongoDbAdapter = vi.hoisted(() => vi.fn(() => 'adapter'));
 const mockGetConnectedMongoClient = vi.hoisted(() => vi.fn(() => ({ client: 'mongo' })));
@@ -77,13 +81,18 @@ vi.mock('@/app/lib/mongoose', () => ({ dbConnect: mockDbConnect }));
 vi.mock('next-auth', () => ({ getServerSession: mockGetServerSession }));
 vi.mock('@/app/models/user', () => ({ __esModule: true, default: { findOne: mockUserFindOne, find: mockUserFind, findById: mockUserFindById, findOneAndUpdate: mockUserFindOneAndUpdate } }));
 vi.mock('@/app/models/argument', () => ({ Argument: { create: mockArgumentCreate, findByIdAndUpdate: mockArgumentFindByIdAndUpdate, find: mockArgumentFind, findById: mockArgumentFindById }, ArgumentSide: { for: 'for', against: 'against', neutral: 'neutral' } }));
-vi.mock('@/app/models/topic', () => ({ Topic: { countDocuments: mockTopicCountDocuments, findOne: mockTopicFindOne, findById: mockTopicFindById, create: mockTopicCreate } }));
+vi.mock('@/app/models/topic', () => ({ Topic: { countDocuments: mockTopicCountDocuments, findOne: mockTopicFindOne, findById: mockTopicFindById, find: mockTopicFind, create: mockTopicCreate } }));
 vi.mock('@/app/models/comment', () => ({ Comment: { create: mockCommentCreate, findByIdAndUpdate: mockCommentFindByIdAndUpdate, find: mockCommentFind } }));
 vi.mock('@/app/models/vote', () => ({ Vote: { init: mockVoteInit, findOneAndUpdate: mockVoteFindOneAndUpdate, countDocuments: mockVoteCountDocuments } }));
 vi.mock('@/app/models/facts', () => ({ Fact: { findOne: mockFactFindOne, create: mockFactCreate, find: mockFactFind } }));
+vi.mock('@/app/services/gcsService', () => ({
+  getSignedReadUrlFromUrl: mockGetSignedReadUrlFromUrl,
+  deleteFileFromUrl: mockDeleteFileFromUrl,
+}));
 vi.mock('@/app/services/ontologyClassificationService', () => ({ classifyTextToOntology: mockClassifyTextToOntology, classificationToAssignments: mockClassificationToAssignments, getOntologyCategories: mockGetOntologyCategories }));
 vi.mock('@/app/services/openaiService', () => ({ getAIAnalysisForArgument: mockGetAIAnalysisForArgument }));
 vi.mock('@/app/services/topicSummaryService', () => ({ getTopicSummary: mockGetTopicSummary }));
+vi.mock('@/app/services/openaiImageGenerationService', () => ({ generateProfileImage: mockGenerateProfileImage }));
 vi.mock('@/app/lib/backgroundTasks', () => ({ trackBackgroundTask: mockTrackBackgroundTask }));
 vi.mock('@/app/services/authService', () => ({ findUserByEmailOrPhone: mockFindUserByEmailOrPhone, createUser: mockCreateUser }));
 vi.mock('@/app/services/passwordService', () => ({ hashPassword: mockHashPassword, comparePassword: mockComparePassword }));
@@ -105,6 +114,8 @@ import { GET as ontologyCategoriesGet } from '@/app/api/ontology/categories/rout
 import { GET as topicDetailGet } from '@/app/api/topics/[id]/route';
 import { GET as topicFactsGet } from '@/app/api/topics/[id]/facts/route';
 import { GET as topicSummaryGet } from '@/app/api/topics/[id]/summary/route';
+import { GET as searchGet } from '@/app/api/search/route';
+import { POST as avatarGeneratePost } from '@/app/api/profile/avatar/generate/route';
 import { POST as userUpdatePost } from '@/app/api/user/update/route';
 import { POST as userIdPost } from '@/app/api/user/[id]/route';
 let nextAuthImported = false;
@@ -118,6 +129,7 @@ function chainableQuery<T>(value: T) {
   query.select.mockReturnValue(query);
   query.lean.mockReturnValue(query);
   query.exec.mockResolvedValue(value);
+  query.then = (onFulfilled: any, onRejected: any) => Promise.resolve(value).then(onFulfilled, onRejected);
   return query;
 }
 
@@ -152,6 +164,7 @@ beforeEach(async () => {
   mockIsValidObjectId.mockImplementation((val: any) => val !== 'bad');
   mockClassifyTextToOntology.mockResolvedValue([]);
   mockClassificationToAssignments.mockReturnValue([]);
+  mockGetServerSession.mockResolvedValue(null);
   mockGetAIAnalysisForArgument.mockResolvedValue({
     isFact: false,
     factualPart: '',
@@ -171,6 +184,8 @@ beforeEach(async () => {
   mockComparePassword.mockResolvedValue(true);
   mockGetOntologyCategories.mockResolvedValue([]);
   mockGetTopicSummary.mockResolvedValue({ generatedAt: new Date('2024-01-01T00:00:00Z'), points: [] });
+  mockGetSignedReadUrlFromUrl.mockImplementation(async (url: string) => `${url}?signed=1`);
+  mockDeleteFileFromUrl.mockResolvedValue({ deleted: true });
   mockNextAuth.mockImplementation((options: any) => {
     if (!capturedNextAuthOptions) capturedNextAuthOptions = options;
     return async () => new Response('ok');
@@ -356,6 +371,51 @@ describe('GET /api/topics', () => {
     expect(json.total).toBe(2);
     expect(json.page).toBe(2);
     expect(json.totalPages).toBe(2);
+  });
+
+  it('uses aggregation when category filters are provided', async () => {
+    const countToArray = vi.fn().mockResolvedValue([{ count: 1 }]);
+    const resultsToArray = vi.fn().mockResolvedValue([
+      { _id: 't1', title: 'Topic 1', upvoteCount: 0, downvoteCount: 0, totalVotes: 0, creatorName: 'Alice', ontologyCategories: [] }
+    ]);
+    mockAggregate
+      .mockReturnValueOnce({ toArray: countToArray })
+      .mockReturnValueOnce({ toArray: resultsToArray });
+
+    const res = await topicsGet({ url: 'http://localhost/api/topics?categoryId=cat1' } as any);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(mockTopicCountDocuments).not.toHaveBeenCalled();
+    expect(mockAggregate).toHaveBeenCalledTimes(2);
+    expect(json.total).toBe(1);
+    expect(json.topics).toHaveLength(1);
+  });
+});
+
+describe('GET /api/search', () => {
+  it('returns empty results for short queries', async () => {
+    const res = await searchGet(new Request('http://localhost/api/search?q=a') as any);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json).toEqual({ topics: [], users: [] });
+  });
+
+  it('returns topic and user matches', async () => {
+    mockTopicFind.mockReturnValue(findChain([
+      { _id: 't1', title: 'Topic Match' },
+    ]));
+    mockUserFind.mockReturnValue(findChain([
+      { _id: 'u1', name: 'User Match', nickname: null, avatarUrl: null },
+    ]));
+
+    const res = await searchGet(new Request('http://localhost/api/search?q=match') as any);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.topics).toHaveLength(1);
+    expect(json.users).toHaveLength(1);
   });
 });
 
@@ -670,6 +730,7 @@ describe('GET /api/profile/[userId]', () => {
   });
 
   it('returns profile data', async () => {
+    mockGetServerSession.mockResolvedValue(null);
     const userDoc = { _id: { toString: () => userId }, name: 'User', nickname: 'Nick', createdAt: new Date('2024-01-01') };
     mockUserFindById.mockReturnValue(chainableQuery(userDoc));
 
@@ -759,6 +820,11 @@ describe('GET /api/topics/[id]/facts', () => {
   });
 
   it('returns facts list', async () => {
+    mockTopicFindById.mockReturnValue(findChain({
+      _id: topicId,
+      isActive: true,
+      visibility: { status: 'visible' }
+    }));
     mockFactFind.mockReturnValue(findChain([
       { _id: 'f1', text: 'fact', sourceArgument: 'arg1', createdAt: new Date('2024-01-01') }
     ]));
@@ -775,6 +841,11 @@ describe('GET /api/topics/[id]/summary', () => {
   const topicId = '507f1f77bcf86cd799439011';
 
   it('returns summary', async () => {
+    mockTopicFindById.mockReturnValue(findChain({
+      _id: topicId,
+      isActive: true,
+      visibility: { status: 'visible' }
+    }));
     mockGetTopicSummary.mockResolvedValue({ generatedAt: new Date('2024-01-05'), points: { for: [], against: [], neutral: [] } });
 
     const res = await topicSummaryGet(new Request(`http://localhost/api/topics/${topicId}/summary`) as any, { params: { id: topicId } } as any);
@@ -783,6 +854,49 @@ describe('GET /api/topics/[id]/summary', () => {
     expect(res.status).toBe(200);
     expect(json.topicId).toBe(topicId);
     expect(json.points).toEqual({ for: [], against: [], neutral: [] });
+  });
+});
+
+describe('POST /api/profile/avatar/generate', () => {
+  it('requires authentication', async () => {
+    mockGetServerSession.mockResolvedValue(null);
+    const res = await avatarGeneratePost(new Request('http://localhost/api/profile/avatar/generate', {
+      method: 'POST',
+      body: JSON.stringify({ gender: 'female', age: 30, hairColor: 'brown', ethnicitySkin: 'White (light skin tone)' })
+    }) as any);
+
+    expect(res.status).toBe(401);
+  });
+
+  it('validates payload', async () => {
+    mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
+    const res = await avatarGeneratePost(new Request('http://localhost/api/profile/avatar/generate', {
+      method: 'POST',
+      body: JSON.stringify({ gender: 'unknown', age: 10, hairColor: 'purple', ethnicitySkin: 'Unknown' })
+    }) as any);
+
+    expect(res.status).toBe(400);
+    expect(mockGenerateProfileImage).not.toHaveBeenCalled();
+  });
+
+  it('returns generated image', async () => {
+    mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
+    mockGenerateProfileImage.mockResolvedValue('base64-data');
+
+    const res = await avatarGeneratePost(new Request('http://localhost/api/profile/avatar/generate', {
+      method: 'POST',
+      body: JSON.stringify({ gender: 'female', age: 32, hairColor: 'brown', ethnicitySkin: 'White (light skin tone)' })
+    }) as any);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.base64).toBe('base64-data');
+    expect(mockGenerateProfileImage).toHaveBeenCalledWith({
+      gender: 'female',
+      age: 32,
+      hairColor: 'brown',
+      ethnicitySkin: 'White (light skin tone)'
+    });
   });
 });
 
@@ -795,7 +909,7 @@ describe('POST /api/user/update', () => {
 
   it('applies allowed updates', async () => {
     mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
-    mockUserFindOneAndUpdate.mockResolvedValue({ name: 'New' });
+    mockUserFindOneAndUpdate.mockReturnValue(chainableQuery({ name: 'New' }));
 
     const res = await userUpdatePost(new Request('http://localhost/api/user/update', { method: 'POST', body: JSON.stringify({ name: 'New' }) }) as any);
     const json = await res.json();
@@ -815,7 +929,7 @@ describe('POST /api/user/[id]', () => {
 
   it('updates allowed fields', async () => {
     mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
-    mockUserFindOneAndUpdate.mockResolvedValue({ name: 'Updated' });
+    mockUserFindOneAndUpdate.mockReturnValue(chainableQuery({ name: 'Updated' }));
 
     const res = await userIdPost(new Request('http://localhost/api/user/1', { method: 'POST', body: JSON.stringify({ name: 'Updated' }) }) as any);
     const json = await res.json();

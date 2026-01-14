@@ -3,9 +3,9 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Basic mocks for Next.js primitives
-const pushMock = vi.fn();
-const refreshMock = vi.fn();
-const replaceMock = vi.fn();
+const pushMock = vi.hoisted(() => vi.fn());
+const refreshMock = vi.hoisted(() => vi.fn());
+const replaceMock = vi.hoisted(() => vi.fn());
 
 vi.mock('next/link', () => ({
   __esModule: true,
@@ -22,8 +22,10 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+const useSessionMock = vi.hoisted(() => vi.fn());
+
 vi.mock('next-auth/react', () => ({
-  useSession: () => ({ data: { user: { name: 'Ada Lovelace', email: 'ada@example.com' } } }),
+  useSession: useSessionMock,
   signIn: vi.fn().mockResolvedValue({ error: null }),
   signOut: vi.fn().mockResolvedValue(undefined),
 }));
@@ -51,6 +53,10 @@ import TopicsBrowser from '../topics/TopicsBrowser';
 import InteractiveCard from '../ui/InteractiveCard';
 import Header from '../ui/header';
 import ProfileHoverCard from '../../profile/ProfileHoverCard';
+import AdminUserActions from '../../profile/AdminUserActions';
+import ProfileHeaderClient from '../../profile/ProfileHeaderClient';
+import ProfileBioCard from '../../profile/ProfileBioCard';
+import ModerationQueue from '../moderation/ModerationQueue';
 import SummaryColumnCard from '../../topics/[id]/summary/SummaryColumnCard';
 import TopicDiscussionControls from '../topics/TopicDiscussionControls';
 import FactCard from '../topics/FactCard';
@@ -58,6 +64,7 @@ import SearchLoading from '../topics/SearchLoading';
 import TopicCard from '../topics/TopicCard';
 import CreateNewTopic from '../topics/CreateNewTopic';
 import OntologyCategoryPicker from '../ontology/OntologyCategoryPicker';
+import ConfirmModal from '../ui/ConfirmModal';
 
 // Shared helpers
 const mockFetch = (data: any, ok = true) => {
@@ -75,6 +82,9 @@ beforeAll(() => {
 beforeEach(() => {
   // Default fetch mock to avoid unhandled rejections in components that prefetch categories
   global.fetch = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ categories: [] }) } as any);
+  useSessionMock.mockReturnValue({
+    data: { user: { name: 'Ada Lovelace', email: 'ada@example.com' } },
+  });
 });
 
 afterEach(() => {
@@ -143,6 +153,86 @@ describe('ArgumentCard', () => {
     expect(screen.getByText('Comment text')).toBeInTheDocument();
     expect(screen.getByText(/replies/i)).toBeInTheDocument();
   });
+
+  it('hides admin delete controls when moderator mode is off', () => {
+    useSessionMock.mockReturnValue({
+      data: { user: { id: 'admin-1', name: 'Admin', email: 'admin@example.com', isAdmin: true } },
+    });
+
+    render(<ArgumentCard argument={{
+      id: 'a2',
+      body: 'Argument body',
+      createdAt: new Date().toISOString(),
+      createdBy: { _id: 'user-1', name: 'User One' },
+      comments: [],
+    }} />);
+
+    expect(screen.queryByLabelText(/delete argument/i)).not.toBeInTheDocument();
+  });
+
+  it('shows admin delete controls when moderator mode is on', () => {
+    useSessionMock.mockReturnValue({
+      data: { user: { id: 'admin-1', name: 'Admin', email: 'admin@example.com', isAdmin: true } },
+    });
+
+    render(<ArgumentCard argument={{
+      id: 'a3',
+      body: 'Argument body',
+      createdAt: new Date().toISOString(),
+      createdBy: { _id: 'user-1', name: 'User One' },
+      comments: [],
+    }} moderatorMode />);
+
+    expect(screen.getByLabelText(/delete argument/i)).toBeInTheDocument();
+  });
+
+  it('hides comment delete controls for admins when moderator mode is off', () => {
+    useSessionMock.mockReturnValue({
+      data: { user: { id: 'admin-1', name: 'Admin', email: 'admin@example.com', isAdmin: true } },
+    });
+
+    render(<ArgumentCard argument={{
+      id: 'a5',
+      body: 'Argument body',
+      createdAt: new Date().toISOString(),
+      createdBy: { _id: 'user-1', name: 'User One' },
+      comments: [
+        {
+          id: 'c3',
+          body: 'Comment text',
+          createdAt: new Date().toISOString(),
+          createdBy: { _id: 'user-2', name: 'User Two' },
+        },
+      ],
+    }} />);
+
+    expect(screen.queryByLabelText(/delete comment/i)).not.toBeInTheDocument();
+  });
+
+  it('shows restore controls for hidden content in moderator mode', () => {
+    useSessionMock.mockReturnValue({
+      data: { user: { id: 'admin-1', name: 'Admin', email: 'admin@example.com', isAdmin: true } },
+    });
+
+    render(<ArgumentCard argument={{
+      id: 'a4',
+      body: 'Argument body',
+      createdAt: new Date().toISOString(),
+      createdBy: { _id: 'user-1', name: 'User One' },
+      visibility: { status: 'hidden' },
+      comments: [
+        {
+          id: 'c2',
+          body: 'Comment text',
+          createdAt: new Date().toISOString(),
+          createdBy: { _id: 'u2', name: 'User Two' },
+          visibility: { status: 'needs_review' },
+        },
+      ],
+    }} moderatorMode />);
+
+    expect(screen.getAllByRole('button', { name: /restore/i }).length).toBeGreaterThanOrEqual(1);
+  });
 });
 
 describe('UI atoms', () => {
@@ -202,9 +292,103 @@ describe('TopicsBrowser', () => {
   });
 });
 
+describe('ConfirmModal', () => {
+  it('renders and triggers confirm/cancel', () => {
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
+
+    render(
+      <ConfirmModal
+        isOpen
+        title="Delete item"
+        body={<p>Confirm delete</p>}
+        confirmLabel="Delete"
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /delete/i }));
+    expect(onConfirm).toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+    expect(onCancel).toHaveBeenCalled();
+  });
+});
+
+describe('AdminUserActions', () => {
+  it('shows admin controls for admins', () => {
+    useSessionMock.mockReturnValue({
+      data: { user: { name: 'Admin User', email: 'admin@example.com', isAdmin: true } },
+    });
+
+    render(<AdminUserActions userId="user-1" initialSuspended={false} displayName="User One" />);
+
+    expect(screen.getByRole('button', { name: /suspend account/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /delete user/i })).toBeInTheDocument();
+  });
+});
+
+describe('ModerationQueue', () => {
+  it('restores a comment via API', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({ id: 'c1', visibility: { status: 'visible' } }),
+    } as any);
+
+    render(
+      <ModerationQueue
+        topics={[]}
+        arguments={[]}
+        comments={[{
+          id: 'c1',
+          body: 'Needs review',
+          createdAt: new Date().toISOString(),
+          createdBy: { _id: 'u1', name: 'User' },
+          visibility: { status: 'hidden' },
+          topic: { id: 't1', title: 'Topic' },
+        }]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /restore/i }));
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith(
+      '/api/comment',
+      expect.objectContaining({ method: 'PATCH' }),
+    ));
+  });
+
+  it('restores a topic via API', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({ id: 't1', visibility: { status: 'visible' } }),
+    } as any);
+
+    render(
+      <ModerationQueue
+        topics={[{
+          id: 't1',
+          title: 'Topic',
+          createdAt: new Date().toISOString(),
+          createdBy: { _id: 'u1', name: 'User' },
+          visibility: { status: 'hidden' },
+        }]}
+        arguments={[]}
+        comments={[]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /restore/i }));
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith(
+      '/api/topics/t1',
+      expect.objectContaining({ method: 'PATCH' }),
+    ));
+  });
+});
+
 describe('Topic discussion controls', () => {
   it('toggles filters and argument form', () => {
-    render(<TopicDiscussionControls topicId="t1" argumentCategoryIds={[]} commentCategoryIds={[]} />);
+    render(<TopicDiscussionControls topicId="t1" argumentQuery="" commentQuery="" />);
     fireEvent.click(screen.getAllByRole('button', { name: /filter/i })[0]);
     expect(screen.getByText(/apply filters/i)).toBeInTheDocument();
   });
@@ -230,6 +414,51 @@ describe('ProfileHoverCard', () => {
     );
     expect(screen.getByText(/sample quote/i)).toBeInTheDocument();
     expect(screen.getByText(/argument snippet/i)).toBeInTheDocument();
+  });
+});
+
+describe('ProfileHeaderClient', () => {
+  it('toggles email visibility for owner', () => {
+    useSessionMock.mockReturnValue({
+      data: { user: { id: 'user-1', name: 'Owner', email: 'owner@example.com' } },
+    });
+
+    render(
+      <ProfileHeaderClient
+        userId="user-1"
+        displayName="Owner"
+        memberSince="January 2024"
+        avatarUrl={null}
+        email="owner@example.com"
+        canViewEmail
+        isSuspended={false}
+      />
+    );
+
+    const toggleButton = screen.getByRole('button', { name: /view email/i });
+    fireEvent.click(toggleButton);
+    expect(screen.getByText(/owner@example.com/i)).toBeInTheDocument();
+    expect(screen.getByText(/only you can view your email address/i)).toBeInTheDocument();
+  });
+});
+
+describe('ProfileBioCard', () => {
+  it('saves bio changes for owner', async () => {
+    useSessionMock.mockReturnValue({
+      data: { user: { id: 'user-1', name: 'Owner', email: 'owner@example.com' } },
+    });
+    mockFetch({ ok: true });
+
+    render(<ProfileBioCard userId="user-1" initialBio="" />);
+
+    fireEvent.click(screen.getByRole('button', { name: /add bio/i }));
+    fireEvent.change(screen.getByPlaceholderText(/tell others about yourself/i), { target: { value: 'Hello world' } });
+    fireEvent.click(screen.getByRole('button', { name: /save bio/i }));
+
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledWith(
+      '/api/user/update',
+      expect.objectContaining({ method: 'POST' }),
+    ));
   });
 });
 
