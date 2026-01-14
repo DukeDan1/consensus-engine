@@ -33,8 +33,9 @@ export default function FeaturedTopics() {
         }
         const data: ApiResponse = await res.json();
         setTopics(data.topics);
-      } catch (err: any) {
-        setError(err?.message || "Failed to load topics");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to load topics";
+        setError(message);
       } finally {
         setLoading(false);
       }
