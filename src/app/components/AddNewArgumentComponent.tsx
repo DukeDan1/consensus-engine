@@ -14,6 +14,8 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
     const [text, setText] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const [evidenceLink, setEvidenceLink] = useState("");
+    const [evidence, setEvidence] = useState<Array<{ url: string; kind: "link" | "file"; fileName?: string; contentType?: string; label?: string }>>([]);
     const router = useRouter();
 
     useEffect(() => {
@@ -36,7 +38,7 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
             const res = await fetch("/api/argument", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ topicId, body }),
+                body: JSON.stringify({ topicId, body, evidence }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
@@ -65,6 +67,7 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
         }
 
         setText("");
+        setEvidence([]);
         toggleForm(false);
         router.replace(`/topics/${topicId}?ordering=newest`);
         router.refresh();
@@ -75,6 +78,65 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
         setTimeout(() => {
             router.refresh();
         }, 10000);
+    }
+
+    async function handleAddLink() {
+        const link = evidenceLink.trim();
+        if (!link) return;
+        try {
+            const url = new URL(link).toString();
+            setEvidence((prev) => [...prev, { url, kind: "link" as const }].slice(0, 6));
+            setEvidenceLink("");
+        } catch {
+            toast.error("Please enter a valid URL");
+        }
+    }
+
+    async function handleFileUpload(file: File) {
+        try {
+            const form = new FormData();
+            form.append("file", file);
+
+            const res = await fetch("/api/uploads", {
+                method: "POST",
+                body: form,
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data?.url) {
+                throw new Error(data?.error || "Upload failed");
+            }
+
+            const storedUrl = data.storageUrl || data.url;
+            setEvidence((prev) => [
+                ...prev,
+                { url: storedUrl as string, kind: "file" as const, fileName: (data.fileName || file.name) as string, contentType: (data.contentType || file.type) as string },
+            ].slice(0, 6));
+            toast.success("File attached");
+        } catch (err: any) {
+            console.error("File upload failed", err);
+            toast.error(err?.message || "Failed to upload file");
+        }
+    }
+
+    function removeEvidenceAt(index: number) {
+        setEvidence((prev) => prev.filter((_, i) => i !== index));
+    }
+
+    async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const files = Array.from(e.target.files ?? []);
+        for (const file of files) {
+            await handleFileUpload(file);
+        }
+        e.target.value = "";
+    }
+
+    async function handlePaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+        const files = Array.from(e.clipboardData?.files ?? []);
+        if (!files.length) return;
+        e.preventDefault();
+        for (const file of files) {
+            await handleFileUpload(file);
+        }
     }
 
     return (
@@ -114,7 +176,48 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
                                     rows={4}
                                     value={text}
                                     onChange={(e) => setText(e.target.value)}
+                                    onPaste={handlePaste}
                                 ></textarea>
+                            </div>
+                            <div className="mb-3">
+                                <label className="form-label">Evidence</label>
+                                <div className="d-flex gap-2 mb-2">
+                                    <input
+                                        className="form-control"
+                                        placeholder="Add a link to evidence"
+                                        value={evidenceLink}
+                                        onChange={(e) => setEvidenceLink(e.target.value)}
+                                    />
+                                    <button type="button" className="btn btn-outline-secondary" onClick={handleAddLink} disabled={!evidenceLink.trim()}>
+                                        Add link
+                                    </button>
+                                </div>
+                                <div className="mb-2">
+                                    <label className="form-label small">Upload a file</label>
+                                    <input type="file" className="form-control" onChange={handleFileChange} multiple />
+                                </div>
+                                {evidence.length > 0 && (
+                                    <div className="small text-muted">
+                                        Attached:
+                                        <ul className="list-unstyled mb-0 mt-1">
+                                            {evidence.map((ev, idx) => (
+                                                <li key={`${ev.url}-${idx}`} className="d-flex align-items-center gap-2">
+                                                    <span className="text-truncate" style={{ maxWidth: "320px" }}>
+                                                        {ev.fileName || ev.url}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-link btn-sm text-danger p-0"
+                                                        onClick={() => removeEvidenceAt(idx)}
+                                                        aria-label="Remove attachment"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
                             </div>
                             <div className="d-flex gap-2">
                                 <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>

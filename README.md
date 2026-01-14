@@ -20,11 +20,12 @@ The project builds an online consensus management platform that structures debat
 ## Getting started
 1) Install Node.js 22+ and npm.
 2) Install dependencies: `npm install` (or `npm ci`).
-3) Create `.env.local` with at least:
+3) Create `.env` with at least:
 	- `MONGODB_URI` — MongoDB connection string
 	- `OPENAI_API_KEY` — OpenAI key for AI features
-	- `AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING` — required if email delivery is enabled
+	- `AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING` — required if you want email functionality. Emails are sent out when a user registers or requests a password reset. See Microsoft Azure Communication Services docs for setup.
 	- Optional: `OPENAI_RESPONSES_MODEL` to override the default model
+	- `GOOGLE_STORAGE_BUCKET_NAME` and `GOOGLE_SERVICE_ACCOUNT_KEY` if you want to enable Google Cloud Storage for file uploads. Without this, the file upload functionality will not work. Set up a Google Cloud project, create a storage bucket, and generate a service account key JSON file for authentication. Ensure that the service account has appropriate permissions to access the storage bucket and populate the environment variable `GOOGLE_SERVICE_ACCOUNT_KEY` with the content of the JSON key file.
 4) Run the app: `npm run dev` and open http://localhost:3000.
 
 ## Project scripts

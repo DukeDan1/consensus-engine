@@ -10,6 +10,7 @@ const mockUserFindOneAndUpdate = vi.hoisted(() => vi.fn());
 const mockArgumentCreate = vi.hoisted(() => vi.fn());
 const mockArgumentFindByIdAndUpdate = vi.hoisted(() => vi.fn());
 const mockArgumentFind = vi.hoisted(() => vi.fn());
+const mockArgumentFindById = vi.hoisted(() => vi.fn());
 const mockTopicFindById = vi.hoisted(() => vi.fn());
 const mockTopicFindOne = vi.hoisted(() => vi.fn());
 const mockTopicCountDocuments = vi.hoisted(() => vi.fn());
@@ -75,7 +76,7 @@ vi.mock('mongoose', () => {
 vi.mock('@/app/lib/mongoose', () => ({ dbConnect: mockDbConnect }));
 vi.mock('next-auth', () => ({ getServerSession: mockGetServerSession }));
 vi.mock('@/app/models/user', () => ({ __esModule: true, default: { findOne: mockUserFindOne, find: mockUserFind, findById: mockUserFindById, findOneAndUpdate: mockUserFindOneAndUpdate } }));
-vi.mock('@/app/models/argument', () => ({ Argument: { create: mockArgumentCreate, findByIdAndUpdate: mockArgumentFindByIdAndUpdate, find: mockArgumentFind }, ArgumentSide: { for: 'for', against: 'against', neutral: 'neutral' } }));
+vi.mock('@/app/models/argument', () => ({ Argument: { create: mockArgumentCreate, findByIdAndUpdate: mockArgumentFindByIdAndUpdate, find: mockArgumentFind, findById: mockArgumentFindById }, ArgumentSide: { for: 'for', against: 'against', neutral: 'neutral' } }));
 vi.mock('@/app/models/topic', () => ({ Topic: { countDocuments: mockTopicCountDocuments, findOne: mockTopicFindOne, findById: mockTopicFindById, create: mockTopicCreate } }));
 vi.mock('@/app/models/comment', () => ({ Comment: { create: mockCommentCreate, findByIdAndUpdate: mockCommentFindByIdAndUpdate, find: mockCommentFind } }));
 vi.mock('@/app/models/vote', () => ({ Vote: { init: mockVoteInit, findOneAndUpdate: mockVoteFindOneAndUpdate, countDocuments: mockVoteCountDocuments } }));
@@ -163,6 +164,7 @@ beforeEach(async () => {
   mockAggregate.mockReturnValue({ toArray: vi.fn().mockResolvedValue([]) });
   mockArgumentFind.mockReturnValue(findChain([]));
   mockCommentFind.mockReturnValue(findChain([]));
+  mockArgumentFindById.mockReturnValue(chainableQuery({ body: 'argument body' }));
   mockFactFind.mockReturnValue(findChain([]));
   mockUserFindOneAndUpdate.mockResolvedValue(undefined);
   mockHashPassword.mockResolvedValue('hashed');
@@ -309,6 +311,7 @@ describe('POST /api/comment', () => {
     const createdAt = new Date('2024-02-02T00:00:00.000Z');
     mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
     mockUserFindOne.mockReturnValue(execResult({ _id: 'user1', name: 'Commenter' }));
+    mockArgumentFindById.mockReturnValue(chainableQuery({ _id: argumentId, body: 'parent argument text' }));
     mockCommentCreate.mockResolvedValue({ _id: 'c1', body: 'hello world', createdAt, ontologyCategories: [] });
 
     const req = new Request('http://localhost/api/comment', {

@@ -18,6 +18,14 @@ export interface IComment extends Document {
     similarity?: number;
   }>;
 
+  evidence?: Array<{
+    url: string;
+    kind: 'link' | 'file';
+    fileName?: string;
+    contentType?: string;
+    label?: string;
+  }>;
+
   visibility?: {
     status: 'visible' | 'hidden' | 'needs_review' | 'blocked';
     rankPenalty?: number;
@@ -50,6 +58,18 @@ const CommentSchema = new Schema<IComment>({
         description: { type: String },
         confidence: { type: Number },
         similarity: { type: Number },
+      }
+    ],
+    default: [],
+  },
+  evidence: {
+    type: [
+      {
+        url: { type: String, required: true },
+        kind: { type: String, enum: ['link', 'file'], default: 'link' },
+        fileName: { type: String },
+        contentType: { type: String },
+        label: { type: String },
       }
     ],
     default: [],

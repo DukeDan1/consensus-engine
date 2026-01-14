@@ -16,7 +16,23 @@ type Body = {
     topicId: string;
     body: string;
     side?: ArgumentSide;
+    evidence?: Array<{ url: string; kind?: 'link' | 'file'; label?: string; fileName?: string; contentType?: string }>;
 };
+
+function sanitiseEvidence(list: Body['evidence']): Array<{ url: string; kind: 'link' | 'file'; label?: string; fileName?: string; contentType?: string }> {
+    if (!Array.isArray(list)) return [];
+    return list
+        .map((item) => {
+            const url = (item?.url || '').trim();
+            if (!url) return null;
+            const kind = item?.kind === 'file' ? 'file' : 'link';
+            const label = item?.label?.toString().slice(0, 160);
+            const fileName = item?.fileName?.toString().slice(0, 160);
+            const contentType = item?.contentType?.toString().slice(0, 120);
+            return { url, kind, label, fileName, contentType };
+        })
+        .filter(Boolean) as Array<{ url: string; kind: 'link' | 'file'; label?: string; fileName?: string; contentType?: string }>;
+}
 
 export async function POST(req: Request) {
     await dbConnect();
@@ -32,7 +48,7 @@ export async function POST(req: Request) {
     }
 
     const payload: Body = await req.json();
-    let { topicId, body, side = "neutral" } = payload || ({} as Body);
+    let { topicId, body, side = "neutral", evidence = [] } = payload || ({} as Body);
 
     if (!topicId || typeof body !== "string") {
         return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
@@ -45,6 +61,9 @@ export async function POST(req: Request) {
     if (!["for", "against", "neutral"].includes(side)) {
         return NextResponse.json({ error: "Invalid stance" }, { status: 400 });
     }
+    
+    const evidenceList = Array.isArray(evidence) ? evidence : [];
+    const safeEvidence = sanitiseEvidence(evidenceList).slice(0, 6);
 
     try {
         const topicObjId = new mongoose.Types.ObjectId(topicId);
@@ -60,9 +79,10 @@ export async function POST(req: Request) {
             userTrustScore: user.trustScore,
             userTrustTier: user.trustTier,
             topicTitle: topic.title,
+            evidence: safeEvidence,
         });
 
-        const visibility = moderationToVisibility({ moderation, userTrustTier: user.trustTier });
+        const visibility = moderationToVisibility({ moderation, userTrustTier: user.trustTier, contentType: "argument" });
 
         if (visibility.status === "blocked") {
             if (moderation.recommendedTrustDelta) {
@@ -84,6 +104,7 @@ export async function POST(req: Request) {
             downvoteCount: 0,
             score: 0,
             ontologyCategories: [],
+            evidence: safeEvidence,
             visibility: {
                 status: visibility.status,
                 rankPenalty: visibility.rankPenalty,
@@ -157,6 +178,7 @@ export async function POST(req: Request) {
             createdBy: { _id: (user._id as mongoose.Types.ObjectId).toString(), name: user.name },
             createdAt: created.createdAt?.toISOString?.() ?? new Date().toISOString(),
             ontologyCategories: created.ontologyCategories ?? [],
+            evidence: created.evidence ?? [],
             visibility: created.visibility,
             comments: [],
         });

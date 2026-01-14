@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { dbConnect } from "@/app/lib/mongoose";
 import { Comment } from "@/app/models/comment";
+import { Argument } from "@/app/models/argument";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
 import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
@@ -13,7 +14,23 @@ type Body = {
     argumentId: string;
     body: string;
     parentId?: string;
+    evidence?: Array<{ url: string; kind?: 'link' | 'file'; label?: string; fileName?: string; contentType?: string }>;
 };
+
+function sanitiseEvidence(list: Body['evidence']): Array<{ url: string; kind: 'link' | 'file'; label?: string; fileName?: string; contentType?: string }> {
+    if (!Array.isArray(list)) return [];
+    return list
+        .map((item) => {
+            const url = (item?.url || '').trim();
+            if (!url) return null;
+            const kind = item?.kind === 'file' ? 'file' : 'link';
+            const label = item?.label?.toString().slice(0, 160);
+            const fileName = item?.fileName?.toString().slice(0, 160);
+            const contentType = item?.contentType?.toString().slice(0, 120);
+            return { url, kind, label, fileName, contentType };
+        })
+        .filter(Boolean) as Array<{ url: string; kind: 'link' | 'file'; label?: string; fileName?: string; contentType?: string }>;
+}
 
 export async function POST(req: Request) {
     await dbConnect();
@@ -29,7 +46,7 @@ export async function POST(req: Request) {
     }
 
     const payload: Body = await req.json();
-    const { argumentId, body, parentId } = payload || {} as Body;
+    const { argumentId, body, parentId, evidence = [] } = payload || {} as Body;
 
     if (!argumentId || typeof body !== "string") {
         return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
@@ -40,18 +57,30 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Comment must be 1-5000 characters" }, { status: 400 });
     }
 
+    const evidenceList = Array.isArray(evidence) ? evidence : [];
+    const safeEvidence = sanitiseEvidence(evidenceList).slice(0, 6);
+
     try {
         const argObjId = new mongoose.Types.ObjectId(argumentId);
         const parentObjId = parentId ? new mongoose.Types.ObjectId(parentId) : undefined;
 
+        const parentArgument = await Argument.findById(argObjId).select({ body: 1 }).lean();
+        if (!parentArgument) {
+            return NextResponse.json({ error: "Argument not found" }, { status: 404 });
+        }
+
+        const parentText = (parentArgument.body || "").toString().slice(0, 4000);
+        const contentWithContext = `${trimmed}\n\nReplying to argument: ${parentText}`;
+
         const moderation = await moderateUserGeneratedText({
-            text: trimmed,
+            text: contentWithContext,
             contentType: "comment",
             userTrustScore: user.trustScore,
             userTrustTier: user.trustTier,
+            evidence: safeEvidence,
         });
 
-        const visibility = moderationToVisibility({ moderation, userTrustTier: user.trustTier });
+        const visibility = moderationToVisibility({ moderation, userTrustTier: user.trustTier, contentType: "comment" });
 
         if (visibility.status === "blocked") {
             if (moderation.recommendedTrustDelta) {
@@ -71,6 +100,7 @@ export async function POST(req: Request) {
             body: trimmed,
             createdBy: user._id,
             ontologyCategories: [],
+            evidence: safeEvidence,
             visibility: {
                 status: visibility.status,
                 rankPenalty: visibility.rankPenalty,
@@ -120,6 +150,7 @@ export async function POST(req: Request) {
             upvoteCount: 0,
             downvoteCount: 0,
             ontologyCategories: created.ontologyCategories ?? [],
+            evidence: created.evidence ?? [],
             visibility: created.visibility,
         });
     } catch (err: any) {

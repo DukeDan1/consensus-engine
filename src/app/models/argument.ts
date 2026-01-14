@@ -27,6 +27,14 @@ export interface IArgument extends Document {
     similarity?: number;
   }>;
 
+  evidence?: Array<{
+    url: string;
+    kind: 'link' | 'file';
+    fileName?: string;
+    contentType?: string;
+    label?: string;
+  }>;
+
   visibility?: {
     status: 'visible' | 'hidden' | 'needs_review' | 'blocked';
     rankPenalty?: number;
@@ -70,6 +78,18 @@ const ArgumentSchema = new Schema<IArgument>({
     default: [],
   }
   ,
+  evidence: {
+    type: [
+      {
+        url: { type: String, required: true },
+        kind: { type: String, enum: ['link', 'file'], default: 'link' },
+        fileName: { type: String },
+        contentType: { type: String },
+        label: { type: String },
+      },
+    ],
+    default: [],
+  },
   visibility: {
     status: { type: String, enum: ['visible', 'hidden', 'needs_review', 'blocked'], default: 'visible', index: true },
     rankPenalty: { type: Number, default: 0 },

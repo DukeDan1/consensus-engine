@@ -4,7 +4,6 @@ import Link from "next/link";
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
 import AddNewCommentComponent from "@/app/components/AddNewCommentComponent";
 import { timeAgo } from "@/app/lib/commonFunctions";
-import OntologyBadgeList from "@/app/components/ontology/OntologyBadgeList";
 
 function normaliseId(value: unknown): string | undefined {
     if (!value) return undefined;
@@ -29,6 +28,53 @@ function applyHighlight(element: HTMLElement) {
         element.style.backgroundColor = prevBg || "";
         element.style.transition = prevTransition;
     }, 1200);
+}
+
+function EvidenceList({ evidence }: { evidence?: any[] }) {
+    if (!evidence || !evidence.length) return null;
+    return (
+        <div className="mt-2">
+            <div className="fw-semibold small mb-1">Evidence</div>
+            <div className="d-flex flex-wrap gap-2">
+                {evidence.map((item, idx) => {
+                    const url = item?.url;
+                    if (!url) return null;
+                    const isImage = (item?.contentType || "").startsWith("image/");
+                    const label = item?.label || item?.fileName || url;
+                    if (isImage) {
+                        return (
+                            <div key={`${url}-${idx}`} className="border rounded p-1 bg-light-subtle">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={url}
+                                    alt={label}
+                                    style={{ maxWidth: 160, maxHeight: 120, objectFit: "cover" }}
+                                />
+                                <div className="small text-muted mt-1">
+                                    <a href={url} target="_blank" rel="noreferrer" className="text-decoration-none">
+                                        Open in new tab
+                                    </a>
+                                </div>
+                            </div>
+                        );
+                    }
+                    return (
+                        <a
+                            key={`${url}-${idx}`}
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="badge text-bg-secondary text-decoration-none"
+                            title={label}
+                        >
+                            <i className="fa-solid fa-paperclip me-1" aria-hidden="true"></i>
+                            {label?.slice(0, 40)}
+                        </a>
+                    );
+                })}
+            </div>
+        </div>
+    );
 }
 
 
@@ -180,7 +226,8 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
 
                         </div>
                         <p className="mb-2">{argument.body}</p>
-                        <OntologyBadgeList categories={argument.ontologyCategories} className="mb-3 d-flex flex-wrap gap-1" />
+                        <EvidenceList evidence={(argument as any).evidence} />
+                        {/* Ontology tags removed as not needed */}
 
                         {/* Comments */}
                         {commentStates.length > 0 && (
@@ -232,7 +279,10 @@ export default function ArgumentCard({ argument }: { argument: TopicApiResponse[
                                                     </div>
                                                 </div>
                                                 <div className="ps-2 mb-2">{c.body}</div>
-                                                <OntologyBadgeList categories={(c as any).ontologyCategories} className="ps-2 d-flex flex-wrap gap-1" />
+                                                <div className="ps-2 mb-2">
+                                                    <EvidenceList evidence={(c as any).evidence} />
+                                                </div>
+                                                {/* Ontology tags removed as not needed */}
                                             </li>
                                         );
                                     })}

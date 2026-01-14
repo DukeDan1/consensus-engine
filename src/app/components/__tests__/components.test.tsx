@@ -293,7 +293,7 @@ describe('OntologyCategoryPicker', () => {
 
     fireEvent.change(screen.getByPlaceholderText(/type to search/i), { target: { value: 'hea' } });
 
-    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /health/i })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: /health/i }));
     expect(onChange).toHaveBeenCalledWith([expect.objectContaining({ id: 'c1' })]);
     expect(onChange).not.toHaveBeenCalledWith(expect.arrayContaining([expect.objectContaining({ id: 'c2' })]));
