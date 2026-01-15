@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ChangeEvent, type ClipboardEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
 import ConfirmModal from "@/app/components/ui/ConfirmModal";
 import { deleteFileViaApi, uploadFileViaApi } from "@/app/lib/fileUpload";
@@ -45,6 +46,7 @@ export default function ProfileAvatarUploader({
   onAvatarUpdated,
 }: Props) {
   const router = useRouter();
+  const { update: updateSession } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -171,6 +173,7 @@ export default function ProfileAvatarUploader({
       onAvatarUpdated(signedUrl || storedUrl);
       toast.success("Avatar updated");
       handleClose();
+      await updateSession();
       router.refresh();
     } catch (err: any) {
       if (storedUrl) {
@@ -196,6 +199,7 @@ export default function ProfileAvatarUploader({
       onAvatarUpdated(null);
       toast.success("Avatar removed");
       handleClose();
+      await updateSession();
       router.refresh();
     } catch (err: any) {
       toast.error(err?.message || "Unable to remove avatar");
