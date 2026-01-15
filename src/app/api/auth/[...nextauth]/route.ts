@@ -102,7 +102,7 @@ const handler = NextAuth({
       return true;
     },
 
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user?.id) token.id = user.id;
       if (typeof (user as { isAdmin?: boolean } | undefined)?.isAdmin === 'boolean') {
         token.isAdmin = (user as { isAdmin?: boolean }).isAdmin;
@@ -110,31 +110,39 @@ const handler = NextAuth({
       if (typeof (user as { avatarUrl?: string | null } | undefined)?.avatarUrl === 'string') {
         token.avatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
       }
-      if (typeof token.isAdmin !== 'boolean' && token.id) {
+      
+      // On session update trigger, always refetch avatarUrl from database
+      const shouldRefetch = trigger === 'update' || typeof token.isAdmin !== 'boolean' || typeof token.avatarUrl === 'undefined';
+      
+      if (token.id && shouldRefetch) {
         await dbConnect();
-        const dbUser = await User.findById(token.id).select({ isAdmin: 1 }).lean();
-        token.isAdmin = !!dbUser?.isAdmin;
-      }
-      if (token.id && typeof token.avatarUrl === 'undefined') {
-        await dbConnect();
-        const dbUser = await User.findById(token.id).select({ avatarUrl: 1 }).lean();
-        token.avatarUrl = dbUser?.avatarUrl ?? null;
+        const dbUser = await User.findById(token.id).select({ isAdmin: 1, avatarUrl: 1 }).lean();
+        if (typeof token.isAdmin !== 'boolean') {
+          token.isAdmin = !!dbUser?.isAdmin;
+        }
+        if (typeof token.avatarUrl === 'undefined' || trigger === 'update') {
+          token.avatarUrl = dbUser?.avatarUrl ?? null;
+        }
       }
       return token;
     },
 
     async session({ session, token }) {
-      if (token?.id && session.user) session.user.id = typeof token.id === 'string' ? token.id : String(token.id);
-      if (session.user) {
-        session.user.isAdmin = typeof token.isAdmin === 'boolean' ? token.isAdmin : undefined;
-        session.user.avatarUrl = typeof token.avatarUrl === 'string' ? token.avatarUrl : null;
-        const avatarUrl = session.user.avatarUrl;
-        if (avatarUrl) {
-          session.user.image = await getSignedReadUrlFromUrl(avatarUrl).catch(() => avatarUrl);
-        } else {
-          session.user.image = null;
-        }
+      if (!session.user) {
+        session.user = {};
       }
+      
+      if (token?.id) session.user.id = typeof token.id === 'string' ? token.id : String(token.id);
+      session.user.isAdmin = typeof token.isAdmin === 'boolean' ? token.isAdmin : undefined;
+      session.user.avatarUrl = typeof token.avatarUrl === 'string' ? token.avatarUrl : null;
+      
+      const avatarUrl = session.user.avatarUrl;
+      if (avatarUrl) {
+        session.user.image = await getSignedReadUrlFromUrl(avatarUrl).catch(() => avatarUrl);
+      } else {
+        session.user.image = null;
+      }
+      
       return session;
     },
   },
