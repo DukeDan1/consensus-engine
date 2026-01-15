@@ -1,7 +1,7 @@
 import User from "@/app/models/user";
 import { deleteFileFromUrl } from "@/app/services/gcsService";
 
-const allowedUpdates = [
+const selfServiceUpdates = [
   "name",
   "nickname",
   "bio",
@@ -9,13 +9,19 @@ const allowedUpdates = [
   "avatarThumbUrl",
   "avatarOriginalUrl",
   "avatarOriginalThumbUrl",
-  "avatarModeration",
   "preferences.theme",
   "preferences.language",
   "preferences.notifications",
 ];
 
-export function buildProfileUpdate(payload: Record<string, any>) {
+const adminUpdates = [...selfServiceUpdates, "avatarModeration"];
+
+type ProfileUpdateOptions = {
+  allowModeration?: boolean;
+};
+
+export function buildProfileUpdate(payload: Record<string, any>, options?: ProfileUpdateOptions) {
+  const allowedUpdates = options?.allowModeration ? adminUpdates : selfServiceUpdates;
   const update: Record<string, any> = {};
   for (const key of allowedUpdates) {
     const value = key.split(".").reduce((obj, k) => obj?.[k], payload);
@@ -26,8 +32,12 @@ export function buildProfileUpdate(payload: Record<string, any>) {
   return update;
 }
 
-async function updateUserProfile(query: Record<string, any>, payload: Record<string, any>) {
-  const update = buildProfileUpdate(payload);
+async function updateUserProfile(
+  query: Record<string, any>,
+  payload: Record<string, any>,
+  options?: ProfileUpdateOptions
+) {
+  const update = buildProfileUpdate(payload, options);
   if (!Object.keys(update).length) return null;
 
   let existingAvatarUrl: string | undefined;
@@ -98,10 +108,18 @@ async function updateUserProfile(query: Record<string, any>, payload: Record<str
   return updated;
 }
 
-export async function updateUserProfileByEmail(email: string, payload: Record<string, any>) {
-  return updateUserProfile({ email }, payload);
+export async function updateUserProfileByEmail(
+  email: string,
+  payload: Record<string, any>,
+  options?: ProfileUpdateOptions
+) {
+  return updateUserProfile({ email }, payload, options);
 }
 
-export async function updateUserProfileById(userId: string, payload: Record<string, any>) {
-  return updateUserProfile({ _id: userId }, payload);
+export async function updateUserProfileById(
+  userId: string,
+  payload: Record<string, any>,
+  options?: ProfileUpdateOptions
+) {
+  return updateUserProfile({ _id: userId }, payload, options);
 }

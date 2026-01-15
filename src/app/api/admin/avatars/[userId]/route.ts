@@ -96,7 +96,7 @@ export async function POST(req: Request, ctx: any) {
       avatarOriginalUrl: user.avatarOriginalUrl ?? null,
       avatarOriginalThumbUrl: user.avatarOriginalThumbUrl ?? null,
       avatarModeration: buildModerationUpdate(user.avatarModeration, "approved", adminResult.adminEmail),
-    });
+    }, { allowModeration: true });
   } else {
     await updateUserProfileById(userId, {
       avatarUrl: null,
@@ -104,7 +104,7 @@ export async function POST(req: Request, ctx: any) {
       avatarOriginalUrl: null,
       avatarOriginalThumbUrl: null,
       avatarModeration: buildModerationUpdate(user.avatarModeration, "removed", adminResult.adminEmail),
-    });
+    }, { allowModeration: true });
   }
 
   notifyAvatarOutcome({ email: user.email, name: user.name }, action);

@@ -71,7 +71,7 @@ export async function PATCH(req: Request, ctx: any) {
       ...(hasAvatarOriginal ? { avatarOriginalUrl: payload.avatarOriginalUrl } : {}),
       ...(hasAvatarOriginalThumb ? { avatarOriginalThumbUrl: payload.avatarOriginalThumbUrl } : {}),
       ...(hasAvatarModeration ? { avatarModeration: payload.avatarModeration } : {}),
-    });
+    }, { allowModeration: true });
     if (!updatedProfile) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
