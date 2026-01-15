@@ -291,7 +291,19 @@ export default function ProfileAvatarUploader({
                       className="form-control"
                       min={18}
                       max={85}
-                      value={age}
+                      value={Number.isNaN(age) ? "" : age}
+                      onChange={(event) => {
+                      const next = event.target.valueAsNumber;
+                      setAge(Number.isNaN(next) ? Number.NaN : next);
+                      }}
+                      onBlur={(event) => {
+                      const next = event.target.valueAsNumber;
+                      if (Number.isNaN(next)) {
+                        setAge(18);
+                        return;
+                      }
+                      setAge(Math.min(85, Math.max(18, next)));
+                      }}
                       disabled={inputsDisabled}
                     />
                     <div className="form-text">Enter an age between 18 and 85.</div>
