@@ -13,6 +13,7 @@ import { moderateUserGeneratedText, moderationToVisibility } from "@/app/service
 import { applyTrustDelta } from "@/app/services/trustService";
 import { sanitiseEvidence, type EvidenceItemInput } from "@/app/lib/evidence";
 import { deleteEvidenceFiles } from "@/app/services/evidenceCleanupService";
+import { evaluateFactPromotionForArgument } from "@/app/services/factPromotionService";
 
 type Body = {
     topicId: string;
@@ -135,6 +136,7 @@ export async function POST(req: Request) {
                         isFact: analysis.isFact,
                         aiSummary: analysis.aiSummary,
                         justification: analysis.justification,
+                        factualPart: analysis.factualPart,
                     },
                  });
 
@@ -147,9 +149,21 @@ export async function POST(req: Request) {
                             topic: topicObjId,
                             text: analysis.factualPart,
                             sourceArgument: created._id,
+                            status: "active",
+                            promotionSource: "ai",
+                            promotedAt: new Date(),
+                            promotionHistory: [
+                                {
+                                    status: "active",
+                                    reason: "ai_analysis",
+                                    createdAt: new Date(),
+                                },
+                            ],
                         });
                     }
                 }
+
+                await evaluateFactPromotionForArgument({ argumentId: created._id });
             } catch (err) {
                 console.error("Background AI processing failed for argument", created._id, err);
             }

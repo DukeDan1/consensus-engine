@@ -22,7 +22,10 @@ export async function GET(_request: NextRequest, ctx: any) {
         if (!topic || topic.isActive === false || (visibilityStatus && ["hidden", "blocked", "needs_review"].includes(visibilityStatus))) {
             return NextResponse.json({ error: "Topic not found" }, { status: 404 });
         }
-        const facts = await Fact.find({ topic: topicObjectId })
+        const facts = await Fact.find({
+            topic: topicObjectId,
+            $or: [{ status: { $exists: false } }, { status: "active" }],
+        })
             .sort({ createdAt: -1 })
             .limit(200)
             .select({ text: 1, sourceArgument: 1, createdAt: 1 })

@@ -122,7 +122,7 @@ export async function generateProfileImage(promptArgs: ProfilePromptArgs): Promi
         model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-1.5",
         prompt: prompt,
         n: 1,
-        size: "1024x1024",
+        size: "256x256",
         quality: "low",
     });
     return response?.data?.[0]?.b64_json || "";

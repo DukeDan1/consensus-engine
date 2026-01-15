@@ -18,6 +18,19 @@ export interface IArgument extends Document {
     isFact: boolean;
     justification: string;
     aiSummary: string;
+    factualPart?: string;
+  };
+  factPromotion?: {
+    status?: "none" | "candidate" | "promoted" | "demoted";
+    candidateAt?: Date;
+    promotedAt?: Date;
+    demotedAt?: Date;
+    lastEvaluatedAt?: Date;
+    reason?: string;
+    upvoteCount?: number;
+    downvoteCount?: number;
+    uniqueVoters?: number;
+    netVotes?: number;
   };
   ontologyCategories: Array<{
     id: string;
@@ -64,6 +77,19 @@ const ArgumentSchema = new Schema<IArgument>({
     isFact: { type: Boolean },
     justification: { type: String },
     aiSummary: { type: String },
+    factualPart: { type: String },
+  },
+  factPromotion: {
+    status: { type: String, enum: ["none", "candidate", "promoted", "demoted"], default: "none" },
+    candidateAt: { type: Date },
+    promotedAt: { type: Date },
+    demotedAt: { type: Date },
+    lastEvaluatedAt: { type: Date },
+    reason: { type: String },
+    upvoteCount: { type: Number },
+    downvoteCount: { type: Number },
+    uniqueVoters: { type: Number },
+    netVotes: { type: Number },
   },
   ontologyCategories: {
     type: [

@@ -95,9 +95,10 @@ export type TopicApiResponse = {
       isRemoved?: boolean;
     }>;
     aiAnalysis?: {
-      isFact: boolean;
-      isOpinion: boolean;
-      justification: string;
+      isFact?: boolean;
+      aiSummary?: string;
+      factualPart?: string;
+      justification?: string;
     };
   }>;
   facts?: Array<{

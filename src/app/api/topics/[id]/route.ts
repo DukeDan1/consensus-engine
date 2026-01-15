@@ -181,7 +181,10 @@ export async function GET(
     : argumentsList;
 
   // Fetch derived facts for this topic (limit reasonable number)
-  const facts = await Fact.find({ topic: topic._id })
+  const facts = await Fact.find({
+    topic: topic._id,
+    $or: [{ status: { $exists: false } }, { status: "active" }],
+  })
     .sort({ createdAt: -1 })
     .limit(100)
     .select({ text: 1, sourceArgument: 1, createdAt: 1 })

@@ -7,10 +7,18 @@ type MongooseId = mongoose.Types.ObjectId;
 
 type SummaryColumn = {
     text: string;
-    argument?: MongooseId;
+    argument?: string;
     stance: "for" | "against" | "neutral";
     justification?: string;
     lastUpdatedAt?: Date;
+    upvoteCount?: number;
+    downvoteCount?: number;
+    factPromotion?: {
+        status?: "none" | "candidate" | "promoted" | "demoted";
+        reason?: string;
+        uniqueVoters?: number;
+        netVotes?: number;
+    };
 };
 
 type SummaryResult = {
@@ -37,7 +45,7 @@ async function buildSummaryPoints(topicId: MongooseId): Promise<{ for: SummaryCo
     const args = await Argument.find({ topic: topicId, isRemoved: false })
         .sort({ score: -1, createdAt: -1 })
         .limit(MAX_POINTS_PER_COLUMN * 3)
-        .select({ side: 1, score: 1, aiAnalysis: 1, updatedAt: 1, createdAt: 1 })
+        .select({ side: 1, score: 1, aiAnalysis: 1, updatedAt: 1, createdAt: 1, upvoteCount: 1, downvoteCount: 1, factPromotion: 1 })
         .lean();
 
     const groups: Record<string, SummaryColumn[]> = { for: [], against: [], neutral: [] };
@@ -49,10 +57,18 @@ async function buildSummaryPoints(topicId: MongooseId): Promise<{ for: SummaryCo
 
         targetGroup.push({
             text: truncateForSummary(textSource),
-            argument: arg._id as MongooseId,
+            argument: arg._id?.toString?.() ?? "",
             stance,
             justification: arg.aiAnalysis?.justification,
             lastUpdatedAt: arg.updatedAt ?? arg.createdAt,
+            upvoteCount: arg.upvoteCount ?? 0,
+            downvoteCount: arg.downvoteCount ?? 0,
+            factPromotion: arg.factPromotion ? {
+                status: arg.factPromotion.status,
+                reason: arg.factPromotion.reason,
+                uniqueVoters: arg.factPromotion.uniqueVoters,
+                netVotes: arg.factPromotion.netVotes,
+            } : undefined,
         });
     }
 

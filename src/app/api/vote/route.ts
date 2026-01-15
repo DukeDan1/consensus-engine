@@ -6,6 +6,7 @@ import { Argument } from "@/app/models/argument";
 import { Comment } from "@/app/models/comment";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
+import { evaluateFactPromotionForArgument } from "@/app/services/factPromotionService";
 
 type Body = {
     targetType: "Argument" | "Topic" | "Comment";
@@ -62,12 +63,21 @@ export async function POST(req: Request) {
         const downCount = await Vote.countDocuments({ targetType, targetId: targetObjectId, value: -1 }).exec();
 
         // If this is an Argument, update its cached counts/score
+        let factPromotion = undefined;
         if (targetType === "Argument") {
             await Argument.findByIdAndUpdate(targetObjectId, {
                 upvoteCount: upCount,
                 downvoteCount: downCount,
                 score: upCount - downCount,
             }).exec();
+            const uniqueVoters = upCount + downCount;
+            const promotionResult = await evaluateFactPromotionForArgument({
+                argumentId: targetObjectId,
+                upvoteCount: upCount,
+                downvoteCount: downCount,
+                uniqueVoters,
+            });
+            factPromotion = promotionResult?.factPromotion;
         } else if (targetType === "Comment") {
             await Comment.findByIdAndUpdate(targetObjectId, {
                 upvoteCount: upCount,
@@ -76,7 +86,7 @@ export async function POST(req: Request) {
             }).exec();
         }
 
-        return NextResponse.json({ upvoteCount: upCount, downvoteCount: downCount });
+        return NextResponse.json({ upvoteCount: upCount, downvoteCount: downCount, factPromotion });
     } catch (err: any) {
         console.error("Vote error", err);
         return NextResponse.json({ error: "Server error" }, { status: 500 });
