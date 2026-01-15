@@ -287,10 +287,9 @@ export default function ProfileAvatarUploader({
                   <div className="mb-2">
                     <label className="form-label">Age</label>
                     <input
-                      type="number"
+                      type="text"
                       className="form-control"
-                      min={18}
-                      max={85}
+                      maxLength={3}
                       value={age}
                       onChange={(event) => {
                         const next = Number(event.target.value);
@@ -302,7 +301,7 @@ export default function ProfileAvatarUploader({
                     <div className="form-text">Enter an age between 18 and 85.</div>
                   </div>
                   <div className="mb-2">
-                    <label className="form-label">Hair color</label>
+                    <label className="form-label">Hair colour</label>
                     <select
                       className="form-select"
                       value={hairColor}
