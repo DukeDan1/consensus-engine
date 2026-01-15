@@ -7,6 +7,9 @@ const allowedUpdates = [
   "bio",
   "avatarUrl",
   "avatarThumbUrl",
+  "avatarOriginalUrl",
+  "avatarOriginalThumbUrl",
+  "avatarModeration",
   "preferences.theme",
   "preferences.language",
   "preferences.notifications",
@@ -29,11 +32,20 @@ async function updateUserProfile(query: Record<string, any>, payload: Record<str
 
   let existingAvatarUrl: string | undefined;
   let existingAvatarThumbUrl: string | undefined;
-  const hasAvatarUpdate = "avatarUrl" in update || "avatarThumbUrl" in update;
+  let existingAvatarOriginalUrl: string | undefined;
+  let existingAvatarOriginalThumbUrl: string | undefined;
+  const hasAvatarUpdate = "avatarUrl" in update
+    || "avatarThumbUrl" in update
+    || "avatarOriginalUrl" in update
+    || "avatarOriginalThumbUrl" in update;
   if (hasAvatarUpdate) {
-    const existing = await User.findOne(query).select({ avatarUrl: 1, avatarThumbUrl: 1 }).lean();
+    const existing = await User.findOne(query)
+      .select({ avatarUrl: 1, avatarThumbUrl: 1, avatarOriginalUrl: 1, avatarOriginalThumbUrl: 1 })
+      .lean();
     existingAvatarUrl = existing?.avatarUrl ?? undefined;
     existingAvatarThumbUrl = existing?.avatarThumbUrl ?? undefined;
+    existingAvatarOriginalUrl = existing?.avatarOriginalUrl ?? undefined;
+    existingAvatarOriginalThumbUrl = existing?.avatarOriginalThumbUrl ?? undefined;
   }
 
   const updated = await User.findOneAndUpdate(
@@ -45,6 +57,10 @@ async function updateUserProfile(query: Record<string, any>, payload: Record<str
   if (hasAvatarUpdate) {
     const nextAvatarUrl = "avatarUrl" in update ? update.avatarUrl : existingAvatarUrl;
     const nextAvatarThumbUrl = "avatarThumbUrl" in update ? update.avatarThumbUrl : existingAvatarThumbUrl;
+    const nextAvatarOriginalUrl = "avatarOriginalUrl" in update ? update.avatarOriginalUrl : existingAvatarOriginalUrl;
+    const nextAvatarOriginalThumbUrl = "avatarOriginalThumbUrl" in update
+      ? update.avatarOriginalThumbUrl
+      : existingAvatarOriginalThumbUrl;
 
     if (existingAvatarUrl && existingAvatarUrl !== nextAvatarUrl) {
       try {
@@ -59,6 +75,22 @@ async function updateUserProfile(query: Record<string, any>, payload: Record<str
         await deleteFileFromUrl(existingAvatarThumbUrl);
       } catch (err) {
         console.error("Failed to delete previous avatar thumbnail", err);
+      }
+    }
+
+    if (existingAvatarOriginalUrl && existingAvatarOriginalUrl !== nextAvatarOriginalUrl) {
+      try {
+        await deleteFileFromUrl(existingAvatarOriginalUrl);
+      } catch (err) {
+        console.error("Failed to delete previous avatar original", err);
+      }
+    }
+
+    if (existingAvatarOriginalThumbUrl && existingAvatarOriginalThumbUrl !== nextAvatarOriginalThumbUrl) {
+      try {
+        await deleteFileFromUrl(existingAvatarOriginalThumbUrl);
+      } catch (err) {
+        console.error("Failed to delete previous avatar original thumbnail", err);
       }
     }
   }

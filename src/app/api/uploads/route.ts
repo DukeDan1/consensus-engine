@@ -13,6 +13,7 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+    const purpose = (formData.get("purpose") || "").toString();
     if (!file) {
       return NextResponse.json({ error: "A file is required" }, { status: 400 });
     }
@@ -34,12 +35,23 @@ export async function POST(req: Request) {
     const buffer = Buffer.from(arrayBuffer);
 
     if (imageProcessingEnabled && contentType.startsWith("image/")) {
-      const { processedBuffer, thumbBuffer } = await processImageBuffer(buffer);
-      const { storageUrl, signedUrl, previewUrl, signedPreviewUrl } = await uploadProcessedImageVariants({
+      const { processedBuffer, thumbBuffer, originalBuffer, originalThumbBuffer, blurred, blurReasons } = await processImageBuffer(buffer);
+      const {
+        storageUrl,
+        signedUrl,
+        previewUrl,
+        signedPreviewUrl,
+        originalUrl,
+        signedOriginalUrl,
+        originalPreviewUrl,
+        signedOriginalPreviewUrl,
+      } = await uploadProcessedImageVariants({
         fileName: safeName,
         contentType,
         processedBuffer,
         thumbBuffer,
+        originalBuffer,
+        originalThumbBuffer,
       });
 
       return NextResponse.json({
@@ -47,6 +59,13 @@ export async function POST(req: Request) {
         storageUrl,
         previewUrl,
         previewSignedUrl: signedPreviewUrl,
+        originalUrl,
+        originalSignedUrl: signedOriginalUrl,
+        originalPreviewUrl,
+        originalPreviewSignedUrl: signedOriginalPreviewUrl,
+        blurred,
+        blurReasons,
+        purpose,
         fileName: file.name,
         contentType,
       });
@@ -70,11 +89,13 @@ export async function DELETE(req: Request) {
     const payload = await req.json().catch(() => ({}));
     const url = typeof payload?.url === "string" ? payload.url : "";
     const previewUrl = typeof payload?.previewUrl === "string" ? payload.previewUrl : "";
+    const originalUrl = typeof payload?.originalUrl === "string" ? payload.originalUrl : "";
+    const originalPreviewUrl = typeof payload?.originalPreviewUrl === "string" ? payload.originalPreviewUrl : "";
     if (!url) {
       return NextResponse.json({ error: "A file URL is required" }, { status: 400 });
     }
 
-    const deleteTargets = [url, previewUrl].filter(Boolean);
+    const deleteTargets = [url, previewUrl, originalUrl, originalPreviewUrl].filter(Boolean);
     const results = await Promise.all(deleteTargets.map((target) => deleteFileFromUrl(target)));
     const hasFailure = results.some((result) => !result.deleted);
     if (hasFailure) {

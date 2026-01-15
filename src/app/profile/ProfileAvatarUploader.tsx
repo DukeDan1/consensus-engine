@@ -114,13 +114,23 @@ export default function ProfileAvatarUploader({
     updateSelectedFile(imageFile);
   }
 
-  async function updateAvatar(avatarUrl: string | null, avatarThumbUrl: string | null) {
+  async function updateAvatar(payload: {
+    avatarUrl: string | null;
+    avatarThumbUrl: string | null;
+    avatarOriginalUrl?: string | null;
+    avatarOriginalThumbUrl?: string | null;
+    avatarModeration?: {
+      status?: "flagged" | "approved" | "removed";
+      reasons?: string[];
+      flaggedAt?: string;
+    } | null;
+  }) {
     const endpoint = isOwner ? "/api/user/update" : `/api/admin/users/${targetUserId}`;
     const method = isOwner ? "POST" : "PATCH";
     const res = await fetch(endpoint, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ avatarUrl, avatarThumbUrl }),
+      body: JSON.stringify(payload),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -165,14 +175,37 @@ export default function ProfileAvatarUploader({
     let storedUrl = "";
     let signedUrl = "";
     let previewUrl: string | undefined;
+    let originalUrl: string | undefined;
+    let originalPreviewUrl: string | undefined;
+    let blurred = false;
+    let blurReasons: string[] | undefined;
     try {
-      const upload = await uploadFileViaApi(selectedFile);
+      const upload = await uploadFileViaApi(selectedFile, { purpose: "avatar" });
       storedUrl = upload.storageUrl || upload.url;
       signedUrl = upload.url || upload.storageUrl || "";
       previewUrl = upload.previewUrl;
-      await updateAvatar(storedUrl, previewUrl ?? null);
+      originalUrl = upload.originalUrl || upload.originalSignedUrl;
+      originalPreviewUrl = upload.originalPreviewUrl || upload.originalPreviewSignedUrl;
+      blurred = !!upload.blurred;
+      blurReasons = upload.blurReasons ?? undefined;
+      await updateAvatar({
+        avatarUrl: storedUrl,
+        avatarThumbUrl: previewUrl ?? null,
+        avatarOriginalUrl: originalUrl ?? null,
+        avatarOriginalThumbUrl: originalPreviewUrl ?? null,
+        avatarModeration: blurred
+          ? {
+              status: "flagged",
+              reasons: blurReasons ?? [],
+              flaggedAt: new Date().toISOString(),
+            }
+          : null,
+      });
 
       onAvatarUpdated(signedUrl || storedUrl);
+      if (blurred) {
+        toast.warn("Your avatar has been flagged by our automated safety system and will be blurred until manually reviewed by a moderator. Consider setting a new avatar or alternatively wait for a manual review.", { autoClose: 20000 });
+      }
       toast.success("Avatar updated");
       handleClose();
       await updateSession();
@@ -180,7 +213,12 @@ export default function ProfileAvatarUploader({
     } catch (err: any) {
       if (storedUrl) {
         try {
-          await deleteFileViaApi({ url: storedUrl, previewUrl });
+          await deleteFileViaApi({
+            url: storedUrl,
+            previewUrl,
+            originalUrl,
+            originalPreviewUrl,
+          });
         } catch (deleteErr) {
           console.error("Failed to delete unused avatar", deleteErr);
         }
@@ -197,7 +235,13 @@ export default function ProfileAvatarUploader({
     setIsBusy(true);
     setBusyAction("remove");
     try {
-      await updateAvatar(null, null);
+      await updateAvatar({
+        avatarUrl: null,
+        avatarThumbUrl: null,
+        avatarOriginalUrl: null,
+        avatarOriginalThumbUrl: null,
+        avatarModeration: null,
+      });
       onAvatarUpdated(null);
       toast.success("Avatar removed");
       handleClose();

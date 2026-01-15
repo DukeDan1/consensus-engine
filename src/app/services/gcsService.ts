@@ -6,8 +6,10 @@ const rawKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
 
 let storage: Storage | null = null;
 
-const imageOutputPrefix = normalisePrefix(process.env.IMAGE_OUTPUT_PREFIX || 'processed/');
-const imageThumbPrefix = normalisePrefix(process.env.IMAGE_THUMB_PREFIX || 'thumbs/128/');
+const imageOutputPrefix = normalisePrefix(process.env.IMAGE_OUTPUT_PREFIX || "processed/");
+const imageThumbPrefix = normalisePrefix(process.env.IMAGE_THUMB_PREFIX || "thumbs/128/");
+const imageOriginalPrefix = normalisePrefix(process.env.IMAGE_ORIGINAL_PREFIX || "originals/");
+const imageOriginalThumbPrefix = normalisePrefix(process.env.IMAGE_ORIGINAL_THUMB_PREFIX || "originals/thumbs/128/");
 
 function parseServiceAccount(jsonish: string) {
   try {
@@ -77,6 +79,8 @@ export function buildImageVariantNames(fileName: string) {
   return {
     processedName: `${imageOutputPrefix}${normalisedName}`,
     thumbName: `${imageThumbPrefix}${normalisedName}`,
+    originalName: `${imageOriginalPrefix}${normalisedName}`,
+    originalThumbName: `${imageOriginalThumbPrefix}${normalisedName}`,
   };
 }
 
@@ -166,12 +170,22 @@ export async function uploadProcessedImageVariants(params: {
   contentType: string;
   processedBuffer: Buffer;
   thumbBuffer: Buffer;
+  originalBuffer: Buffer;
+  originalThumbBuffer: Buffer;
   signedReadExpiresSeconds?: number;
 }) {
-  const { fileName, contentType, processedBuffer, thumbBuffer, signedReadExpiresSeconds = 7 * 24 * 60 * 60 } = params;
-  const { processedName, thumbName } = buildImageVariantNames(fileName);
+  const {
+    fileName,
+    contentType,
+    processedBuffer,
+    thumbBuffer,
+    originalBuffer,
+    originalThumbBuffer,
+    signedReadExpiresSeconds = 7 * 24 * 60 * 60,
+  } = params;
+  const { processedName, thumbName, originalName, originalThumbName } = buildImageVariantNames(fileName);
 
-  const [processed, thumb] = await Promise.all([
+  const [processed, thumb, original, originalThumb] = await Promise.all([
     uploadFileToBucket({
       fileName: processedName,
       contentType,
@@ -184,6 +198,18 @@ export async function uploadProcessedImageVariants(params: {
       data: thumbBuffer,
       signedReadExpiresSeconds,
     }),
+    uploadFileToBucket({
+      fileName: originalName,
+      contentType,
+      data: originalBuffer,
+      signedReadExpiresSeconds,
+    }),
+    uploadFileToBucket({
+      fileName: originalThumbName,
+      contentType,
+      data: originalThumbBuffer,
+      signedReadExpiresSeconds,
+    }),
   ]);
 
   return {
@@ -191,6 +217,10 @@ export async function uploadProcessedImageVariants(params: {
     signedUrl: processed.signedUrl,
     previewUrl: thumb.storageUrl,
     signedPreviewUrl: thumb.signedUrl,
+    originalUrl: original.storageUrl,
+    signedOriginalUrl: original.signedUrl,
+    originalPreviewUrl: originalThumb.storageUrl,
+    signedOriginalPreviewUrl: originalThumb.signedUrl,
   };
 }
 

@@ -34,6 +34,10 @@ export interface IArgument extends Document {
     contentType?: string;
     label?: string;
     previewUrl?: string;
+    originalUrl?: string;
+    originalPreviewUrl?: string;
+    blurred?: boolean;
+    blurReasons?: string[];
   }>;
 
   visibility?: {
@@ -88,6 +92,10 @@ const ArgumentSchema = new Schema<IArgument>({
         contentType: { type: String },
         label: { type: String },
         previewUrl: { type: String },
+        originalUrl: { type: String },
+        originalPreviewUrl: { type: String },
+        blurred: { type: Boolean },
+        blurReasons: { type: [String], default: [] },
       },
     ],
     default: [],

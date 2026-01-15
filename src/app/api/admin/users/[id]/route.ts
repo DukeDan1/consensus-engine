@@ -42,7 +42,10 @@ export async function PATCH(req: Request, ctx: any) {
   const hasSuspended = typeof suspended === "boolean";
   const hasAvatar = Object.prototype.hasOwnProperty.call(payload, "avatarUrl");
   const hasAvatarThumb = Object.prototype.hasOwnProperty.call(payload, "avatarThumbUrl");
-  if (!hasSuspended && !hasAvatar && !hasAvatarThumb) {
+  const hasAvatarOriginal = Object.prototype.hasOwnProperty.call(payload, "avatarOriginalUrl");
+  const hasAvatarOriginalThumb = Object.prototype.hasOwnProperty.call(payload, "avatarOriginalThumbUrl");
+  const hasAvatarModeration = Object.prototype.hasOwnProperty.call(payload, "avatarModeration");
+  if (!hasSuspended && !hasAvatar && !hasAvatarThumb && !hasAvatarOriginal && !hasAvatarOriginalThumb && !hasAvatarModeration) {
     return NextResponse.json({ error: "Missing update payload" }, { status: 400 });
   }
   if (hasAvatar && payload.avatarUrl !== null && typeof payload.avatarUrl !== "string") {
@@ -51,11 +54,23 @@ export async function PATCH(req: Request, ctx: any) {
   if (hasAvatarThumb && payload.avatarThumbUrl !== null && typeof payload.avatarThumbUrl !== "string") {
     return NextResponse.json({ error: "Invalid avatarThumbUrl" }, { status: 400 });
   }
+  if (hasAvatarOriginal && payload.avatarOriginalUrl !== null && typeof payload.avatarOriginalUrl !== "string") {
+    return NextResponse.json({ error: "Invalid avatarOriginalUrl" }, { status: 400 });
+  }
+  if (hasAvatarOriginalThumb && payload.avatarOriginalThumbUrl !== null && typeof payload.avatarOriginalThumbUrl !== "string") {
+    return NextResponse.json({ error: "Invalid avatarOriginalThumbUrl" }, { status: 400 });
+  }
+  if (hasAvatarModeration && payload.avatarModeration !== null && typeof payload.avatarModeration !== "object") {
+    return NextResponse.json({ error: "Invalid avatarModeration" }, { status: 400 });
+  }
 
-  if (hasAvatar || hasAvatarThumb) {
+  if (hasAvatar || hasAvatarThumb || hasAvatarOriginal || hasAvatarOriginalThumb || hasAvatarModeration) {
     const updatedProfile = await updateUserProfileById(userId, {
       ...(hasAvatar ? { avatarUrl: payload.avatarUrl } : {}),
       ...(hasAvatarThumb ? { avatarThumbUrl: payload.avatarThumbUrl } : {}),
+      ...(hasAvatarOriginal ? { avatarOriginalUrl: payload.avatarOriginalUrl } : {}),
+      ...(hasAvatarOriginalThumb ? { avatarOriginalThumbUrl: payload.avatarOriginalThumbUrl } : {}),
+      ...(hasAvatarModeration ? { avatarModeration: payload.avatarModeration } : {}),
     });
     if (!updatedProfile) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -75,7 +90,16 @@ export async function PATCH(req: Request, ctx: any) {
   }
 
   const finalUser = await User.findById(userId)
-    .select({ _id: 1, isSuspended: 1, suspendedAt: 1, avatarUrl: 1, avatarThumbUrl: 1 })
+    .select({
+      _id: 1,
+      isSuspended: 1,
+      suspendedAt: 1,
+      avatarUrl: 1,
+      avatarThumbUrl: 1,
+      avatarOriginalUrl: 1,
+      avatarOriginalThumbUrl: 1,
+      avatarModeration: 1,
+    })
     .lean();
   if (!finalUser) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -87,6 +111,9 @@ export async function PATCH(req: Request, ctx: any) {
     suspendedAt: finalUser.suspendedAt ?? null,
     avatarUrl: finalUser.avatarUrl ?? null,
     avatarThumbUrl: finalUser.avatarThumbUrl ?? null,
+    avatarOriginalUrl: finalUser.avatarOriginalUrl ?? null,
+    avatarOriginalThumbUrl: finalUser.avatarOriginalThumbUrl ?? null,
+    avatarModeration: finalUser.avatarModeration ?? null,
   });
 }
 

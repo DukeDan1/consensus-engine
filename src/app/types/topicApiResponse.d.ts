@@ -48,6 +48,10 @@ export type TopicApiResponse = {
       contentType?: string;
       label?: string;
       previewUrl?: string;
+      originalUrl?: string;
+      originalPreviewUrl?: string;
+      blurred?: boolean;
+      blurReasons?: string[];
     }>;
     visibility?: {
       status?: 'visible' | 'hidden' | 'needs_review' | 'blocked';
@@ -83,6 +87,10 @@ export type TopicApiResponse = {
         contentType?: string;
         label?: string;
         previewUrl?: string;
+        originalUrl?: string;
+        originalPreviewUrl?: string;
+        blurred?: boolean;
+        blurReasons?: string[];
       }>;
       visibility?: {
         status?: 'visible' | 'hidden' | 'needs_review' | 'blocked';

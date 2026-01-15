@@ -5,6 +5,10 @@ export type EvidenceItem = {
   fileName?: string;
   contentType?: string;
   previewUrl?: string;
+  originalUrl?: string;
+  originalPreviewUrl?: string;
+  blurred?: boolean;
+  blurReasons?: string[];
 };
 
 export type EvidenceItemInput = {
@@ -14,6 +18,10 @@ export type EvidenceItemInput = {
   fileName?: string | null;
   contentType?: string | null;
   previewUrl?: string | null;
+  originalUrl?: string | null;
+  originalPreviewUrl?: string | null;
+  blurred?: boolean | null;
+  blurReasons?: string[] | null;
 };
 
 export function sanitiseEvidence(
@@ -30,7 +38,24 @@ export function sanitiseEvidence(
       const fileName = item?.fileName?.toString().slice(0, 160);
       const contentType = item?.contentType?.toString().slice(0, 120);
       const previewUrl = item?.previewUrl?.toString().slice(0, 400);
-      return { url, kind, label, fileName, contentType, previewUrl };
+      const originalUrl = item?.originalUrl?.toString().slice(0, 400);
+      const originalPreviewUrl = item?.originalPreviewUrl?.toString().slice(0, 400);
+      const blurred = typeof item?.blurred === "boolean" ? item.blurred : undefined;
+      const blurReasons = Array.isArray(item?.blurReasons)
+        ? item.blurReasons.map((value) => value?.toString?.().slice(0, 80)).filter(Boolean)
+        : undefined;
+      return {
+        url,
+        kind,
+        label,
+        fileName,
+        contentType,
+        previewUrl,
+        originalUrl,
+        originalPreviewUrl,
+        blurred,
+        blurReasons,
+      };
     })
     .filter(Boolean) as EvidenceItem[];
 

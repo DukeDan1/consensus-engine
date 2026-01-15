@@ -19,6 +19,15 @@ export interface IUser extends Document {
   bio?: string;
   avatarUrl?: string;
   avatarThumbUrl?: string;
+  avatarOriginalUrl?: string;
+  avatarOriginalThumbUrl?: string;
+  avatarModeration?: {
+    status?: "flagged" | "approved" | "removed";
+    reasons?: string[];
+    flaggedAt?: Date;
+    reviewedAt?: Date;
+    reviewedBy?: string;
+  };
   address?: {
     line1?: string;
     line2?: string;
@@ -75,6 +84,15 @@ const UserSchema = new Schema<IUser>(
     bio: { type: String, maxlength: 1000 },
     avatarUrl: { type: String },
     avatarThumbUrl: { type: String },
+    avatarOriginalUrl: { type: String },
+    avatarOriginalThumbUrl: { type: String },
+    avatarModeration: {
+      status: { type: String, enum: ["flagged", "approved", "removed"], default: undefined },
+      reasons: { type: [String], default: [] },
+      flaggedAt: { type: Date },
+      reviewedAt: { type: Date },
+      reviewedBy: { type: String },
+    },
     address: {
       line1: { type: String },
       line2: { type: String },

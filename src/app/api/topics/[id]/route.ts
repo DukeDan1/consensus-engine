@@ -17,7 +17,13 @@ async function signEvidence(evidence: any[] = []) {
       const previewUrl = ev.previewUrl
         ? await getSignedReadUrlFromUrl(ev.previewUrl).catch(() => ev.previewUrl)
         : undefined;
-      return { ...ev, url: signed, previewUrl };
+      const originalUrl = ev.originalUrl
+        ? await getSignedReadUrlFromUrl(ev.originalUrl).catch(() => ev.originalUrl)
+        : undefined;
+      const originalPreviewUrl = ev.originalPreviewUrl
+        ? await getSignedReadUrlFromUrl(ev.originalPreviewUrl).catch(() => ev.originalPreviewUrl)
+        : undefined;
+      return { ...ev, url: signed, previewUrl, originalUrl, originalPreviewUrl };
     })
   );
 }

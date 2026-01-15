@@ -67,6 +67,8 @@ You can supply env directly via `--set-env-vars` and secrets via `--set-secrets`
 - `IMAGE_PROCESSING_ENABLED` (optional; set to `false` to skip image processing on upload).
 - `IMAGE_OUTPUT_PREFIX` (defaults to `processed/`).
 - `IMAGE_THUMB_PREFIX` (defaults to `thumbs/128/`).
+- `IMAGE_ORIGINAL_PREFIX` (defaults to `originals/`).
+- `IMAGE_ORIGINAL_THUMB_PREFIX` (defaults to `originals/thumbs/128/`).
 - `IMAGE_SAFETY_CHECKS_ENABLED` (set `false` to skip SafeSearch).
 - `IMAGE_SENSITIVE_LIKELIHOOD` (threshold like `POSSIBLE`, `LIKELY`, `VERY_LIKELY`).
 - `IMAGE_SENSITIVE_FIELDS` (comma-separated fields, defaults to `adult,violence,racy,medical`).

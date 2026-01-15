@@ -46,10 +46,26 @@ type ModerationComment = {
   visibility?: VisibilityInfo;
 };
 
+type ModerationAvatar = {
+  id: string;
+  name: string;
+  email?: string | null;
+  avatarUrl?: string | null;
+  avatarThumbUrl?: string | null;
+  avatarOriginalUrl?: string | null;
+  avatarOriginalThumbUrl?: string | null;
+  moderation?: {
+    status?: string;
+    reasons?: string[];
+    flaggedAt?: string | Date | null;
+  } | null;
+};
+
 type Props = {
   topics: ModerationTopic[];
   arguments: ModerationArgument[];
   comments: ModerationComment[];
+  avatars: ModerationAvatar[];
 };
 
 type DeleteTarget = {
@@ -98,10 +114,12 @@ export default function ModerationQueue({
   topics: initialTopics,
   arguments: initialArguments,
   comments: initialComments,
+  avatars: initialAvatars,
 }: Props) {
   const [topics, setTopics] = useState(initialTopics);
   const [argumentsList, setArgumentsList] = useState(initialArguments);
   const [comments, setComments] = useState(initialComments);
+  const [avatars, setAvatars] = useState(initialAvatars);
   const [pending, setPending] = useState<Record<string, boolean>>({});
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [restoring, setRestoring] = useState<Record<string, boolean>>({});
@@ -206,6 +224,28 @@ export default function ModerationQueue({
     }
   }
 
+  async function moderateAvatar(userId: string, action: "approve" | "remove") {
+    const key = `avatar-${userId}-${action}`;
+    setPendingKey(key, true);
+    try {
+      const res = await fetch(`/api/admin/avatars/${userId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to update avatar");
+      }
+      setAvatars((prev) => prev.filter((item) => item.id !== userId));
+      toast.success(action === "approve" ? "Avatar approved" : "Avatar removed");
+    } catch (err: any) {
+      toast.error(err?.message || "Unable to update avatar");
+    } finally {
+      setPendingKey(key, false);
+    }
+  }
+
   async function restoreTopic(id: string) {
     await restoreItem({
       type: "topic",
@@ -257,6 +297,88 @@ export default function ModerationQueue({
 
   return (
     <div className="d-flex flex-column gap-4">
+      <section>
+        <div className="d-flex align-items-center justify-content-between mb-2">
+          <h2 className="h5 mb-0">Avatars held for review</h2>
+          <span className="badge text-bg-secondary">{avatars.length}</span>
+        </div>
+        {avatars.length === 0 ? (
+          <div className="alert alert-light">No avatars awaiting review.</div>
+        ) : (
+          <div className="d-flex flex-column gap-3">
+            {avatars.map((avatar) => {
+              const reasons = avatar.moderation?.reasons ?? [];
+              const flaggedAt = avatar.moderation?.flaggedAt
+                ? formatTime(String(avatar.moderation.flaggedAt))
+                : "";
+              const previewUrl = avatar.avatarThumbUrl || avatar.avatarUrl || undefined;
+              const originalUrl = avatar.avatarOriginalUrl || avatar.avatarOriginalThumbUrl || undefined;
+              return (
+                <div key={avatar.id} className="card shadow-sm">
+                  <div className="card-body">
+                    <div className="d-flex flex-wrap justify-content-between gap-3">
+                      <div className="d-flex align-items-center gap-3">
+                        {previewUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={previewUrl}
+                            alt={`${avatar.name} avatar`}
+                            width={64}
+                            height={64}
+                            className="rounded-circle border"
+                            style={{ objectFit: "cover" }}
+                          />
+                        ) : (
+                          <div className="rounded-circle bg-secondary-subtle border" style={{ width: 64, height: 64 }} />
+                        )}
+                        <div>
+                          <div className="fw-semibold">{avatar.name}</div>
+                          {avatar.email && <div className="text-muted small">{avatar.email}</div>}
+                          {flaggedAt && <div className="text-muted small">Flagged {flaggedAt}</div>}
+                          {reasons.length > 0 && (
+                            <div className="d-flex flex-wrap gap-1 mt-1">
+                              {reasons.map((reason) => (
+                                <span key={reason} className="badge text-bg-warning">
+                                  {reason}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {originalUrl && (
+                            <div className="small text-muted mt-1">
+                              <a href={originalUrl} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                                View original
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="d-flex flex-wrap align-items-center gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={() => moderateAvatar(avatar.id, "remove")}
+                          disabled={pending[`avatar-${avatar.id}-remove`]}
+                        >
+                          {pending[`avatar-${avatar.id}-remove`] ? "Removing..." : "Remove"}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-success"
+                          onClick={() => moderateAvatar(avatar.id, "approve")}
+                          disabled={pending[`avatar-${avatar.id}-approve`]}
+                        >
+                          {pending[`avatar-${avatar.id}-approve`] ? "Approving..." : "Approve"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
       <section>
         <div className="d-flex align-items-center justify-content-between mb-2">
           <h2 className="h5 mb-0">Topics held for review</h2>

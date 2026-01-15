@@ -6,6 +6,7 @@ import { Topic } from "@/app/models/topic";
 import { Argument } from "@/app/models/argument";
 import { Comment } from "@/app/models/comment";
 import ModerationQueue from "@/app/components/moderation/ModerationQueue";
+import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +61,12 @@ export default async function ModerationPage() {
     .populate({ path: "argument", select: "body topic", populate: { path: "topic", select: "title" } })
     .lean();
 
+  const avatarsRaw = await User.find({ "avatarModeration.status": "flagged" })
+    .sort({ "avatarModeration.flaggedAt": -1 })
+    .limit(50)
+    .select({ name: 1, email: 1, avatarUrl: 1, avatarThumbUrl: 1, avatarOriginalUrl: 1, avatarOriginalThumbUrl: 1, avatarModeration: 1 })
+    .lean();
+
   const topics = topicsRaw.map((topic: any) => ({
     id: topic._id.toString(),
     title: topic.title,
@@ -107,13 +114,46 @@ export default async function ModerationPage() {
     };
   });
 
+  const avatars = await Promise.all(
+    (avatarsRaw ?? []).map(async (user: any) => {
+      const signedAvatarUrl = user?.avatarUrl
+        ? await getSignedReadUrlFromUrl(user.avatarUrl).catch(() => user.avatarUrl)
+        : null;
+      const signedThumbUrl = user?.avatarThumbUrl
+        ? await getSignedReadUrlFromUrl(user.avatarThumbUrl).catch(() => user.avatarThumbUrl)
+        : null;
+      const signedOriginalUrl = user?.avatarOriginalUrl
+        ? await getSignedReadUrlFromUrl(user.avatarOriginalUrl).catch(() => user.avatarOriginalUrl)
+        : null;
+      const signedOriginalThumbUrl = user?.avatarOriginalThumbUrl
+        ? await getSignedReadUrlFromUrl(user.avatarOriginalThumbUrl).catch(() => user.avatarOriginalThumbUrl)
+        : null;
+
+      return {
+        id: user._id?.toString?.() ?? "",
+        name: user.name ?? "Unknown",
+        email: user.email ?? null,
+        avatarUrl: signedAvatarUrl,
+        avatarThumbUrl: signedThumbUrl,
+        avatarOriginalUrl: signedOriginalUrl,
+        avatarOriginalThumbUrl: signedOriginalThumbUrl,
+        moderation: user.avatarModeration
+          ? {
+              ...user.avatarModeration,
+              flaggedAt: user.avatarModeration.flaggedAt?.toISOString?.() ?? null,
+            }
+          : null,
+      };
+    })
+  );
+
   return (
     <div className="container py-4">
       <div className="mb-4">
         <h1 className="h4 mb-1">Moderation Queue</h1>
         <p className="text-muted mb-0">Review content flagged by moderation signals.</p>
       </div>
-      <ModerationQueue topics={topics} arguments={argumentsList} comments={comments} />
+      <ModerationQueue topics={topics} arguments={argumentsList} comments={comments} avatars={avatars} />
     </div>
   );
 }

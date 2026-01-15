@@ -348,6 +348,7 @@ describe('ModerationQueue', () => {
           visibility: { status: 'hidden' },
           topic: { id: 't1', title: 'Topic' },
         }]}
+        avatars={[]}
       />
     );
 
@@ -375,6 +376,7 @@ describe('ModerationQueue', () => {
         }]}
         arguments={[]}
         comments={[]}
+        avatars={[]}
       />
     );
 
