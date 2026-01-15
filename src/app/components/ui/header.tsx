@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import LogoutButton from '../LogoutButton';
-import Image from 'next/image';
 import HeaderSearch from './HeaderSearch';
 
 interface HeaderProps {
@@ -97,7 +96,8 @@ export default function Header({ title }: HeaderProps) {
                   aria-haspopup="true"
                 >
                   {session.user?.image ? (
-                    <Image
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
                       src={session.user.image}
                       alt="User avatar"
                       width={40}
