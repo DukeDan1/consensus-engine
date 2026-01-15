@@ -10,6 +10,7 @@ type Props = {
   displayName: string;
   memberSince?: string | null;
   avatarUrl?: string | null;
+  avatarThumbUrl?: string | null;
   email?: string | null;
   canViewEmail?: boolean;
   isSuspended?: boolean;
@@ -20,6 +21,7 @@ export default function ProfileHeaderClient({
   displayName,
   memberSince,
   avatarUrl,
+  avatarThumbUrl,
   email,
   canViewEmail = false,
   isSuspended = false,
@@ -29,11 +31,11 @@ export default function ProfileHeaderClient({
   const isAdmin = !!session?.user?.isAdmin;
   const canManageAvatar = isOwner || isAdmin;
   const [showEmail, setShowEmail] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(avatarUrl ?? null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(avatarUrl ?? avatarThumbUrl ?? null);
 
   useEffect(() => {
-    setAvatarPreview(avatarUrl ?? null);
-  }, [avatarUrl]);
+    setAvatarPreview(avatarUrl ?? avatarThumbUrl ?? null);
+  }, [avatarUrl, avatarThumbUrl]);
 
   return (
     <div className="bg-body-secondary border rounded-4 p-4 p-md-5 d-flex flex-column flex-md-row align-items-center gap-4 mb-4">
@@ -45,6 +47,13 @@ export default function ProfileHeaderClient({
             alt={displayName}
             className="rounded-circle border"
             style={{ width: 88, height: 88, objectFit: "cover" }}
+            onError={() => {
+              if (avatarThumbUrl && avatarPreview !== avatarThumbUrl) {
+                setAvatarPreview(avatarThumbUrl);
+                return;
+              }
+              setAvatarPreview(null);
+            }}
           />
         ) : (
           <UserAvatar

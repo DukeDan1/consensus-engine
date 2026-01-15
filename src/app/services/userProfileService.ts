@@ -6,6 +6,7 @@ const allowedUpdates = [
   "nickname",
   "bio",
   "avatarUrl",
+  "avatarThumbUrl",
   "preferences.theme",
   "preferences.language",
   "preferences.notifications",
@@ -26,10 +27,13 @@ async function updateUserProfile(query: Record<string, any>, payload: Record<str
   const update = buildProfileUpdate(payload);
   if (!Object.keys(update).length) return null;
 
-  let existingAvatar: string | undefined;
-  if ("avatarUrl" in update) {
-    const existing = await User.findOne(query).select({ avatarUrl: 1 }).lean();
-    existingAvatar = existing?.avatarUrl ?? undefined;
+  let existingAvatarUrl: string | undefined;
+  let existingAvatarThumbUrl: string | undefined;
+  const hasAvatarUpdate = "avatarUrl" in update || "avatarThumbUrl" in update;
+  if (hasAvatarUpdate) {
+    const existing = await User.findOne(query).select({ avatarUrl: 1, avatarThumbUrl: 1 }).lean();
+    existingAvatarUrl = existing?.avatarUrl ?? undefined;
+    existingAvatarThumbUrl = existing?.avatarThumbUrl ?? undefined;
   }
 
   const updated = await User.findOneAndUpdate(
@@ -38,11 +42,24 @@ async function updateUserProfile(query: Record<string, any>, payload: Record<str
     { new: true, runValidators: true }
   ).lean();
 
-  if ("avatarUrl" in update && existingAvatar && existingAvatar !== update.avatarUrl) {
-    try {
-      await deleteFileFromUrl(existingAvatar);
-    } catch (err) {
-      console.error("Failed to delete previous avatar", err);
+  if (hasAvatarUpdate) {
+    const nextAvatarUrl = "avatarUrl" in update ? update.avatarUrl : existingAvatarUrl;
+    const nextAvatarThumbUrl = "avatarThumbUrl" in update ? update.avatarThumbUrl : existingAvatarThumbUrl;
+
+    if (existingAvatarUrl && existingAvatarUrl !== nextAvatarUrl) {
+      try {
+        await deleteFileFromUrl(existingAvatarUrl);
+      } catch (err) {
+        console.error("Failed to delete previous avatar", err);
+      }
+    }
+
+    if (existingAvatarThumbUrl && existingAvatarThumbUrl !== nextAvatarThumbUrl) {
+      try {
+        await deleteFileFromUrl(existingAvatarThumbUrl);
+      } catch (err) {
+        console.error("Failed to delete previous avatar thumbnail", err);
+      }
     }
   }
 

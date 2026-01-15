@@ -24,6 +24,7 @@ export interface IComment extends Document {
     fileName?: string;
     contentType?: string;
     label?: string;
+    previewUrl?: string;
   }>;
 
   visibility?: {
@@ -70,6 +71,7 @@ const CommentSchema = new Schema<IComment>({
         fileName: { type: String },
         contentType: { type: String },
         label: { type: String },
+        previewUrl: { type: String },
       }
     ],
     default: [],

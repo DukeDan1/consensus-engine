@@ -14,7 +14,10 @@ async function signEvidence(evidence: any[] = []) {
     (evidence || []).map(async (ev) => {
       if (!ev || !ev.url) return ev;
       const signed = await getSignedReadUrlFromUrl(ev.url).catch(() => ev.url);
-      return { ...ev, url: signed };
+      const previewUrl = ev.previewUrl
+        ? await getSignedReadUrlFromUrl(ev.previewUrl).catch(() => ev.previewUrl)
+        : undefined;
+      return { ...ev, url: signed, previewUrl };
     })
   );
 }
@@ -28,11 +31,13 @@ async function mapUserSummary(user: any) {
   if (!user) return undefined;
   const id = user?._id?.toString?.() ?? undefined;
   const avatarUrl = await signAvatarUrl(user?.avatarUrl ?? null);
+  const avatarThumbUrl = await signAvatarUrl(user?.avatarThumbUrl ?? null);
   return {
     _id: id,
     name: user?.name ?? undefined,
     nickname: user?.nickname ?? undefined,
     avatarUrl,
+    avatarThumbUrl,
     createdAt: user?.createdAt ?? undefined,
   };
 }
@@ -90,7 +95,7 @@ export async function GET(
   }
 
   const topic = await Topic.findById(id)
-    .populate({ path: "createdBy", select: "name nickname avatarUrl createdAt" })
+    .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt" })
     .lean();
 
   if (!topic) {
@@ -129,7 +134,7 @@ export async function GET(
   const argumentsList = await Argument.find(argumentFilters)
     .sort(argSort)
     .limit(numArguments)
-    .populate({ path: "createdBy", select: "name nickname avatarUrl createdAt" })
+    .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt" })
     .lean();
 
   // Fetch comments for each argument, ordering by relevancy (approx: newest first for now) or could extend with score if added later
@@ -149,7 +154,7 @@ export async function GET(
     const comments = await Comment.find(commentFilters)
       .sort({ createdAt: -1 })
       .limit(500)
-      .populate({ path: "createdBy", select: "name nickname avatarUrl createdAt" })
+      .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt" })
       .lean();
     for (const c of comments) {
       const key = c.argument.toString();

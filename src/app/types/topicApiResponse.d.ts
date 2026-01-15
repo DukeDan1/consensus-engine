@@ -3,6 +3,7 @@ type UserSummary = {
   name?: string;
   nickname?: string;
   avatarUrl?: string | null;
+  avatarThumbUrl?: string | null;
   createdAt?: string | null;
 };
 
@@ -46,6 +47,7 @@ export type TopicApiResponse = {
       fileName?: string;
       contentType?: string;
       label?: string;
+      previewUrl?: string;
     }>;
     visibility?: {
       status?: 'visible' | 'hidden' | 'needs_review' | 'blocked';
@@ -80,6 +82,7 @@ export type TopicApiResponse = {
         fileName?: string;
         contentType?: string;
         label?: string;
+        previewUrl?: string;
       }>;
       visibility?: {
         status?: 'visible' | 'hidden' | 'needs_review' | 'blocked';

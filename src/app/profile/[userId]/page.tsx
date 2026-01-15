@@ -16,6 +16,7 @@ type ProfileApiResponse = {
     nickname?: string | null;
     bio?: string | null;
     avatarUrl?: string | null;
+    avatarThumbUrl?: string | null;
     email?: string | null;
     canViewEmail?: boolean;
     isSuspended?: boolean;
@@ -118,6 +119,7 @@ export default async function UserProfilePage({ params }: any) {
 
   const isSuspended = !!data.user?.isSuspended;
   const avatarUrl = data.user?.avatarUrl ?? null;
+  const avatarThumbUrl = data.user?.avatarThumbUrl ?? null;
   const email = data.user?.email ?? null;
   const canViewEmail = !!data.user?.canViewEmail;
 
@@ -172,6 +174,7 @@ export default async function UserProfilePage({ params }: any) {
         displayName={displayName}
         memberSince={memberSince}
         avatarUrl={avatarUrl}
+        avatarThumbUrl={avatarThumbUrl}
         email={email}
         canViewEmail={canViewEmail}
         isSuspended={isSuspended}

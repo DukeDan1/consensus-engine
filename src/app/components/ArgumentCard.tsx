@@ -26,6 +26,7 @@ type UserSummary = {
     name?: string;
     nickname?: string;
     avatarUrl?: string | null;
+    avatarThumbUrl?: string | null;
     createdAt?: string | Date | null;
 };
 
@@ -40,6 +41,7 @@ function resolveUserSummary(value: any): UserSummary {
             name: value.name ?? undefined,
             nickname: value.nickname ?? undefined,
             avatarUrl: value.avatarUrl ?? null,
+            avatarThumbUrl: value.avatarThumbUrl ?? null,
             createdAt: value.createdAt ?? null,
         };
     }
@@ -74,6 +76,7 @@ function EvidenceList({ evidence }: { evidence?: any[] }) {
             <div className="d-flex flex-wrap gap-2">
                 {evidence.map((item, idx) => {
                     const url = item?.url;
+                    const previewUrl = item?.previewUrl || url;
                     if (!url) return null;
                     const isImage = (item?.contentType || "").startsWith("image/");
                     const label = item?.label || item?.fileName || url;
@@ -82,9 +85,14 @@ function EvidenceList({ evidence }: { evidence?: any[] }) {
                             <div key={`${url}-${idx}`} className="border rounded p-1 bg-light-subtle">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
-                                    src={url}
+                                    src={previewUrl}
                                     alt={label}
-                                    style={{ maxWidth: 160, maxHeight: 120, objectFit: "cover" }}
+                                    style={{ width: 128, height: 128, objectFit: "cover" }}
+                                    onError={(event) => {
+                                        if (previewUrl !== url) {
+                                            event.currentTarget.src = url;
+                                        }
+                                    }}
                                 />
                                 <div className="small text-muted mt-1">
                                     <a href={url} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
@@ -361,6 +369,7 @@ export default function ArgumentCard({
                                     name={author.name}
                                     nickname={author.nickname}
                                     avatarUrl={author.avatarUrl ?? undefined}
+                                    avatarThumbUrl={author.avatarThumbUrl ?? undefined}
                                     createdAt={author.createdAt}
                                     size={36}
                                     nameClassName="author-link fw-semibold"
@@ -461,6 +470,7 @@ export default function ArgumentCard({
                                                             name={commenter.name}
                                                             nickname={commenter.nickname}
                                                             avatarUrl={commenter.avatarUrl ?? undefined}
+                                                            avatarThumbUrl={commenter.avatarThumbUrl ?? undefined}
                                                             createdAt={commenter.createdAt}
                                                             size={28}
                                                             className="small text-muted fw-semibold"

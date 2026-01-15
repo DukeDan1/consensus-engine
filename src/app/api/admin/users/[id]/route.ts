@@ -41,15 +41,22 @@ export async function PATCH(req: Request, ctx: any) {
   const suspended = payload?.suspended;
   const hasSuspended = typeof suspended === "boolean";
   const hasAvatar = Object.prototype.hasOwnProperty.call(payload, "avatarUrl");
-  if (!hasSuspended && !hasAvatar) {
+  const hasAvatarThumb = Object.prototype.hasOwnProperty.call(payload, "avatarThumbUrl");
+  if (!hasSuspended && !hasAvatar && !hasAvatarThumb) {
     return NextResponse.json({ error: "Missing update payload" }, { status: 400 });
   }
   if (hasAvatar && payload.avatarUrl !== null && typeof payload.avatarUrl !== "string") {
     return NextResponse.json({ error: "Invalid avatarUrl" }, { status: 400 });
   }
+  if (hasAvatarThumb && payload.avatarThumbUrl !== null && typeof payload.avatarThumbUrl !== "string") {
+    return NextResponse.json({ error: "Invalid avatarThumbUrl" }, { status: 400 });
+  }
 
-  if (hasAvatar) {
-    const updatedProfile = await updateUserProfileById(userId, { avatarUrl: payload.avatarUrl });
+  if (hasAvatar || hasAvatarThumb) {
+    const updatedProfile = await updateUserProfileById(userId, {
+      ...(hasAvatar ? { avatarUrl: payload.avatarUrl } : {}),
+      ...(hasAvatarThumb ? { avatarThumbUrl: payload.avatarThumbUrl } : {}),
+    });
     if (!updatedProfile) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -68,7 +75,7 @@ export async function PATCH(req: Request, ctx: any) {
   }
 
   const finalUser = await User.findById(userId)
-    .select({ _id: 1, isSuspended: 1, suspendedAt: 1, avatarUrl: 1 })
+    .select({ _id: 1, isSuspended: 1, suspendedAt: 1, avatarUrl: 1, avatarThumbUrl: 1 })
     .lean();
   if (!finalUser) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -79,6 +86,7 @@ export async function PATCH(req: Request, ctx: any) {
     isSuspended: !!finalUser.isSuspended,
     suspendedAt: finalUser.suspendedAt ?? null,
     avatarUrl: finalUser.avatarUrl ?? null,
+    avatarThumbUrl: finalUser.avatarThumbUrl ?? null,
   });
 }
 

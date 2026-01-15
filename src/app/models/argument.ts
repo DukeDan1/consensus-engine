@@ -33,6 +33,7 @@ export interface IArgument extends Document {
     fileName?: string;
     contentType?: string;
     label?: string;
+    previewUrl?: string;
   }>;
 
   visibility?: {
@@ -86,6 +87,7 @@ const ArgumentSchema = new Schema<IArgument>({
         fileName: { type: String },
         contentType: { type: String },
         label: { type: String },
+        previewUrl: { type: String },
       },
     ],
     default: [],

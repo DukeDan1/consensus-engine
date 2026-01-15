@@ -114,13 +114,13 @@ export default function ProfileAvatarUploader({
     updateSelectedFile(imageFile);
   }
 
-  async function updateAvatar(avatarUrl: string | null) {
+  async function updateAvatar(avatarUrl: string | null, avatarThumbUrl: string | null) {
     const endpoint = isOwner ? "/api/user/update" : `/api/admin/users/${targetUserId}`;
     const method = isOwner ? "POST" : "PATCH";
     const res = await fetch(endpoint, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ avatarUrl }),
+      body: JSON.stringify({ avatarUrl, avatarThumbUrl }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -164,11 +164,13 @@ export default function ProfileAvatarUploader({
     setBusyAction("upload");
     let storedUrl = "";
     let signedUrl = "";
+    let previewUrl: string | undefined;
     try {
       const upload = await uploadFileViaApi(selectedFile);
       storedUrl = upload.storageUrl || upload.url;
       signedUrl = upload.url || upload.storageUrl || "";
-      await updateAvatar(storedUrl);
+      previewUrl = upload.previewUrl;
+      await updateAvatar(storedUrl, previewUrl ?? null);
 
       onAvatarUpdated(signedUrl || storedUrl);
       toast.success("Avatar updated");
@@ -178,7 +180,7 @@ export default function ProfileAvatarUploader({
     } catch (err: any) {
       if (storedUrl) {
         try {
-          await deleteFileViaApi(storedUrl);
+          await deleteFileViaApi({ url: storedUrl, previewUrl });
         } catch (deleteErr) {
           console.error("Failed to delete unused avatar", deleteErr);
         }
@@ -195,7 +197,7 @@ export default function ProfileAvatarUploader({
     setIsBusy(true);
     setBusyAction("remove");
     try {
-      await updateAvatar(null);
+      await updateAvatar(null, null);
       onAvatarUpdated(null);
       toast.success("Avatar removed");
       handleClose();

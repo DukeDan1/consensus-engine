@@ -18,6 +18,7 @@ export interface IUser extends Document {
   nickname?: string;    // casual display name
   bio?: string;
   avatarUrl?: string;
+  avatarThumbUrl?: string;
   address?: {
     line1?: string;
     line2?: string;
@@ -73,6 +74,7 @@ const UserSchema = new Schema<IUser>(
     nickname: { type: String },
     bio: { type: String, maxlength: 1000 },
     avatarUrl: { type: String },
+    avatarThumbUrl: { type: String },
     address: {
       line1: { type: String },
       line2: { type: String },

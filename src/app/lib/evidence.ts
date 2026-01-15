@@ -4,6 +4,7 @@ export type EvidenceItem = {
   label?: string;
   fileName?: string;
   contentType?: string;
+  previewUrl?: string;
 };
 
 export type EvidenceItemInput = {
@@ -12,6 +13,7 @@ export type EvidenceItemInput = {
   label?: string | null;
   fileName?: string | null;
   contentType?: string | null;
+  previewUrl?: string | null;
 };
 
 export function sanitiseEvidence(
@@ -27,7 +29,8 @@ export function sanitiseEvidence(
       const label = item?.label?.toString().slice(0, 160);
       const fileName = item?.fileName?.toString().slice(0, 160);
       const contentType = item?.contentType?.toString().slice(0, 120);
-      return { url, kind, label, fileName, contentType };
+      const previewUrl = item?.previewUrl?.toString().slice(0, 400);
+      return { url, kind, label, fileName, contentType, previewUrl };
     })
     .filter(Boolean) as EvidenceItem[];
 

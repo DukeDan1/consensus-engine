@@ -2,13 +2,15 @@ import { deleteFileFromUrl } from "@/app/services/gcsService";
 
 export type EvidenceLike = {
   url?: string | null;
+  previewUrl?: string | null;
   kind?: "link" | "file" | null;
 };
 
 function collectEvidenceUrls(evidenceItems: EvidenceLike[] = []) {
   const urls = evidenceItems
-    .filter((item) => item?.kind === "file" && item?.url)
-    .map((item) => String(item?.url))
+    .filter((item) => item?.kind === "file")
+    .flatMap((item) => [item?.url, item?.previewUrl])
+    .map((value) => String(value))
     .filter(Boolean);
   return Array.from(new Set(urls));
 }

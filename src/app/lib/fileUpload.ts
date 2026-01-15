@@ -1,6 +1,8 @@
 export type UploadResponse = {
   url: string;
   storageUrl?: string;
+  previewUrl?: string;
+  previewSignedUrl?: string;
   fileName?: string;
   contentType?: string;
 };
@@ -20,11 +22,12 @@ export async function uploadFileViaApi(file: File): Promise<UploadResponse> {
   return data as UploadResponse;
 }
 
-export async function deleteFileViaApi(url: string) {
+export async function deleteFileViaApi(payload: { url: string; previewUrl?: string } | string) {
+  const body = typeof payload === "string" ? { url: payload } : payload;
   const res = await fetch("/api/uploads", {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ url }),
+    body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {

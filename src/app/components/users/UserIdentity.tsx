@@ -9,6 +9,7 @@ type UserIdentityProps = {
   name?: string | null;
   nickname?: string | null;
   avatarUrl?: string | null;
+  avatarThumbUrl?: string | null;
   createdAt?: string | Date | null;
   size?: number;
   className?: string;
@@ -54,6 +55,7 @@ export default function UserIdentity({
   name,
   nickname,
   avatarUrl,
+  avatarThumbUrl,
   createdAt,
   size = 32,
   className,
@@ -70,14 +72,15 @@ export default function UserIdentity({
   const initials = getInitials(displayName);
 
   const shouldShowTooltip = showTooltip && Boolean(userId);
+  const resolvedAvatarUrl = avatarThumbUrl || avatarUrl || null;
 
   const tooltipHtml = useMemo(() => {
     if (!shouldShowTooltip) return "";
     const safeName = escapeHtml(displayName);
-    const safeAvatar = avatarUrl ? escapeHtml(avatarUrl) : "";
+    const safeAvatar = resolvedAvatarUrl ? escapeHtml(resolvedAvatarUrl) : "";
     const safeInitials = escapeHtml(initials);
     const joinedLabel = memberSince ? `Joined ${escapeHtml(memberSince)}` : "";
-    const avatarMarkup = avatarUrl
+    const avatarMarkup = resolvedAvatarUrl
       ? `<img src="${safeAvatar}" alt="${safeName}" class="user-tooltip-avatar" />`
       : `<div class="user-tooltip-avatar user-tooltip-initials">${safeInitials}</div>`;
     const metaMarkup = joinedLabel ? `<div class="user-tooltip-meta">${joinedLabel}</div>` : "";
@@ -90,7 +93,7 @@ export default function UserIdentity({
         </div>
       </div>
     `.trim();
-  }, [avatarUrl, displayName, initials, memberSince, shouldShowTooltip]);
+  }, [displayName, initials, memberSince, shouldShowTooltip, resolvedAvatarUrl]);
 
   useEffect(() => {
     let active = true;
@@ -139,7 +142,7 @@ export default function UserIdentity({
       className={`d-inline-flex align-items-center gap-2 ${className ?? ""}`.trim()}
       {...tooltipProps}
     >
-      <UserAvatar name={displayName} avatarUrl={avatarUrl} size={size} />
+      <UserAvatar name={displayName} avatarUrl={resolvedAvatarUrl} size={size} />
       {userId ? (
         <Link href={`/profile/${userId}`} className={nameClassName}>
           {displayName}
