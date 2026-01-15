@@ -119,6 +119,7 @@ export default async function TopicPage({ params, searchParams }: any) {
               name={t.createdBy?.name}
               nickname={t.createdBy?.nickname}
               avatarUrl={t.createdBy?.avatarUrl ?? undefined}
+              avatarThumbUrl={t.createdBy?.avatarThumbUrl ?? undefined}
               createdAt={t.createdBy?.createdAt}
               size={24}
               className="small text-muted"

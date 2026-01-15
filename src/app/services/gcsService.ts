@@ -6,6 +6,11 @@ const rawKey = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
 
 let storage: Storage | null = null;
 
+const imageOutputPrefix = normalisePrefix(process.env.IMAGE_OUTPUT_PREFIX || "processed/");
+const imageThumbPrefix = normalisePrefix(process.env.IMAGE_THUMB_PREFIX || "thumbs/128/");
+const imageOriginalPrefix = normalisePrefix(process.env.IMAGE_ORIGINAL_PREFIX || "originals/");
+const imageOriginalThumbPrefix = normalisePrefix(process.env.IMAGE_ORIGINAL_THUMB_PREFIX || "originals/thumbs/128/");
+
 function parseServiceAccount(jsonish: string) {
   try {
     return JSON.parse(jsonish);
@@ -23,6 +28,27 @@ function parseServiceAccount(jsonish: string) {
 function normalizePrivateKey(key: string | undefined) {
   if (!key) return undefined;
   return key.includes('\\n') ? key.replace(/\\n/g, '\n') : key;
+}
+
+function normalisePrefix(value: string) {
+  const trimmed = value.replace(/^\/+/, "");
+  return trimmed.endsWith("/") ? trimmed : `${trimmed}/`;
+}
+
+function normaliseObjectName(value: string) {
+  return value.replace(/^\/+/, "");
+}
+
+function encodeObjectPath(objectName: string) {
+  return objectName
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+}
+
+function buildStorageUrl(objectName: string) {
+  if (!bucketName) throw new Error("Missing GOOGLE_STORAGE_BUCKET_NAME");
+  return `https://storage.googleapis.com/${bucketName}/${encodeObjectPath(objectName)}`;
 }
 
 function getStorage(): Storage | null {
@@ -46,6 +72,56 @@ function getStorage(): Storage | null {
     },
   });
   return storage;
+}
+
+export function buildImageVariantNames(fileName: string) {
+  const normalisedName = normaliseObjectName(fileName);
+  return {
+    processedName: `${imageOutputPrefix}${normalisedName}`,
+    thumbName: `${imageThumbPrefix}${normalisedName}`,
+    originalName: `${imageOriginalPrefix}${normalisedName}`,
+    originalThumbName: `${imageOriginalThumbPrefix}${normalisedName}`,
+  };
+}
+
+async function getSignedReadUrlForObjectPath(objectPath: string, expiresInSeconds: number) {
+  if (!bucketName) throw new Error("Missing GOOGLE_STORAGE_BUCKET_NAME");
+  const client = getStorage();
+  if (!client) throw new Error("Google Storage is not configured");
+  const bucket = client.bucket(bucketName);
+  const file = bucket.file(objectPath);
+  const [signedUrl] = await file.getSignedUrl({
+    version: "v4",
+    action: "read",
+    expires: Date.now() + expiresInSeconds * 1000,
+  });
+  return signedUrl;
+}
+
+async function saveFileToBucket(params: {
+  fileName: string;
+  contentType: string;
+  data: Buffer;
+}) {
+  const { fileName, contentType, data } = params;
+  if (!bucketName) throw new Error("Missing GOOGLE_STORAGE_BUCKET_NAME");
+
+  const client = getStorage();
+  if (!client) throw new Error("Google Storage is not configured");
+
+  const bucket = client.bucket(bucketName);
+  const file = bucket.file(fileName);
+
+  await file.save(data, {
+    contentType,
+    resumable: false,
+    metadata: {
+      contentType,
+      cacheControl: "private, max-age=0, no-transform",
+    },
+  });
+
+  return { storageUrl: buildStorageUrl(fileName) };
 }
 
 export async function getSignedUploadUrl(params: {
@@ -72,7 +148,7 @@ export async function getSignedUploadUrl(params: {
     },
   });
 
-  const publicUrl = `https://storage.googleapis.com/${bucketName}/${encodeURIComponent(fileName)}`;
+  const publicUrl = buildStorageUrl(fileName);
 
   return { uploadUrl: url, publicUrl };
 }
@@ -84,32 +160,68 @@ export async function uploadFileToBucket(params: {
   signedReadExpiresSeconds?: number;
 }) {
   const { fileName, contentType, data, signedReadExpiresSeconds = 7 * 24 * 60 * 60 } = params;
-  if (!bucketName) throw new Error('Missing GOOGLE_STORAGE_BUCKET_NAME');
-
-  const client = getStorage();
-  if (!client) throw new Error('Google Storage is not configured');
-
-  const bucket = client.bucket(bucketName);
-  const file = bucket.file(fileName);
-
-  await file.save(data, {
-    contentType,
-    resumable: false,
-    metadata: {
-      contentType,
-      cacheControl: 'private, max-age=0, no-transform',
-    },
-  });
-
-  const storageUrl = `https://storage.googleapis.com/${bucketName}/${encodeURIComponent(fileName)}`;
-
-  const [signedUrl] = await file.getSignedUrl({
-    version: 'v4',
-    action: 'read',
-    expires: Date.now() + signedReadExpiresSeconds * 1000,
-  });
-
+  const { storageUrl } = await saveFileToBucket({ fileName, contentType, data });
+  const signedUrl = await getSignedReadUrlForObjectPath(fileName, signedReadExpiresSeconds);
   return { storageUrl, signedUrl };
+}
+
+export async function uploadProcessedImageVariants(params: {
+  fileName: string;
+  contentType: string;
+  processedBuffer: Buffer;
+  thumbBuffer: Buffer;
+  originalBuffer: Buffer;
+  originalThumbBuffer: Buffer;
+  signedReadExpiresSeconds?: number;
+}) {
+  const {
+    fileName,
+    contentType,
+    processedBuffer,
+    thumbBuffer,
+    originalBuffer,
+    originalThumbBuffer,
+    signedReadExpiresSeconds = 7 * 24 * 60 * 60,
+  } = params;
+  const { processedName, thumbName, originalName, originalThumbName } = buildImageVariantNames(fileName);
+
+  const [processed, thumb, original, originalThumb] = await Promise.all([
+    uploadFileToBucket({
+      fileName: processedName,
+      contentType,
+      data: processedBuffer,
+      signedReadExpiresSeconds,
+    }),
+    uploadFileToBucket({
+      fileName: thumbName,
+      contentType,
+      data: thumbBuffer,
+      signedReadExpiresSeconds,
+    }),
+    uploadFileToBucket({
+      fileName: originalName,
+      contentType,
+      data: originalBuffer,
+      signedReadExpiresSeconds,
+    }),
+    uploadFileToBucket({
+      fileName: originalThumbName,
+      contentType,
+      data: originalThumbBuffer,
+      signedReadExpiresSeconds,
+    }),
+  ]);
+
+  return {
+    storageUrl: processed.storageUrl,
+    signedUrl: processed.signedUrl,
+    previewUrl: thumb.storageUrl,
+    signedPreviewUrl: thumb.signedUrl,
+    originalUrl: original.storageUrl,
+    signedOriginalUrl: original.signedUrl,
+    originalPreviewUrl: originalThumb.storageUrl,
+    signedOriginalPreviewUrl: originalThumb.signedUrl,
+  };
 }
 
 export async function getSignedReadUrlFromUrl(objectUrl: string, expiresInSeconds = 7 * 24 * 60 * 60) {

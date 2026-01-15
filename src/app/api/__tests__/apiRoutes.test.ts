@@ -918,6 +918,25 @@ describe('POST /api/user/update', () => {
     expect(json.name).toBe('New');
     expect(mockUserFindOneAndUpdate).toHaveBeenCalled();
   });
+
+  it('persists avatarModeration on self updates', async () => {
+    mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
+    mockUserFindOneAndUpdate.mockReturnValue(chainableQuery({
+      avatarModeration: { status: 'flagged', reasons: [], flaggedAt: new Date('2024-01-01T00:00:00Z') }
+    }));
+
+    const res = await userUpdatePost(new Request('http://localhost/api/user/update', {
+      method: 'POST',
+      body: JSON.stringify({
+        avatarModeration: { status: 'flagged', reasons: [], flaggedAt: '2024-01-01T00:00:00Z' }
+      })
+    }) as any);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.avatarModeration?.status).toBe('flagged');
+    expect(mockUserFindOneAndUpdate).toHaveBeenCalled();
+  });
 });
 
 describe('POST /api/user/[id]', () => {

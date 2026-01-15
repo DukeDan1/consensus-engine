@@ -26,6 +26,7 @@ type UserSummary = {
     name?: string;
     nickname?: string;
     avatarUrl?: string | null;
+    avatarThumbUrl?: string | null;
     createdAt?: string | Date | null;
 };
 
@@ -40,6 +41,7 @@ function resolveUserSummary(value: any): UserSummary {
             name: value.name ?? undefined,
             nickname: value.nickname ?? undefined,
             avatarUrl: value.avatarUrl ?? null,
+            avatarThumbUrl: value.avatarThumbUrl ?? null,
             createdAt: value.createdAt ?? null,
         };
     }
@@ -66,6 +68,87 @@ function getVisibilityLabel(status?: string) {
     return "Hidden";
 }
 
+function EvidenceImageItem({ item, label }: { item: any; label: string }) {
+    const [showDetails, setShowDetails] = useState(false);
+    const url = item?.url;
+    const previewUrl = item?.previewUrl || url;
+    const originalUrl = item?.originalUrl || url;
+    const reasons = Array.isArray(item?.blurReasons) ? item.blurReasons.filter(Boolean) : [];
+    const isBlurred = !!item?.blurred;
+
+    if (!url) return null;
+
+    return (
+        <div className="border rounded p-1 bg-light-subtle">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+                src={previewUrl}
+                alt={label}
+                style={{ width: 128, height: 128, objectFit: "cover" }}
+                onError={(event) => {
+                    if (previewUrl !== url) {
+                        event.currentTarget.src = url;
+                    }
+                }}
+            />
+            {isBlurred ? (
+                <div className="mt-2 small">
+                    <div className="text-danger mb-2">Our automated systems have detected harmful content in this image.</div>
+                    {!showDetails ? (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => setShowDetails(true)}
+                        >
+                            View
+                        </button>
+                    ) : (
+                        <div>
+                            <div className="small text-muted">Flag reasons:</div>
+                            <div className="d-flex flex-wrap gap-1 mt-1">
+                                {reasons.length ? reasons.map((reason: string) => (
+                                    <span key={reason} className="badge text-bg-warning">
+                                        {reason}
+                                    </span>
+                                )) : (
+                                    <span className="badge text-bg-warning">Flagged by automated safety system</span>
+                                )}
+                            </div>
+                            <div className="d-flex flex-wrap gap-2 mt-2">
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => {
+                                        if (originalUrl) {
+                                            window.open(originalUrl, "_blank", "noopener,noreferrer");
+                                        }
+                                        setShowDetails(false);
+                                    }}
+                                >
+                                    View image
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-secondary"
+                                    onClick={() => setShowDetails(false)}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <div className="small text-muted mt-1">
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                        Open in new tab
+                    </a>
+                </div>
+            )}
+        </div>
+    );
+}
+
 function EvidenceList({ evidence }: { evidence?: any[] }) {
     if (!evidence || !evidence.length) return null;
     return (
@@ -78,21 +161,7 @@ function EvidenceList({ evidence }: { evidence?: any[] }) {
                     const isImage = (item?.contentType || "").startsWith("image/");
                     const label = item?.label || item?.fileName || url;
                     if (isImage) {
-                        return (
-                            <div key={`${url}-${idx}`} className="border rounded p-1 bg-light-subtle">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                    src={url}
-                                    alt={label}
-                                    style={{ maxWidth: 160, maxHeight: 120, objectFit: "cover" }}
-                                />
-                                <div className="small text-muted mt-1">
-                                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
-                                        Open in new tab
-                                    </a>
-                                </div>
-                            </div>
-                        );
+                        return <EvidenceImageItem key={`${url}-${idx}`} item={item} label={label} />;
                     }
                     return (
                         <a
@@ -361,6 +430,7 @@ export default function ArgumentCard({
                                     name={author.name}
                                     nickname={author.nickname}
                                     avatarUrl={author.avatarUrl ?? undefined}
+                                    avatarThumbUrl={author.avatarThumbUrl ?? undefined}
                                     createdAt={author.createdAt}
                                     size={36}
                                     nameClassName="author-link fw-semibold"
@@ -461,6 +531,7 @@ export default function ArgumentCard({
                                                             name={commenter.name}
                                                             nickname={commenter.nickname}
                                                             avatarUrl={commenter.avatarUrl ?? undefined}
+                                                            avatarThumbUrl={commenter.avatarThumbUrl ?? undefined}
                                                             createdAt={commenter.createdAt}
                                                             size={28}
                                                             className="small text-muted fw-semibold"

@@ -13,6 +13,8 @@ import { moderateUserGeneratedText, moderationToVisibility } from "@/app/service
 import { applyTrustDelta } from "@/app/services/trustService";
 import { sanitiseEvidence, type EvidenceItemInput } from "@/app/lib/evidence";
 import { deleteEvidenceFiles } from "@/app/services/evidenceCleanupService";
+import { sendEmail } from "@/app/services/emailService";
+import { buildBaseUrl } from "@/app/lib/commonFunctions";
 import { evaluateFactPromotionForArgument } from "@/app/services/factPromotionService";
 
 type Body = {
@@ -224,8 +226,12 @@ export async function DELETE(req: Request) {
 
     try {
         await deleteEvidenceFiles(argument?.evidence ?? []);
+        if (user.isAdmin) {
+            await Argument.findByIdAndDelete(targetId).exec();
+            return NextResponse.json({ ok: true, deleted: true }, { status: 200 });
+        }
         await Argument.findByIdAndUpdate(targetId, { isRemoved: true, evidence: [] }).exec();
-        return NextResponse.json({ ok: true }, { status: 200 });
+        return NextResponse.json({ ok: true, removed: true }, { status: 200 });
     } catch (err) {
         console.error("Delete argument failed", err);
         return NextResponse.json({ error: "Failed to delete argument" }, { status: 500 });
@@ -255,7 +261,9 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
-    const existing = await Argument.findById(targetId).select({ isRemoved: 1 }).lean();
+    const existing = await Argument.findById(targetId)
+        .select({ isRemoved: 1, createdBy: 1, visibility: 1, topic: 1 })
+        .lean();
     if (!existing) {
         return NextResponse.json({ error: "Argument not found" }, { status: 404 });
     }
@@ -275,6 +283,25 @@ export async function PATCH(req: Request) {
         },
         { new: true }
     ).lean();
+
+    const shouldNotify = existing?.visibility?.status && existing.visibility.status !== "visible";
+    if (shouldNotify && existing.createdBy) {
+        try {
+            const author = await User.findById(existing.createdBy).select({ email: 1, name: 1 }).lean();
+            const topicId = typeof existing.topic?.toString === "function" ? existing.topic.toString() : String(existing.topic || "");
+            if (author?.email && topicId) {
+                const baseUrl = buildBaseUrl(req.headers);
+                const argumentUrl = `${baseUrl}/topics/${topicId}#argument-${targetId}`;
+                const name = author.name?.trim() || "there";
+                const subject = "Your post has been approved";
+                const html = `<p>Hi ${name},</p><p>Your post has been approved and is now visible.</p><p><a href="${argumentUrl}">View your post</a></p><p>Thanks,<br/>The Consensus Engine Team</p>`;
+                const text = `Hi ${name},\n\nYour post has been approved and is now visible.\n\nView your post: ${argumentUrl}\n\nThanks,\nThe Consensus Engine Team`;
+                sendEmail(author.email, subject, html, text);
+            }
+        } catch (err) {
+            console.error("Failed to send post approval email", err);
+        }
+    }
 
     return NextResponse.json({
         id: updated?._id?.toString?.() ?? targetId,

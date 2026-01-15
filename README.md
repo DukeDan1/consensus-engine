@@ -25,7 +25,10 @@ The project builds an online consensus management platform that structures debat
 	- `OPENAI_API_KEY` — OpenAI key for AI features
 	- `AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING` — required if you want email functionality. Emails are sent out when a user registers or requests a password reset. See Microsoft Azure Communication Services docs for setup.
 	- Optional: `OPENAI_RESPONSES_MODEL` to override the default model
-	- `GOOGLE_STORAGE_BUCKET_NAME` and `GOOGLE_SERVICE_ACCOUNT_KEY` if you want to enable Google Cloud Storage for file uploads. Without this, the file upload functionality will not work. Set up a Google Cloud project, create a storage bucket, and generate a service account key JSON file for authentication. Ensure that the service account has appropriate permissions to access the storage bucket and populate the environment variable `GOOGLE_SERVICE_ACCOUNT_KEY` with the content of the JSON key file.
+- `GOOGLE_STORAGE_BUCKET_NAME` and `GOOGLE_SERVICE_ACCOUNT_KEY` if you want to enable Google Cloud Storage for file uploads. Without this, the file upload functionality will not work. Set up a Google Cloud project, create a storage bucket, and generate a service account key JSON file for authentication. Ensure that the service account has appropriate permissions to access the storage bucket and populate the environment variable `GOOGLE_SERVICE_ACCOUNT_KEY` with the content of the JSON key file.
+- `IMAGE_PROCESSING_ENABLED` (optional; set to `false` to skip image processing on upload).
+- `IMAGE_OUTPUT_PREFIX`, `IMAGE_THUMB_PREFIX`, `IMAGE_ORIGINAL_PREFIX`, `IMAGE_ORIGINAL_THUMB_PREFIX` (optional overrides for image storage prefixes).
+- `IMAGE_SAFETY_CHECKS_ENABLED`, `IMAGE_SENSITIVE_LIKELIHOOD`, `IMAGE_SENSITIVE_FIELDS`, `IMAGE_BLUR_SIGMA`, `IMAGE_THUMB_SIZE` (optional controls for sensitive-image blur and thumbnails).
 4) Run the app: `npm run dev` and open http://localhost:3000.
 
 ## Deployment

@@ -40,13 +40,19 @@ export function useEvidenceAttachments(options: Options = {}) {
       return;
     }
     try {
-      const data = await uploadFileViaApi(file);
+      const data = await uploadFileViaApi(file, { purpose: "evidence" });
       const storedUrl = data.storageUrl || data.url;
+      const previewUrl = data.previewUrl;
       setEvidence((prev) => [
         ...prev,
         {
           url: storedUrl as string,
           kind: "file" as const,
+          previewUrl: previewUrl || undefined,
+          originalUrl: data.originalUrl || data.originalSignedUrl,
+          originalPreviewUrl: data.originalPreviewUrl || data.originalPreviewSignedUrl,
+          blurred: data.blurred ?? false,
+          blurReasons: data.blurReasons ?? [],
           fileName: (data.fileName || file.name) as string,
           contentType: (data.contentType || file.type) as string,
         },
@@ -63,7 +69,12 @@ export function useEvidenceAttachments(options: Options = {}) {
     setEvidence((prev) => prev.filter((_, i) => i !== index));
     if (item?.kind !== "file") return;
     try {
-      await deleteFileViaApi(item.url);
+      await deleteFileViaApi({
+        url: item.url,
+        previewUrl: item.previewUrl,
+        originalUrl: item.originalUrl,
+        originalPreviewUrl: item.originalPreviewUrl,
+      });
     } catch (err: any) {
       console.error("File delete failed", err);
       toast.error(err?.message || "Failed to delete file");

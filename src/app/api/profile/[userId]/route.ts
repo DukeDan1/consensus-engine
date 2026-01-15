@@ -19,6 +19,7 @@ type UserLean = {
     nickname?: string | null;
     bio?: string | null;
     avatarUrl?: string | null;
+    avatarThumbUrl?: string | null;
     email?: string | null;
     isSuspended?: boolean;
     createdAt?: Date | null;
@@ -31,6 +32,7 @@ type ProfileResponse = {
         nickname: string | null;
         bio?: string | null;
         avatarUrl?: string | null;
+        avatarThumbUrl?: string | null;
         email?: string | null;
         canViewEmail?: boolean;
         isSuspended?: boolean;
@@ -98,7 +100,7 @@ export async function GET(request: NextRequest, ctx: any) {
     await dbConnect();
 
     const userDoc = (await User.findById(userId)
-        .select({ name: 1, nickname: 1, bio: 1, avatarUrl: 1, email: 1, createdAt: 1, isSuspended: 1 })
+        .select({ name: 1, nickname: 1, bio: 1, avatarUrl: 1, avatarThumbUrl: 1, email: 1, createdAt: 1, isSuspended: 1 })
         .lean()
         .exec()) as UserLean | null;
 
@@ -118,6 +120,10 @@ export async function GET(request: NextRequest, ctx: any) {
     let avatarUrl = userDoc.avatarUrl ?? null;
     if (avatarUrl) {
         avatarUrl = await getSignedReadUrlFromUrl(avatarUrl).catch(() => avatarUrl);
+    }
+    let avatarThumbUrl = userDoc.avatarThumbUrl ?? null;
+    if (avatarThumbUrl) {
+        avatarThumbUrl = await getSignedReadUrlFromUrl(avatarThumbUrl).catch(() => avatarThumbUrl);
     }
 
     const { searchParams } = new URL(request.url);
@@ -195,6 +201,7 @@ export async function GET(request: NextRequest, ctx: any) {
             nickname: userDoc.nickname ?? null,
             bio: userDoc.bio ?? null,
             avatarUrl,
+            avatarThumbUrl,
             email: canViewEmail ? userDoc.email ?? null : null,
             canViewEmail,
             isSuspended: !!userDoc.isSuspended,

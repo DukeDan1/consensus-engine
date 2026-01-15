@@ -11,6 +11,8 @@ import { moderateUserGeneratedText, moderationToVisibility } from "@/app/service
 import { applyTrustDelta } from "@/app/services/trustService";
 import { sanitiseEvidence, type EvidenceItemInput } from "@/app/lib/evidence";
 import { deleteEvidenceFiles } from "@/app/services/evidenceCleanupService";
+import { sendEmail } from "@/app/services/emailService";
+import { buildBaseUrl } from "@/app/lib/commonFunctions";
 
 type Body = {
     argumentId: string;
@@ -181,8 +183,12 @@ export async function DELETE(req: Request) {
 
     try {
         await deleteEvidenceFiles(comment?.evidence ?? []);
+        if (user.isAdmin) {
+            await Comment.findByIdAndDelete(targetId).exec();
+            return NextResponse.json({ ok: true, deleted: true }, { status: 200 });
+        }
         await Comment.findByIdAndUpdate(targetId, { isRemoved: true, evidence: [] }).exec();
-        return NextResponse.json({ ok: true }, { status: 200 });
+        return NextResponse.json({ ok: true, removed: true }, { status: 200 });
     } catch (err) {
         console.error("Delete comment failed", err);
         return NextResponse.json({ error: "Failed to delete comment" }, { status: 500 });
@@ -212,7 +218,7 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
-    const existing = await Comment.findById(targetId).select({ isRemoved: 1 }).lean();
+    const existing = await Comment.findById(targetId).select({ isRemoved: 1, createdBy: 1, visibility: 1, argument: 1 }).lean();
     if (!existing) {
         return NextResponse.json({ error: "Comment not found" }, { status: 404 });
     }
@@ -232,6 +238,26 @@ export async function PATCH(req: Request) {
         },
         { new: true }
     ).lean();
+
+    const shouldNotify = existing?.visibility?.status && existing.visibility.status !== "visible";
+    if (shouldNotify && existing.createdBy && existing.argument) {
+        try {
+            const author = await User.findById(existing.createdBy).select({ email: 1, name: 1 }).lean();
+            const argument = await Argument.findById(existing.argument).select({ topic: 1 }).lean();
+            const topicId = argument?.topic?.toString?.() ?? "";
+            if (author?.email && topicId) {
+                const baseUrl = buildBaseUrl(req.headers);
+                const commentUrl = `${baseUrl}/topics/${topicId}#comment-${targetId}`;
+                const name = author.name?.trim() || "there";
+                const subject = "Your post has been approved";
+                const html = `<p>Hi ${name},</p><p>Your post has been approved and is now visible.</p><p><a href="${commentUrl}">View your post</a></p>`;
+                const text = `Hi ${name},\n\nYour post has been approved and is now visible.\n\nView your post: ${commentUrl}`;
+                await sendEmail(author.email, subject, html, text);
+            }
+        } catch (err) {
+            console.error("Failed to send post approval email", err);
+        }
+    }
 
     return NextResponse.json({
         id: updated?._id?.toString?.() ?? targetId,

@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 import { Buffer } from "buffer";
-import { deleteFileFromUrl, uploadFileToBucket } from "@/app/services/gcsService";
+import { deleteFileFromUrl, uploadFileToBucket, uploadProcessedImageVariants } from "@/app/services/gcsService";
+import { processImageBuffer } from "@/app/services/imageProcessingService";
 
 export const runtime = "nodejs";
 
 const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50MB hard cap
 const allowedPrefixes = ["image/", "application/pdf", "text/", "video/", "audio/"];
+const imageProcessingEnabled = process.env.IMAGE_PROCESSING_ENABLED !== "false";
 
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+    const purpose = (formData.get("purpose") || "").toString();
     if (!file) {
       return NextResponse.json({ error: "A file is required" }, { status: 400 });
     }
@@ -31,6 +34,43 @@ export async function POST(req: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    if (imageProcessingEnabled && contentType.startsWith("image/")) {
+      const { processedBuffer, thumbBuffer, originalBuffer, originalThumbBuffer, blurred, blurReasons } = await processImageBuffer(buffer);
+      const {
+        storageUrl,
+        signedUrl,
+        previewUrl,
+        signedPreviewUrl,
+        originalUrl,
+        signedOriginalUrl,
+        originalPreviewUrl,
+        signedOriginalPreviewUrl,
+      } = await uploadProcessedImageVariants({
+        fileName: safeName,
+        contentType,
+        processedBuffer,
+        thumbBuffer,
+        originalBuffer,
+        originalThumbBuffer,
+      });
+
+      return NextResponse.json({
+        url: signedUrl,
+        storageUrl,
+        previewUrl,
+        previewSignedUrl: signedPreviewUrl,
+        originalUrl,
+        originalSignedUrl: signedOriginalUrl,
+        originalPreviewUrl,
+        originalPreviewSignedUrl: signedOriginalPreviewUrl,
+        blurred,
+        blurReasons,
+        purpose,
+        fileName: file.name,
+        contentType,
+      });
+    }
+
     const { storageUrl, signedUrl } = await uploadFileToBucket({
       fileName: safeName,
       contentType,
@@ -48,12 +88,17 @@ export async function DELETE(req: Request) {
   try {
     const payload = await req.json().catch(() => ({}));
     const url = typeof payload?.url === "string" ? payload.url : "";
+    const previewUrl = typeof payload?.previewUrl === "string" ? payload.previewUrl : "";
+    const originalUrl = typeof payload?.originalUrl === "string" ? payload.originalUrl : "";
+    const originalPreviewUrl = typeof payload?.originalPreviewUrl === "string" ? payload.originalPreviewUrl : "";
     if (!url) {
       return NextResponse.json({ error: "A file URL is required" }, { status: 400 });
     }
 
-    const result = await deleteFileFromUrl(url);
-    if (!result.deleted) {
+    const deleteTargets = [url, previewUrl, originalUrl, originalPreviewUrl].filter(Boolean);
+    const results = await Promise.all(deleteTargets.map((target) => deleteFileFromUrl(target)));
+    const hasFailure = results.some((result) => !result.deleted);
+    if (hasFailure) {
       return NextResponse.json({ error: "Invalid file URL" }, { status: 400 });
     }
 

@@ -34,7 +34,9 @@ This guide shows how to set up Google Cloud for this app and deploy to Cloud Run
    - Access: uniform bucket-level access ON, public access prevention ON, no public ACLs.
    - Lifecycle (optional): add retention or auto-delete if desired.
    - Note the bucket name for `GOOGLE_STORAGE_BUCKET_NAME`.
-5. **Service account for CI/CD and signing URLs**:
+5. **Enable Vision API (for sensitive-image detection)**:
+   - Enable `vision.googleapis.com` in your project.
+6. **Service account for CI/CD and signing URLs**:
    - Create a service account, e.g., `consensusengine-deployer`.
    - Grant roles: `roles/run.admin`, `roles/artifactregistry.writer`, `roles/iam.serviceAccountUser`, `roles/storage.objectAdmin` (bucket object access/signing), and `roles/secretmanager.secretAccessor` if using Secret Manager.
    - (Optional) Create a second narrower SA just for signing upload/read URLs with `roles/storage.objectAdmin` on the bucket; use its key for `GOOGLE_SERVICE_ACCOUNT_KEY_STORAGE`.
@@ -62,6 +64,16 @@ You can supply env directly via `--set-env-vars` and secrets via `--set-secrets`
 
 ### Non-secret env to set in the deploy step
 - `GOOGLE_STORAGE_BUCKET_NAME` (bucket created in step 2.4).
+- `IMAGE_PROCESSING_ENABLED` (optional; set to `false` to skip image processing on upload).
+- `IMAGE_OUTPUT_PREFIX` (defaults to `processed/`).
+- `IMAGE_THUMB_PREFIX` (defaults to `thumbs/128/`).
+- `IMAGE_ORIGINAL_PREFIX` (defaults to `originals/`).
+- `IMAGE_ORIGINAL_THUMB_PREFIX` (defaults to `originals/thumbs/128/`).
+- `IMAGE_SAFETY_CHECKS_ENABLED` (set `false` to skip SafeSearch).
+- `IMAGE_SENSITIVE_LIKELIHOOD` (threshold like `POSSIBLE`, `LIKELY`, `VERY_LIKELY`).
+- `IMAGE_SENSITIVE_FIELDS` (comma-separated fields, defaults to `adult,violence,racy,medical`).
+- `IMAGE_BLUR_SIGMA` (blur strength; higher is stronger).
+- `IMAGE_THUMB_SIZE` (thumbnail size, defaults to `128`).
 - `NEXTJS_APP_BASE_URL` and `NEXTAUTH_URL` (your Cloud Run HTTPS URL after first deploy; you can redeploy to update).
 - `OPENAI_RESPONSES_MODEL` (optional, defaults to `gpt-5.2`).
 - `EMAIL_SENDER_ADDRESS` (from ACS setup below).
@@ -103,4 +115,5 @@ File: `.github/workflows/main.yml`
 - **Deploy fails auth**: confirm `GCP_CREDENTIALS` matches the service account with required roles.
 - **Image push denied**: verify Artifact Registry repo name/region matches `AR_HOST`/`REPO`.
 - **Runtime 500s on uploads**: check bucket name/permissions and `GOOGLE_SERVICE_ACCOUNT_KEY` content; ensure `GOOGLE_STORAGE_BUCKET_NAME` is set.
+- **SafeSearch errors**: enable the Vision API or set `IMAGE_SAFETY_CHECKS_ENABLED=false` to skip blur detection.
 - **Emails not sent**: ensure ACS connection string and sender are valid; check ACS email domain verification.

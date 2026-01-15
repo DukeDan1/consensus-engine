@@ -11,6 +11,30 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const user = await updateUserProfileByEmail(session.user.email, body);
+  const hasAvatarModeration = !!body
+    && typeof body === "object"
+    && Object.prototype.hasOwnProperty.call(body, "avatarModeration");
+  if (hasAvatarModeration) {
+    const moderation = body.avatarModeration;
+    if (moderation !== null) {
+      if (!moderation || typeof moderation !== "object" || Array.isArray(moderation)) {
+        return NextResponse.json({ error: "Invalid avatarModeration" }, { status: 400 });
+      }
+      if (moderation.status !== "flagged") {
+        return NextResponse.json({ error: "Invalid avatarModeration status" }, { status: 400 });
+      }
+      if (moderation.reasons !== undefined && !Array.isArray(moderation.reasons)) {
+        return NextResponse.json({ error: "Invalid avatarModeration reasons" }, { status: 400 });
+      }
+      if (typeof moderation.flaggedAt !== "string") {
+        moderation.flaggedAt = new Date().toISOString();
+      }
+    }
+  }
+  const user = await updateUserProfileByEmail(
+    session.user.email,
+    body,
+    hasAvatarModeration ? { allowModeration: true } : undefined
+  );
   return NextResponse.json(user ?? {});
 }
