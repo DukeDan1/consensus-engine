@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "bootswatch/dist/litera/bootstrap.min.css";
-import "@fortawesome/fontawesome-free/css/all.min.css";
+import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
+import "@fortawesome/fontawesome-free/css/solid.min.css";
+import "@fortawesome/fontawesome-free/css/regular.min.css";
 import "./globals.css";
 import Header from "@/app/components/ui/header";
-import BootstrapClient from "@/app/components/BootstrapClient";
 import { Roboto_Flex } from "next/font/google";
 import Providers from "@/app/providers";
 import ErrorBoundary from "@/app/components/layout/ErrorBoundary";
@@ -28,8 +29,6 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className={roboto.className}>
-        {/* If BootstrapClient imports bootstrap.bundle JS, keep it. */}
-        <BootstrapClient />
         {/* Ensure Providers includes SessionProvider for Header/useSession */}
         <Providers>
           <Header title="Consensus Engine" />
