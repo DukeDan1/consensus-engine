@@ -8,6 +8,7 @@ import AddNewCommentComponent from "@/app/components/AddNewCommentComponent";
 import { timeAgo } from "@/app/lib/commonFunctions";
 import ConfirmModal from "@/app/components/ui/ConfirmModal";
 import UserIdentity from "@/app/components/users/UserIdentity";
+import NotificationSubscribeButton from "@/app/components/notifications/NotificationSubscribeButton";
 
 function normaliseId(value: unknown): string | undefined {
     if (!value) return undefined;
@@ -464,6 +465,12 @@ export default function ArgumentCard({
                                     <i className="fa-regular fa-comments me-1" aria-hidden="true"></i>
                                     {commentStates.length} replies
                                 </span>
+                                <NotificationSubscribeButton
+                                    targetType="argument"
+                                    targetId={argument.id}
+                                    initialSubscribed={argument.subscription?.isSubscribed}
+                                    showLabel={false}
+                                />
                                 {canDeleteArgument && (
                                     <button
                                         type="button"

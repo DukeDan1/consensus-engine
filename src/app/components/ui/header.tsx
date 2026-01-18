@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import LogoutButton from '../LogoutButton';
 import HeaderSearch from './HeaderSearch';
+import NotificationsPanel from '../notifications/NotificationsPanel';
 
 interface HeaderProps {
   title: string;
@@ -88,60 +89,65 @@ export default function Header({ title }: HeaderProps) {
                 </li>
               </>
             ) : (
-              <li className="nav-item dropdown">
-                <button
-                  className="btn p-0 border-0"
-                  onClick={toggleMenu}
-                  aria-expanded={menuOpen}
-                  aria-haspopup="true"
-                >
-                  {session.user?.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={session.user.image}
-                      alt="User avatar"
-                      width={40}
-                      height={40}
-                      className="rounded-circle"
-                      style={{ objectFit: 'cover' }}
-                    />
-                  ) : (
-                    <div
-                      className="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle"
-                      style={{ width: 40, height: 40, fontWeight: 700 }}
-                    >
-                      {userInitials}
-                    </div>
-                  )}
-                </button>
-                <ul
-                  className={`dropdown-menu dropdown-menu-end ${menuOpen ? 'show' : ''}`}
-                  style={{ marginTop: '0.5rem' }}
-                  onMouseLeave={closeMenu}
-                >
-                  <li>
-                    <Link className="dropdown-item" href="/topics" onClick={closeMenu}>
-                      Home
-                    </Link>
-                  </li>
-                  <li>
-                    <Link className="dropdown-item" href="/profile" onClick={closeMenu}>
-                      Profile
-                    </Link>
-                  </li>
-                  {session.user?.isAdmin && (
+              <>
+                <li className="nav-item">
+                  <NotificationsPanel />
+                </li>
+                <li className="nav-item dropdown">
+                  <button
+                    className="btn p-0 border-0"
+                    onClick={toggleMenu}
+                    aria-expanded={menuOpen}
+                    aria-haspopup="true"
+                  >
+                    {session.user?.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={session.user.image}
+                        alt="User avatar"
+                        width={40}
+                        height={40}
+                        className="rounded-circle"
+                        style={{ objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <div
+                        className="d-flex align-items-center justify-content-center bg-primary text-white rounded-circle"
+                        style={{ width: 40, height: 40, fontWeight: 700 }}
+                      >
+                        {userInitials}
+                      </div>
+                    )}
+                  </button>
+                  <ul
+                    className={`dropdown-menu dropdown-menu-end ${menuOpen ? 'show' : ''}`}
+                    style={{ marginTop: '0.5rem' }}
+                    onMouseLeave={closeMenu}
+                  >
                     <li>
-                      <Link className="dropdown-item" href="/moderation" onClick={closeMenu}>
-                        Moderation
+                      <Link className="dropdown-item" href="/topics" onClick={closeMenu}>
+                        Home
                       </Link>
                     </li>
-                  )}
-                  <li><hr className="dropdown-divider" /></li>
-                  <li className="px-3 py-1">
-                    <LogoutButton />
-                  </li>
-                </ul>
-              </li>
+                    <li>
+                      <Link className="dropdown-item" href="/profile" onClick={closeMenu}>
+                        Profile
+                      </Link>
+                    </li>
+                    {session.user?.isAdmin && (
+                      <li>
+                        <Link className="dropdown-item" href="/moderation" onClick={closeMenu}>
+                          Moderation
+                        </Link>
+                      </li>
+                    )}
+                    <li><hr className="dropdown-divider" /></li>
+                    <li className="px-3 py-1">
+                      <LogoutButton />
+                    </li>
+                  </ul>
+                </li>
+              </>
             )}
           </ul>
         </div>

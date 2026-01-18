@@ -19,6 +19,13 @@ const mockTopicCreate = vi.hoisted(() => vi.fn());
 const mockCommentCreate = vi.hoisted(() => vi.fn());
 const mockCommentFind = vi.hoisted(() => vi.fn());
 const mockCommentFindByIdAndUpdate = vi.hoisted(() => vi.fn());
+const mockCommentDistinct = vi.hoisted(() => vi.fn());
+const mockNotificationFind = vi.hoisted(() => vi.fn());
+const mockNotificationInsertMany = vi.hoisted(() => vi.fn());
+const mockNotificationUpdateMany = vi.hoisted(() => vi.fn());
+const mockNotificationSubscriptionFind = vi.hoisted(() => vi.fn());
+const mockNotificationSubscriptionFindOne = vi.hoisted(() => vi.fn());
+const mockNotificationSubscriptionUpdateOne = vi.hoisted(() => vi.fn());
 const mockVoteInit = vi.hoisted(() => vi.fn());
 const mockVoteFindOneAndUpdate = vi.hoisted(() => vi.fn());
 const mockVoteCountDocuments = vi.hoisted(() => vi.fn());
@@ -82,7 +89,15 @@ vi.mock('next-auth', () => ({ getServerSession: mockGetServerSession }));
 vi.mock('@/app/models/user', () => ({ __esModule: true, default: { findOne: mockUserFindOne, find: mockUserFind, findById: mockUserFindById, findOneAndUpdate: mockUserFindOneAndUpdate } }));
 vi.mock('@/app/models/argument', () => ({ Argument: { create: mockArgumentCreate, findByIdAndUpdate: mockArgumentFindByIdAndUpdate, find: mockArgumentFind, findById: mockArgumentFindById }, ArgumentSide: { for: 'for', against: 'against', neutral: 'neutral' } }));
 vi.mock('@/app/models/topic', () => ({ Topic: { countDocuments: mockTopicCountDocuments, findOne: mockTopicFindOne, findById: mockTopicFindById, find: mockTopicFind, create: mockTopicCreate } }));
-vi.mock('@/app/models/comment', () => ({ Comment: { create: mockCommentCreate, findByIdAndUpdate: mockCommentFindByIdAndUpdate, find: mockCommentFind } }));
+vi.mock('@/app/models/comment', () => ({ Comment: { create: mockCommentCreate, findByIdAndUpdate: mockCommentFindByIdAndUpdate, find: mockCommentFind, distinct: mockCommentDistinct } }));
+vi.mock('@/app/models/notification', () => ({ Notification: { find: mockNotificationFind, insertMany: mockNotificationInsertMany, updateMany: mockNotificationUpdateMany } }));
+vi.mock('@/app/models/notificationSubscription', () => ({
+  NotificationSubscription: {
+    find: mockNotificationSubscriptionFind,
+    findOne: mockNotificationSubscriptionFindOne,
+    updateOne: mockNotificationSubscriptionUpdateOne
+  }
+}));
 vi.mock('@/app/models/vote', () => ({ Vote: { init: mockVoteInit, findOneAndUpdate: mockVoteFindOneAndUpdate, countDocuments: mockVoteCountDocuments } }));
 vi.mock('@/app/models/facts', () => ({ Fact: { findOne: mockFactFindOne, create: mockFactCreate, find: mockFactFind } }));
 vi.mock('@/app/services/gcsService', () => ({
@@ -103,6 +118,8 @@ vi.mock('next-auth/next', () => ({ __esModule: true, default: (...args: any[]) =
 
 import { POST as argumentPost } from '@/app/api/argument/route';
 import { POST as commentPost } from '@/app/api/comment/route';
+import { GET as notificationsGet, PATCH as notificationsPatch } from '@/app/api/notifications/route';
+import { GET as subscriptionsGet, POST as subscriptionsPost } from '@/app/api/notifications/subscriptions/route';
 import { GET as topicsGet, POST as topicsPost } from '@/app/api/topics/route';
 import { GET as topTopicsGet } from '@/app/api/top-topics/route';
 import { POST as votePost } from '@/app/api/vote/route';
@@ -177,8 +194,15 @@ beforeEach(async () => {
   mockAggregate.mockReturnValue({ toArray: vi.fn().mockResolvedValue([]) });
   mockArgumentFind.mockReturnValue(findChain([]));
   mockCommentFind.mockReturnValue(findChain([]));
+  mockCommentDistinct.mockResolvedValue([]);
   mockArgumentFindById.mockReturnValue(chainableQuery({ body: 'argument body' }));
   mockFactFind.mockReturnValue(findChain([]));
+  mockNotificationFind.mockReturnValue(findChain([]));
+  mockNotificationInsertMany.mockResolvedValue([]);
+  mockNotificationUpdateMany.mockResolvedValue({ modifiedCount: 0 });
+  mockNotificationSubscriptionFind.mockReturnValue(findChain([]));
+  mockNotificationSubscriptionFindOne.mockReturnValue(chainableQuery(null));
+  mockNotificationSubscriptionUpdateOne.mockResolvedValue(undefined);
   mockUserFindOneAndUpdate.mockResolvedValue(undefined);
   mockHashPassword.mockResolvedValue('hashed');
   mockComparePassword.mockResolvedValue(true);
@@ -351,6 +375,122 @@ describe('POST /api/comment', () => {
       ontologyCategories: expect.any(Array),
       visibility: expect.objectContaining({ status: expect.any(String) })
     }));
+  });
+});
+
+describe('GET /api/notifications', () => {
+  it('requires authentication', async () => {
+    mockGetServerSession.mockResolvedValue(null);
+
+    const res = await notificationsGet(new Request('http://localhost/api/notifications') as any);
+
+    expect(res.status).toBe(401);
+  });
+
+  it('returns notifications with actor metadata', async () => {
+    mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
+    mockUserFindOne.mockReturnValue(chainableQuery({ _id: 'user1' }));
+    mockNotificationFind.mockReturnValue(findChain([
+      {
+        _id: 'notif1',
+        type: 'comment_reply',
+        actor: 'actor1',
+        topic: 'topic1',
+        argument: 'arg1',
+        comment: 'comment1',
+        message: 'Someone replied',
+        topicTitle: 'Topic',
+        argumentSnippet: 'Argument',
+        commentSnippet: 'Reply',
+        createdAt: new Date('2024-01-01T00:00:00Z')
+      }
+    ]));
+    mockUserFind.mockReturnValue(findChain([
+      { _id: 'actor1', name: 'Alice', avatarThumbUrl: 'https://example.com/avatar.png' }
+    ]));
+
+    const res = await notificationsGet(new Request('http://localhost/api/notifications') as any);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.notifications).toHaveLength(1);
+    expect(json.notifications[0]).toMatchObject({
+      id: 'notif1',
+      message: 'Someone replied',
+      href: '/topics/topic1#comment-comment1'
+    });
+    expect(json.notifications[0].actor?.name).toBe('Alice');
+    expect(json.notifications[0].actor?.avatarUrl).toBe('https://example.com/avatar.png?signed=1');
+  });
+});
+
+describe('PATCH /api/notifications', () => {
+  it('marks notifications as read', async () => {
+    mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
+    mockUserFindOne.mockReturnValue(chainableQuery({ _id: 'user1' }));
+    mockNotificationUpdateMany.mockResolvedValue({ modifiedCount: 2 });
+
+    const res = await notificationsPatch(new Request('http://localhost/api/notifications', {
+      method: 'PATCH',
+      body: JSON.stringify({ ids: ['notif1', 'notif2'] })
+    }) as any);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.updated).toBe(2);
+    expect(mockNotificationUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ recipient: 'user1' }),
+      expect.anything()
+    );
+  });
+
+  it('rejects empty selection', async () => {
+    mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
+    mockUserFindOne.mockReturnValue(chainableQuery({ _id: 'user1' }));
+
+    const res = await notificationsPatch(new Request('http://localhost/api/notifications', {
+      method: 'PATCH',
+      body: JSON.stringify({ ids: [] })
+    }) as any);
+    const json = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(json.error).toMatch(/no notifications selected/i);
+  });
+});
+
+describe('GET /api/notifications/subscriptions', () => {
+  const targetId = '507f1f77bcf86cd799439011';
+
+  it('returns subscription status', async () => {
+    mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
+    mockUserFindOne.mockReturnValue(chainableQuery({ _id: 'user1' }));
+    mockNotificationSubscriptionFindOne.mockReturnValue(chainableQuery({ muted: false }));
+
+    const res = await subscriptionsGet(new Request(`http://localhost/api/notifications/subscriptions?targetType=argument&targetId=${targetId}`) as any);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.subscribed).toBe(true);
+  });
+});
+
+describe('POST /api/notifications/subscriptions', () => {
+  const targetId = '507f1f77bcf86cd799439011';
+
+  it('updates subscription state', async () => {
+    mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
+    mockUserFindOne.mockReturnValue(chainableQuery({ _id: 'user1' }));
+
+    const res = await subscriptionsPost(new Request('http://localhost/api/notifications/subscriptions', {
+      method: 'POST',
+      body: JSON.stringify({ targetType: 'argument', targetId, subscribe: true })
+    }) as any);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.subscribed).toBe(true);
+    expect(mockNotificationSubscriptionUpdateOne).toHaveBeenCalled();
   });
 });
 
@@ -807,6 +947,31 @@ describe('GET /api/topics/[id]', () => {
     expect(json.arguments[0].commentCount).toBe(1);
     expect(json.facts).toHaveLength(1);
     expect(json.meta.ordering).toBe('newest');
+  });
+
+  it('includes subscription state for authenticated viewers', async () => {
+    mockGetServerSession.mockResolvedValue({ user: { email: 'viewer@test.com' } });
+    mockUserFindOne.mockReturnValue(chainableQuery({ _id: 'viewer1', isAdmin: false }));
+    const topicDoc = { _id: topicId, title: 'T', createdBy: { name: 'Creator' }, ontologyCategories: [], isActive: true, argumentCounts: {}, score: 1 };
+    mockTopicFindById.mockReturnValue(findChain(topicDoc));
+
+    const argumentId = 'arg1';
+    mockArgumentFind.mockReturnValue(findChain([
+      { _id: argumentId, side: 'pro', body: 'b', createdBy: { _id: 'creator1', name: 'A' }, upvoteCount: 1, downvoteCount: 0, score: 1, createdAt: new Date('2024-01-02'), ontologyCategories: [], aiAnalysis: {} }
+    ]));
+    mockCommentFind.mockReturnValue(findChain([]));
+    mockFactFind.mockReturnValue(findChain([]));
+    mockNotificationSubscriptionFind.mockReturnValue(findChain([
+      { targetType: 'topic', targetId: topicId, muted: false },
+      { targetType: 'argument', targetId: argumentId, muted: true }
+    ]));
+
+    const res = await topicDetailGet(new Request(`http://localhost/api/topics/${topicId}?num_arguments=5&ordering=newest`) as any, { params: { id: topicId } } as any);
+    const json = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(json.topic.subscription.isSubscribed).toBe(true);
+    expect(json.arguments[0].subscription.isSubscribed).toBe(false);
   });
 });
 
