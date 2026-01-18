@@ -8,6 +8,7 @@ import { Fact } from "@/app/models/facts";
 import User from "@/app/models/user";
 import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
 import { getServerSession } from "next-auth";
+import { NotificationSubscription } from "@/app/models/notificationSubscription";
 
 async function signEvidence(evidence: any[] = []) {
   return Promise.all(
@@ -95,9 +96,11 @@ export async function GET(
 
   const session = await getServerSession();
   let isAdmin = false;
+  let viewerId: string | null = null;
   if (session?.user?.email) {
-    const adminUser = await User.findOne({ email: session.user.email }).select({ isAdmin: 1 }).lean();
-    isAdmin = !!adminUser?.isAdmin;
+    const viewer = await User.findOne({ email: session.user.email }).select({ _id: 1, isAdmin: 1 }).lean();
+    isAdmin = !!viewer?.isAdmin;
+    viewerId = viewer?._id?.toString?.() ?? null;
   }
 
   const topic = await Topic.findById(id)
@@ -191,6 +194,21 @@ export async function GET(
     ? argumentsList.filter((arg) => (commentsByArgument[arg._id.toString()] ?? []).length > 0)
     : argumentsList;
 
+  const subscriptionMap = new Map<string, { muted?: boolean }>();
+  if (viewerId) {
+    const targetIds = [topic._id, ...argumentIds];
+    const subscriptions = await NotificationSubscription.find({
+      userId: viewerId,
+      targetType: { $in: ["topic", "argument"] },
+      targetId: { $in: targetIds },
+    }).lean();
+
+    subscriptions.forEach((sub) => {
+      const key = `${sub.targetType}:${sub.targetId?.toString?.() ?? ""}`;
+      if (key) subscriptionMap.set(key, { muted: !!sub.muted });
+    });
+  }
+
   // Fetch derived facts for this topic (limit reasonable number)
   const facts = await Fact.find({ topic: topic._id })
     .sort({ createdAt: -1 })
@@ -210,6 +228,17 @@ export async function GET(
       score: topic.score,
       createdAt: topic.createdAt,
       updatedAt: topic.updatedAt,
+      ...(viewerId
+        ? {
+            subscription: {
+              isSubscribed: (() => {
+                const key = `topic:${topic._id.toString()}`;
+                const sub = subscriptionMap.get(key);
+                return sub ? !sub.muted : false;
+              })(),
+            },
+          }
+        : {}),
     },
     arguments: await Promise.all(
       argumentsForResponse.map(async (a) => {
@@ -218,6 +247,21 @@ export async function GET(
         const commentList = commentsByArgument[a._id.toString()] || [];
         const signedEvidence = await signEvidence(a.evidence ?? []);
         const createdBy = await mapUserSummary(a.createdBy);
+        const argumentSubscription = (() => {
+          if (!viewerId) return undefined;
+          const key = `argument:${a._id.toString()}`;
+          const sub = subscriptionMap.get(key);
+          if (sub) {
+            return { isSubscribed: !sub.muted };
+          }
+          const createdById = createdBy?._id?.toString?.() ?? "";
+          const hasCommented = commentList.some((comment) => {
+            const commenterId = comment?.createdBy?._id?.toString?.() ?? "";
+            return commenterId && commenterId === viewerId;
+          });
+          const isAuthor = createdById && createdById === viewerId;
+          return { isSubscribed: isAuthor || hasCommented };
+        })();
         return {
           id: a._id,
           side: normalisedSide,
@@ -234,6 +278,7 @@ export async function GET(
           comments: commentList,
           commentCount: commentList.length,
           aiAnalysis: a.aiAnalysis,
+          ...(argumentSubscription ? { subscription: argumentSubscription } : {}),
         };
       })
     ),

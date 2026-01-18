@@ -13,6 +13,9 @@ import { sanitiseEvidence, type EvidenceItemInput } from "@/app/lib/evidence";
 import { deleteEvidenceFiles } from "@/app/services/evidenceCleanupService";
 import { sendEmail } from "@/app/services/emailService";
 import { buildBaseUrl } from "@/app/lib/commonFunctions";
+import { Notification } from "@/app/models/notification";
+import { NotificationSubscription } from "@/app/models/notificationSubscription";
+import { Topic } from "@/app/models/topic";
 
 type Body = {
     argumentId: string;
@@ -52,7 +55,7 @@ export async function POST(req: Request) {
         const argObjId = new mongoose.Types.ObjectId(argumentId);
         const parentObjId = parentId ? new mongoose.Types.ObjectId(parentId) : undefined;
 
-        const parentArgument = await Argument.findById(argObjId).select({ body: 1 }).lean();
+        const parentArgument = await Argument.findById(argObjId).select({ body: 1, createdBy: 1, topic: 1 }).lean();
         if (!parentArgument) {
             return NextResponse.json({ error: "Argument not found" }, { status: 404 });
         }
@@ -104,6 +107,12 @@ export async function POST(req: Request) {
             },
         });
 
+        await NotificationSubscription.updateOne(
+            { userId: user._id, targetType: "argument", targetId: argObjId },
+            { $setOnInsert: { muted: false } },
+            { upsert: true }
+        );
+
         if (moderation.recommendedTrustDelta) {
             await applyTrustDelta({
                 userId: user._id,
@@ -129,6 +138,77 @@ export async function POST(req: Request) {
         })();
 
         trackBackgroundTask(backgroundTask);
+
+        const notificationTask = (async () => {
+            try {
+                if (visibility.status !== "visible") return;
+                if (!parentArgument?.topic) return;
+
+                const topic = await Topic.findById(parentArgument.topic).select({ title: 1 }).lean();
+                const topicTitle = (topic?.title || "").toString().trim() || "a topic";
+                const argumentSnippet = (parentArgument.body || "").toString().trim().slice(0, 180);
+                const commentSnippet = trimmed.slice(0, 180);
+                const commenterName = user.name?.trim() || user.nickname?.trim() || "Someone";
+
+                const [commenterIds, argumentSubscriptions, topicSubscriptions] = await Promise.all([
+                    Comment.distinct("createdBy", { argument: argObjId }),
+                    NotificationSubscription.find({ targetType: "argument", targetId: argObjId })
+                        .select({ userId: 1, muted: 1 })
+                        .lean(),
+                    NotificationSubscription.find({ targetType: "topic", targetId: parentArgument.topic })
+                        .select({ userId: 1, muted: 1 })
+                        .lean(),
+                ]);
+
+                const recipientIds = new Set<string>();
+                const mutedIds = new Set<string>();
+
+                const addRecipient = (value: any) => {
+                    const id = value?.toString?.() ?? "";
+                    if (id) recipientIds.add(id);
+                };
+                const addMuted = (value: any) => {
+                    const id = value?.toString?.() ?? "";
+                    if (id) mutedIds.add(id);
+                };
+
+                commenterIds.forEach(addRecipient);
+                addRecipient(parentArgument.createdBy);
+                argumentSubscriptions.forEach((sub) => {
+                    if (sub.muted) addMuted(sub.userId);
+                    else addRecipient(sub.userId);
+                });
+                topicSubscriptions.forEach((sub) => {
+                    if (sub.muted) addMuted(sub.userId);
+                    else addRecipient(sub.userId);
+                });
+
+                const actorId = user._id?.toString?.() ?? "";
+                if (actorId) recipientIds.delete(actorId);
+                mutedIds.forEach((id) => recipientIds.delete(id));
+
+                if (!recipientIds.size) return;
+
+                const payload = Array.from(recipientIds).map((recipientId) => ({
+                    recipient: recipientId,
+                    actor: user._id,
+                    type: "comment_reply",
+                    topic: parentArgument.topic,
+                    argument: argObjId,
+                    comment: created._id,
+                    message: `${commenterName} replied to an argument you follow`,
+                    topicTitle,
+                    argumentSnippet,
+                    commentSnippet,
+                }));
+
+                await Notification.insertMany(payload, { ordered: false });
+            } catch (err) {
+                console.error("Notification dispatch failed", err);
+            }
+        })();
+
+        trackBackgroundTask(notificationTask);
 
         return NextResponse.json({
             id: (created._id as mongoose.Types.ObjectId).toString(),

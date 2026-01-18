@@ -15,6 +15,7 @@ import { sanitiseEvidence, type EvidenceItemInput } from "@/app/lib/evidence";
 import { deleteEvidenceFiles } from "@/app/services/evidenceCleanupService";
 import { sendEmail } from "@/app/services/emailService";
 import { buildBaseUrl } from "@/app/lib/commonFunctions";
+import { NotificationSubscription } from "@/app/models/notificationSubscription";
 
 type Body = {
     topicId: string;
@@ -107,6 +108,12 @@ export async function POST(req: Request) {
                 model: moderation.model,
             },
         });
+
+        await NotificationSubscription.updateOne(
+            { userId: user._id, targetType: "argument", targetId: created._id },
+            { $setOnInsert: { muted: false } },
+            { upsert: true }
+        );
 
         if (moderation.recommendedTrustDelta) {
             await applyTrustDelta({

@@ -13,6 +13,9 @@ export type TopicApiResponse = {
     title: string;
     description?: string;
     createdBy?: UserSummary;
+    subscription?: {
+      isSubscribed: boolean;
+    };
     ontologyCategories?: Array<{
       id: string;
       label: string;
@@ -30,6 +33,9 @@ export type TopicApiResponse = {
     body: string;
     createdBy?: UserSummary;
     createdAt?: string;
+    subscription?: {
+      isSubscribed: boolean;
+    };
     upvoteCount?: number;
     downvoteCount?: number;
     score?: number;

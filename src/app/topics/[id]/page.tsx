@@ -10,6 +10,7 @@ import OntologyBadgeList from "@/app/components/ontology/OntologyBadgeList";
 import TopicDiscussionControls from "@/app/components/topics/TopicDiscussionControls";
 import TopicAdminActions from "@/app/components/topics/TopicAdminActions";
 import UserIdentity from "@/app/components/users/UserIdentity";
+import NotificationSubscribeButton from "@/app/components/notifications/NotificationSubscribeButton";
 import { buildBaseUrl } from "@/app/lib/commonFunctions";
 import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
@@ -137,6 +138,11 @@ export default async function TopicPage({ params, searchParams }: any) {
             <i className="fa-solid fa-lightbulb me-1" aria-hidden></i>
             Facts view
           </Link>
+          <NotificationSubscribeButton
+            targetType="topic"
+            targetId={t.id}
+            initialSubscribed={t.subscription?.isSubscribed}
+          />
           <div className="btn-group btn-group-sm" role="group" aria-label="Ordering">
             <Link
               href={{
