@@ -66,7 +66,7 @@ export default function ActivityNotificationEmail({
         </Link>
       </Text>
       <Text style={unsubscribeStyle}>
-        You can unsubscribe from activity notifications by visiting your profile and unsubscribing:{" "}
+        You can unsubscribe from these activity notification emails by visiting your profile and unsubscribing:{" "}
         <Link href={profileUrl} style={{ color: "#2563eb" }}>
           {profileUrl}
         </Link>
