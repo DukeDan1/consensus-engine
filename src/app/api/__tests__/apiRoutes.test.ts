@@ -11,6 +11,7 @@ const mockArgumentCreate = vi.hoisted(() => vi.fn());
 const mockArgumentFindByIdAndUpdate = vi.hoisted(() => vi.fn());
 const mockArgumentFind = vi.hoisted(() => vi.fn());
 const mockArgumentFindById = vi.hoisted(() => vi.fn());
+const mockArgumentAggregate = vi.hoisted(() => vi.fn());
 const mockTopicFindById = vi.hoisted(() => vi.fn());
 const mockTopicFindOne = vi.hoisted(() => vi.fn());
 const mockTopicFind = vi.hoisted(() => vi.fn());
@@ -20,12 +21,17 @@ const mockCommentCreate = vi.hoisted(() => vi.fn());
 const mockCommentFind = vi.hoisted(() => vi.fn());
 const mockCommentFindByIdAndUpdate = vi.hoisted(() => vi.fn());
 const mockCommentDistinct = vi.hoisted(() => vi.fn());
+const mockCommentAggregate = vi.hoisted(() => vi.fn());
 const mockNotificationFind = vi.hoisted(() => vi.fn());
 const mockNotificationInsertMany = vi.hoisted(() => vi.fn());
 const mockNotificationUpdateMany = vi.hoisted(() => vi.fn());
 const mockNotificationSubscriptionFind = vi.hoisted(() => vi.fn());
 const mockNotificationSubscriptionFindOne = vi.hoisted(() => vi.fn());
 const mockNotificationSubscriptionUpdateOne = vi.hoisted(() => vi.fn());
+const mockUserFollowFind = vi.hoisted(() => vi.fn());
+const mockUserFollowAggregate = vi.hoisted(() => vi.fn());
+const mockUserFollowUpdateOne = vi.hoisted(() => vi.fn());
+const mockUserFollowDeleteOne = vi.hoisted(() => vi.fn());
 const mockVoteInit = vi.hoisted(() => vi.fn());
 const mockVoteFindOneAndUpdate = vi.hoisted(() => vi.fn());
 const mockVoteCountDocuments = vi.hoisted(() => vi.fn());
@@ -87,15 +93,23 @@ vi.mock('mongoose', () => {
 vi.mock('@/app/lib/mongoose', () => ({ dbConnect: mockDbConnect }));
 vi.mock('next-auth', () => ({ getServerSession: mockGetServerSession }));
 vi.mock('@/app/models/user', () => ({ __esModule: true, default: { findOne: mockUserFindOne, find: mockUserFind, findById: mockUserFindById, findOneAndUpdate: mockUserFindOneAndUpdate } }));
-vi.mock('@/app/models/argument', () => ({ Argument: { create: mockArgumentCreate, findByIdAndUpdate: mockArgumentFindByIdAndUpdate, find: mockArgumentFind, findById: mockArgumentFindById }, ArgumentSide: { for: 'for', against: 'against', neutral: 'neutral' } }));
+vi.mock('@/app/models/argument', () => ({ Argument: { create: mockArgumentCreate, findByIdAndUpdate: mockArgumentFindByIdAndUpdate, find: mockArgumentFind, findById: mockArgumentFindById, aggregate: mockArgumentAggregate }, ArgumentSide: { for: 'for', against: 'against', neutral: 'neutral' } }));
 vi.mock('@/app/models/topic', () => ({ Topic: { countDocuments: mockTopicCountDocuments, findOne: mockTopicFindOne, findById: mockTopicFindById, find: mockTopicFind, create: mockTopicCreate } }));
-vi.mock('@/app/models/comment', () => ({ Comment: { create: mockCommentCreate, findByIdAndUpdate: mockCommentFindByIdAndUpdate, find: mockCommentFind, distinct: mockCommentDistinct } }));
+vi.mock('@/app/models/comment', () => ({ Comment: { create: mockCommentCreate, findByIdAndUpdate: mockCommentFindByIdAndUpdate, find: mockCommentFind, distinct: mockCommentDistinct, aggregate: mockCommentAggregate } }));
 vi.mock('@/app/models/notification', () => ({ Notification: { find: mockNotificationFind, insertMany: mockNotificationInsertMany, updateMany: mockNotificationUpdateMany } }));
 vi.mock('@/app/models/notificationSubscription', () => ({
   NotificationSubscription: {
     find: mockNotificationSubscriptionFind,
     findOne: mockNotificationSubscriptionFindOne,
     updateOne: mockNotificationSubscriptionUpdateOne
+  }
+}));
+vi.mock('@/app/models/userFollow', () => ({
+  UserFollow: {
+    find: mockUserFollowFind,
+    aggregate: mockUserFollowAggregate,
+    updateOne: mockUserFollowUpdateOne,
+    deleteOne: mockUserFollowDeleteOne,
   }
 }));
 vi.mock('@/app/models/vote', () => ({ Vote: { init: mockVoteInit, findOneAndUpdate: mockVoteFindOneAndUpdate, countDocuments: mockVoteCountDocuments } }));
@@ -193,8 +207,10 @@ beforeEach(async () => {
   mockCollection.mockReturnValue({ aggregate: mockAggregate });
   mockAggregate.mockReturnValue({ toArray: vi.fn().mockResolvedValue([]) });
   mockArgumentFind.mockReturnValue(findChain([]));
+  mockArgumentAggregate.mockResolvedValue([]);
   mockCommentFind.mockReturnValue(findChain([]));
   mockCommentDistinct.mockResolvedValue([]);
+  mockCommentAggregate.mockResolvedValue([]);
   mockArgumentFindById.mockReturnValue(chainableQuery({ body: 'argument body' }));
   mockFactFind.mockReturnValue(findChain([]));
   mockNotificationFind.mockReturnValue(findChain([]));
@@ -203,6 +219,10 @@ beforeEach(async () => {
   mockNotificationSubscriptionFind.mockReturnValue(findChain([]));
   mockNotificationSubscriptionFindOne.mockReturnValue(chainableQuery(null));
   mockNotificationSubscriptionUpdateOne.mockResolvedValue(undefined);
+  mockUserFollowFind.mockReturnValue(findChain([]));
+  mockUserFollowAggregate.mockResolvedValue([]);
+  mockUserFollowUpdateOne.mockResolvedValue(undefined);
+  mockUserFollowDeleteOne.mockResolvedValue(undefined);
   mockUserFindOneAndUpdate.mockResolvedValue(undefined);
   mockHashPassword.mockResolvedValue('hashed');
   mockComparePassword.mockResolvedValue(true);

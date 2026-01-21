@@ -21,6 +21,12 @@ type ProfileApiResponse = {
     canViewEmail?: boolean;
     isSuspended?: boolean;
     createdAt?: string | null;
+    stats?: {
+      posts: number;
+      comments: number;
+      upvotes: number;
+      followers: number;
+    };
   };
   recentArguments: Array<{
     id: string;
@@ -178,6 +184,7 @@ export default async function UserProfilePage({ params }: any) {
         email={email}
         canViewEmail={canViewEmail}
         isSuspended={isSuspended}
+        stats={data.user.stats}
       />
       <div className="mb-4">
         <AdminUserActions userId={data.user.id} initialSuspended={isSuspended} displayName={displayName} />
@@ -190,7 +197,7 @@ export default async function UserProfilePage({ params }: any) {
         <div className="col-lg-6">
           <section className="card h-100 border-0 shadow-sm">
             <div className="card-header bg-white border-0 pb-0">
-              <h2 className="h5 mb-1">Recent Arguments</h2>
+              <h2 className="h5 mb-1">Recent Posts</h2>
               <p className="text-muted small mb-0">Perspectives this user has contributed to debates.</p>
             </div>
             <div className="card-body">
@@ -215,7 +222,7 @@ export default async function UserProfilePage({ params }: any) {
               ) : (
                 <div className="text-center text-muted py-4">
                   <i className="fa-regular fa-lightbulb mb-2" style={{ fontSize: "2rem" }} aria-hidden="true"></i>
-                  <p className="mb-0">No arguments yet.</p>
+                  <p className="mb-0">No posts yet.</p>
                 </div>
               )}
             </div>

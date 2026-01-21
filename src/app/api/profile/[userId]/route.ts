@@ -6,6 +6,7 @@ import User from "@/app/models/user";
 import { Argument } from "@/app/models/argument";
 import { Comment } from "@/app/models/comment";
 import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
+import { UserFollow } from "@/app/models/userFollow";
 import "@/app/models/topic";
 
 const DEFAULT_LIMIT = 10;
@@ -37,6 +38,12 @@ type ProfileResponse = {
         canViewEmail?: boolean;
         isSuspended?: boolean;
         createdAt: string | null;
+        stats?: {
+            posts: number;
+            comments: number;
+            upvotes: number;
+            followers: number;
+        };
     };
     recentArguments: Array<{
         id: string;
@@ -129,7 +136,7 @@ export async function GET(request: NextRequest, ctx: any) {
     const { searchParams } = new URL(request.url);
     const limit = sanitiseLimit(searchParams.get("limit"));
 
-    const [argumentDocsRaw, commentDocsRaw] = await Promise.all([
+    const [argumentDocsRaw, commentDocsRaw, argumentStats, commentStats, followerStats] = await Promise.all([
         Argument.find({ createdBy: userDoc._id, isRemoved: false })
             .sort({ createdAt: -1 })
             .limit(limit)
@@ -146,6 +153,18 @@ export async function GET(request: NextRequest, ctx: any) {
             })
             .lean()
             .exec(),
+        Argument.aggregate([
+            { $match: { createdBy: userDoc._id, isRemoved: false } },
+            { $group: { _id: "$createdBy", count: { $sum: 1 }, upvotes: { $sum: { $ifNull: ["$upvoteCount", 0] } } } },
+        ]),
+        Comment.aggregate([
+            { $match: { createdBy: userDoc._id, isRemoved: false } },
+            { $group: { _id: "$createdBy", count: { $sum: 1 }, upvotes: { $sum: { $ifNull: ["$upvoteCount", 0] } } } },
+        ]),
+        UserFollow.aggregate([
+            { $match: { targetUserId: userDoc._id } },
+            { $group: { _id: "$targetUserId", count: { $sum: 1 } } },
+        ]),
     ]);
 
     const argumentDocs = (argumentDocsRaw ?? []) as any[];
@@ -194,6 +213,11 @@ export async function GET(request: NextRequest, ctx: any) {
         };
     });
 
+    const postCount = argumentStats?.[0]?.count ?? 0;
+    const commentCount = commentStats?.[0]?.count ?? 0;
+    const upvoteCount = (argumentStats?.[0]?.upvotes ?? 0) + (commentStats?.[0]?.upvotes ?? 0);
+    const followerCount = followerStats?.[0]?.count ?? 0;
+
     const response: ProfileResponse = {
         user: {
             id: userDoc._id.toString(),
@@ -206,6 +230,12 @@ export async function GET(request: NextRequest, ctx: any) {
             canViewEmail,
             isSuspended: !!userDoc.isSuspended,
             createdAt: userDoc.createdAt ? userDoc.createdAt.toISOString() : null,
+            stats: {
+                posts: postCount,
+                comments: commentCount,
+                upvotes: upvoteCount,
+                followers: followerCount,
+            },
         },
         recentArguments,
         recentComments,

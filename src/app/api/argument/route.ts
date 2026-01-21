@@ -16,6 +16,8 @@ import { deleteEvidenceFiles } from "@/app/services/evidenceCleanupService";
 import { sendEmail } from "@/app/services/emailService";
 import { buildBaseUrl } from "@/app/lib/commonFunctions";
 import { NotificationSubscription } from "@/app/models/notificationSubscription";
+import { Notification } from "@/app/models/notification";
+import { UserFollow } from "@/app/models/userFollow";
 
 type Body = {
     topicId: string;
@@ -124,6 +126,41 @@ export async function POST(req: Request) {
             });
         }
         
+        const notificationTask = (async () => {
+            try {
+                if (visibility.status !== "visible") return;
+                const followerDocs = await UserFollow.find({ targetUserId: user._id })
+                    .select({ followerId: 1 })
+                    .lean();
+                const actorId = user._id?.toString?.() ?? "";
+                const followerIds = followerDocs
+                    .map((doc) => doc.followerId?.toString?.() ?? "")
+                    .filter((id) => id && id !== actorId);
+                if (!followerIds.length) return;
+
+                const authorName = user.name?.trim() || user.nickname?.trim() || "Someone";
+                const topicTitle = (topic?.title || "").toString().trim() || "a topic";
+                const argumentSnippet = trimmed.slice(0, 180);
+
+                const payload = followerIds.map((recipientId) => ({
+                    recipient: recipientId,
+                    actor: user._id,
+                    type: "user_post",
+                    topic: topicObjId,
+                    argument: created._id,
+                    message: `${authorName} posted in ${topicTitle}`,
+                    topicTitle,
+                    argumentSnippet,
+                }));
+
+                await Notification.insertMany(payload, { ordered: false });
+            } catch (err) {
+                console.error("Follower notification dispatch failed", err);
+            }
+        })();
+
+        trackBackgroundTask(notificationTask);
+
         // Track background AI processing for graceful shutdown
         const backgroundTask = (async () => {
             try {

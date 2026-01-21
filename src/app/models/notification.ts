@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
-export type NotificationType = "comment_reply";
+export type NotificationType = "comment_reply" | "user_post";
 
 export interface INotification extends Document {
   recipient: Types.ObjectId;
@@ -22,7 +22,7 @@ const NotificationSchema = new Schema<INotification>(
   {
     recipient: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     actor: { type: Schema.Types.ObjectId, ref: "User" },
-    type: { type: String, enum: ["comment_reply"], required: true, index: true },
+    type: { type: String, enum: ["comment_reply", "user_post"], required: true, index: true },
     topic: { type: Schema.Types.ObjectId, ref: "Topic", index: true },
     argument: { type: Schema.Types.ObjectId, ref: "Argument", index: true },
     comment: { type: Schema.Types.ObjectId, ref: "Comment", index: true },

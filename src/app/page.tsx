@@ -14,7 +14,7 @@ export default async function Home() {
           </h1>
           <p className="lead mb-4 text-muted">
             Join the conversation and discover what people are debating about. 
-            Share your perspective, vote on arguments, and help build consensus on important topics.
+            Share your perspective, vote on posts, and help build consensus on important topics.
           </p>
           <div className="d-flex gap-3 justify-content-center flex-wrap">
             <Link href="/register" className="btn btn-primary btn-lg px-5">
@@ -47,9 +47,9 @@ export default async function Home() {
             <div className="mb-3">
               <i className="fa-solid fa-vote-yea fa-3x text-primary" aria-hidden="true"></i>
             </div>
-            <h3 className="h5">Vote on Arguments</h3>
+            <h3 className="h5">Vote on Posts</h3>
             <p className="text-muted">
-              Support compelling arguments and help surface the best ideas
+              Support compelling posts and help surface the best ideas
             </p>
           </div>
         </div>
@@ -84,7 +84,7 @@ export default async function Home() {
             <div className="card-body py-5">
               <h3 className="h4 mb-3">Ready to Join?</h3>
               <p className="mb-4">
-                Create an account to start participating in debates, voting on arguments, 
+                Create an account to start participating in debates, voting on posts, 
                 and helping build consensus on important topics.
               </p>
               <Link href="/register" className="btn btn-primary btn-lg">

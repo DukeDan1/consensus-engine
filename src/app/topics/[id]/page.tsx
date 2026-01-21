@@ -126,6 +126,7 @@ export default async function TopicPage({ params, searchParams }: any) {
               className="small text-muted"
               nameClassName="author-link text-muted"
               fallbackLabel="Unknown"
+              stats={t.createdBy?.stats}
             />
           </div>
         </div>
@@ -226,13 +227,13 @@ export default async function TopicPage({ params, searchParams }: any) {
         </div>
       )}
 
-      {/* Arguments */}
+      {/* Posts */}
       {data.arguments.length === 0 ? (
-        <div className="alert alert-secondary">No arguments yet.</div>
+        <div className="alert alert-secondary">No posts yet.</div>
       ) : (
         <div className="row g-3">
           <div className="col-12">
-            <h5 className="mb-3">Arguments</h5>
+            <h5 className="mb-3">Posts</h5>
           </div>
           {data.arguments.map((a) => (
             <ArgumentCard argument={a} key={a.id} moderatorMode={moderatorMode} />
