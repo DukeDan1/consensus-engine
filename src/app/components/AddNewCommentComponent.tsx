@@ -20,6 +20,7 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
         handlePaste,
         removeEvidenceAt,
         clearEvidence,
+        prepareEvidenceForSubmit,
         maxItems,
         canAddMore,
     } = useEvidenceAttachments();
@@ -34,6 +35,15 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
         const body = text.trim();
         if (!body) return;
 
+        const preparedEvidence = prepareEvidenceForSubmit();
+        if (preparedEvidence.error) {
+            toast.error(preparedEvidence.error);
+            return;
+        }
+        if (preparedEvidence.linkSkipped) {
+            toast.info(`Limit reached: up to ${maxItems} items.`);
+        }
+
         // Placeholder: attempt to POST to a comments API if available. If you have an endpoint,
         // update the URL below. For now we'll optimistically clear and hide the form.
         setSubmitting(true);
@@ -41,7 +51,7 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
             const res = await fetch("/api/comment", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ argumentId, body, evidence }),
+                body: JSON.stringify({ argumentId, body, evidence: preparedEvidence.evidence }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {

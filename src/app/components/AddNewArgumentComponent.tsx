@@ -25,6 +25,7 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
         handlePaste,
         removeEvidenceAt,
         clearEvidence,
+        prepareEvidenceForSubmit,
         maxItems,
         canAddMore,
     } = useEvidenceAttachments();
@@ -45,12 +46,21 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
         const body = text.trim();
         if (!body) return;
 
+        const preparedEvidence = prepareEvidenceForSubmit();
+        if (preparedEvidence.error) {
+            toast.error(preparedEvidence.error);
+            return;
+        }
+        if (preparedEvidence.linkSkipped) {
+            toast.info(`Limit reached: up to ${maxItems} items.`);
+        }
+
         setSubmitting(true);
         try {
             const res = await fetch("/api/argument", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ topicId, body, evidence }),
+                body: JSON.stringify({ topicId, body, evidence: preparedEvidence.evidence }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {

@@ -13,6 +13,25 @@ export function useEvidenceAttachments(options: Options = {}) {
   const [evidenceLink, setEvidenceLink] = useState("");
   const canAddMore = evidence.length < maxItems;
 
+  function prepareEvidenceForSubmit() {
+    const link = evidenceLink.trim();
+    if (!link) {
+      return { evidence };
+    }
+    if (evidence.length >= maxItems) {
+      return { evidence, linkSkipped: true };
+    }
+    try {
+      const url = new URL(link).toString();
+      return {
+        evidence: [...evidence, { url, kind: "link" as const }].slice(0, maxItems),
+        linkAdded: true,
+      };
+    } catch {
+      return { evidence, error: "Please enter a valid URL" };
+    }
+  }
+
   function clearEvidence() {
     setEvidence([]);
     setEvidenceLink("");
@@ -117,6 +136,7 @@ export function useEvidenceAttachments(options: Options = {}) {
     handleFileChange,
     handlePaste,
     removeEvidenceAt,
+    prepareEvidenceForSubmit,
     clearEvidence,
   };
 }
