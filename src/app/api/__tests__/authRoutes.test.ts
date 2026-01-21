@@ -38,7 +38,7 @@ describe('register', () => {
   });
 
   it('creates user and sends welcome email', async () => {
-    const deps = baseDeps();
+    const deps = baseDeps() as any;
     deps.userModel.findOne.mockResolvedValueOnce(null);
     deps.hashPassword.mockResolvedValueOnce('hash');
     deps.userModel.create.mockResolvedValueOnce({ email: 'a@test.com', name: 'Ann' });
