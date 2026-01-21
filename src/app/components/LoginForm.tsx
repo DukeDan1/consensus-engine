@@ -16,6 +16,7 @@ const errorMessages: Record<string, string> = {
   NotSignedInRedirect: "You must be signed in to access that page.",
   PasswordResetRedirect: "Password reset successful! You can now log in.",
   LoggedOutRedirect: "You have been logged out successfully.",
+  AccountSuspended: "Your account has been suspended. You cannot log in."
 };
 
 export default function LoginForm() {

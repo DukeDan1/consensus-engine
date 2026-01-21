@@ -7,6 +7,7 @@ import AdminUserActions from "@/app/profile/AdminUserActions";
 import ProfileHeaderClient from "@/app/profile/ProfileHeaderClient";
 import ProfileBioCard from "@/app/profile/ProfileBioCard";
 import ProfileNotificationSettings from "@/app/profile/ProfileNotificationSettings";
+import ProfileSecuritySettings from "@/app/profile/ProfileSecuritySettings";
 
 const RECENT_LIMIT = 10;
 
@@ -206,6 +207,9 @@ export default async function UserProfilePage({ params }: any) {
           userId={data.user.id}
           initialPreferences={data.user.notificationPreferences}
         />
+      </div>
+      <div className="mb-4">
+        <ProfileSecuritySettings userId={data.user.id} />
       </div>
 
       <div className="row g-4">

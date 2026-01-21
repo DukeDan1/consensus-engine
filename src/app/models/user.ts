@@ -62,6 +62,7 @@ export interface IUser extends Document {
   isAdmin?: boolean;
   isSuspended?: boolean;
   suspendedAt?: Date;
+  sessionVersion?: number;
   trustScore?: number;
   trustTier?: 'low' | 'new' | 'standard' | 'trusted' | 'high';
   trustUpdatedAt?: Date;
@@ -143,6 +144,7 @@ const UserSchema = new Schema<IUser>(
     isAdmin: { type: Boolean, default: false, index: true },
     isSuspended: { type: Boolean, default: false, index: true },
     suspendedAt: { type: Date },
+    sessionVersion: { type: Number, default: 1 },
     trustTier: {
       type: String,
       enum: ['low', 'new', 'standard', 'trusted', 'high'],

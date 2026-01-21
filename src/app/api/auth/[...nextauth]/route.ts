@@ -21,6 +21,7 @@ declare module 'next-auth' {
       image?: string | null;
       avatarUrl?: string | null;
       isAdmin?: boolean;
+      sessionVersion?: number;
     };
   }
 }
@@ -30,6 +31,8 @@ declare module 'next-auth/jwt' {
     id?: string;
     isAdmin?: boolean;
     avatarUrl?: string | null;
+    sessionVersion?: number;
+    error?: string;
   }
 }
 
@@ -69,13 +72,16 @@ const handler = NextAuth({
           if (!valid) return null;
         }
 
-        if (user.isSuspended) return null;
+        if (user.isSuspended) {
+          throw new Error('AccountSuspended');
+        }
 
         return {
           id: user._id.toString(),
           email: user.email,
           name: user.name,
           avatarUrl: user.avatarUrl ?? null,
+          sessionVersion: typeof user.sessionVersion === 'number' ? user.sessionVersion : 1,
           isAdmin: !!user.isAdmin,
         };
       },
@@ -102,7 +108,7 @@ const handler = NextAuth({
       return true;
     },
 
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user, trigger, session }) {
       if (user?.id) token.id = user.id;
       if (typeof (user as { isAdmin?: boolean } | undefined)?.isAdmin === 'boolean') {
         token.isAdmin = (user as { isAdmin?: boolean }).isAdmin;
@@ -110,24 +116,50 @@ const handler = NextAuth({
       if (typeof (user as { avatarUrl?: string | null } | undefined)?.avatarUrl === 'string') {
         token.avatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
       }
-      
-      // On session update trigger, always refetch avatarUrl from database
-      const shouldRefetch = trigger === 'update' || typeof token.isAdmin !== 'boolean' || typeof token.avatarUrl === 'undefined';
-      
-      if (token.id && shouldRefetch) {
-        await dbConnect();
-        const dbUser = await User.findById(token.id).select({ isAdmin: 1, avatarUrl: 1 }).lean();
-        if (typeof token.isAdmin !== 'boolean') {
-          token.isAdmin = !!dbUser?.isAdmin;
-        }
-        if (typeof token.avatarUrl === 'undefined' || trigger === 'update') {
-          token.avatarUrl = dbUser?.avatarUrl ?? null;
-        }
+
+      if (typeof (user as { sessionVersion?: number } | undefined)?.sessionVersion === 'number') {
+        token.sessionVersion = (user as { sessionVersion?: number }).sessionVersion;
       }
+
+      const sessionOverride = trigger === 'update'
+        ? (typeof (session as any)?.user?.sessionVersion === 'number'
+          ? (session as any).user.sessionVersion
+          : (typeof (session as any)?.sessionVersion === 'number' ? (session as any).sessionVersion : undefined))
+        : undefined;
+
+      if (typeof sessionOverride === 'number') {
+        token.sessionVersion = sessionOverride;
+      }
+
+      if (!token.id) return token;
+
+      await dbConnect();
+      const dbUser = await User.findById(token.id)
+        .select({ isAdmin: 1, avatarUrl: 1, sessionVersion: 1, isSuspended: 1 })
+        .lean();
+
+      if (!dbUser || dbUser.isSuspended) {
+        token.error = 'ACCOUNT_SUSPENDED';
+        return token;
+      }
+
+      const dbSessionVersion = typeof dbUser.sessionVersion === 'number' ? dbUser.sessionVersion : 1;
+      const tokenSessionVersion = typeof token.sessionVersion === 'number' ? token.sessionVersion : dbSessionVersion;
+      if (dbSessionVersion !== tokenSessionVersion) {
+        token.error = 'SESSION_REVOKED';
+        return token;
+      }
+
+      token.sessionVersion = dbSessionVersion;
+      token.isAdmin = !!dbUser.isAdmin;
+      token.avatarUrl = dbUser.avatarUrl ?? null;
       return token;
     },
 
     async session({ session, token }) {
+      if (token?.error) {
+        return null as any;
+      }
       if (!session.user) {
         session.user = {};
       }
@@ -135,6 +167,7 @@ const handler = NextAuth({
       if (token?.id) session.user.id = typeof token.id === 'string' ? token.id : String(token.id);
       session.user.isAdmin = typeof token.isAdmin === 'boolean' ? token.isAdmin : undefined;
       session.user.avatarUrl = typeof token.avatarUrl === 'string' ? token.avatarUrl : null;
+      session.user.sessionVersion = typeof token.sessionVersion === 'number' ? token.sessionVersion : undefined;
       
       const avatarUrl = session.user.avatarUrl;
       if (avatarUrl) {
