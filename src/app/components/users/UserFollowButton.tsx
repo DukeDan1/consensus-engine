@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 type Props = {
   targetUserId: string;
   initialFollowing?: boolean;
-  onFollowChange?: (following: boolean) => void;
+  onFollowChange?: (_following: boolean) => void;
   className?: string;
   size?: "sm" | "md";
 };

@@ -323,7 +323,7 @@ describe('POST /api/argument', () => {
       ontologyCategories: expect.any(Array),
       visibility: expect.objectContaining({ status: expect.any(String) })
     }));
-    expect(mockTrackBackgroundTask).toHaveBeenCalledTimes(1);
+    expect(mockTrackBackgroundTask).toHaveBeenCalledTimes(2);
     expect(json).toMatchObject({
       id: 'arg1',
       side: 'for',

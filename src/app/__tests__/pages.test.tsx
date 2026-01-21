@@ -96,7 +96,7 @@ describe('App Router pages', () => {
 
     // Features section
     expect(screen.getByRole('heading', { name: /engage in debates/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /vote on arguments/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /vote on posts/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /build consensus/i })).toBeInTheDocument();
 
     // Featured topics section

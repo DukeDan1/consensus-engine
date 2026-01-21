@@ -338,7 +338,7 @@ export async function GET(
           if (sub) {
             return { isSubscribed: !sub.muted };
           }
-          const createdByIdValue = createdById || createdBy?._id?.toString?.() ?? "";
+          const createdByIdValue = createdById || (createdBy?._id?.toString?.() ?? "");
           const hasCommented = commentList.some((comment) => {
             const commenterId = comment?.createdBy?._id?.toString?.() ?? "";
             return commenterId && commenterId === viewerId;

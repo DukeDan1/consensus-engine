@@ -18,6 +18,9 @@ import { buildBaseUrl } from "@/app/lib/commonFunctions";
 import { NotificationSubscription } from "@/app/models/notificationSubscription";
 import { Notification } from "@/app/models/notification";
 import { UserFollow } from "@/app/models/userFollow";
+import PostApprovedEmail from "@/app/emails/templates/PostApprovedEmail";
+import { renderEmail } from "@/app/emails/renderEmail";
+import { sendNotificationEmails } from "@/app/services/notificationEmailService";
 
 type Body = {
     topicId: string;
@@ -73,7 +76,12 @@ export async function POST(req: Request) {
             evidence: safeEvidence,
         });
 
-        const visibility = moderationToVisibility({ moderation, userTrustTier: user.trustTier, contentType: "argument" });
+        const visibility = moderationToVisibility({
+            moderation,
+            userTrustTier: user.trustTier,
+            contentType: "argument",
+            evidenceCount: safeEvidence.length,
+        });
 
         if (visibility.status === "blocked") {
             if (moderation.recommendedTrustDelta) {
@@ -129,31 +137,91 @@ export async function POST(req: Request) {
         const notificationTask = (async () => {
             try {
                 if (visibility.status !== "visible") return;
-                const followerDocs = await UserFollow.find({ targetUserId: user._id })
-                    .select({ followerId: 1 })
-                    .lean();
-                const actorId = user._id?.toString?.() ?? "";
-                const followerIds = followerDocs
-                    .map((doc) => doc.followerId?.toString?.() ?? "")
-                    .filter((id) => id && id !== actorId);
-                if (!followerIds.length) return;
+
+                const [topicSubscriptions, followerDocs] = await Promise.all([
+                    NotificationSubscription.find({ targetType: "topic", targetId: topicObjId })
+                        .select({ userId: 1, muted: 1 })
+                        .lean(),
+                    UserFollow.find({ targetUserId: user._id }).select({ followerId: 1 }).lean(),
+                ]);
 
                 const authorName = user.name?.trim() || user.nickname?.trim() || "Someone";
                 const topicTitle = (topic?.title || "").toString().trim() || "a topic";
                 const argumentSnippet = trimmed.slice(0, 180);
+                const actorId = user._id?.toString?.() ?? "";
 
-                const payload = followerIds.map((recipientId) => ({
+                const topicRecipients = new Set<string>();
+                const userRecipients = new Set<string>();
+
+                topicSubscriptions.forEach((sub) => {
+                    const id = sub.userId?.toString?.() ?? "";
+                    if (!id || sub.muted) return;
+                    topicRecipients.add(id);
+                });
+                followerDocs.forEach((doc) => {
+                    const id = doc.followerId?.toString?.() ?? "";
+                    if (id) userRecipients.add(id);
+                });
+
+                topicRecipients.delete(actorId);
+                userRecipients.delete(actorId);
+
+                const reasonMap = new Map<string, "topic" | "user">();
+                const addRecipients = (ids: Set<string>, reason: "topic" | "user") => {
+                    ids.forEach((id) => {
+                        if (!reasonMap.has(id)) {
+                            reasonMap.set(id, reason);
+                        }
+                    });
+                };
+                addRecipients(topicRecipients, "topic");
+                addRecipients(userRecipients, "user");
+
+                if (!reasonMap.size) return;
+
+                const topicMessage = `${authorName} posted in ${topicTitle}`;
+                const userMessage = `${authorName} posted a new post`;
+                const payload = Array.from(reasonMap.entries()).map(([recipientId, reason]) => ({
                     recipient: recipientId,
                     actor: user._id,
-                    type: "user_post",
+                    type: reason === "topic" ? "topic_activity" : "user_activity",
                     topic: topicObjId,
                     argument: created._id,
-                    message: `${authorName} posted in ${topicTitle}`,
+                    message: reason === "topic" ? topicMessage : userMessage,
                     topicTitle,
                     argumentSnippet,
                 }));
 
                 await Notification.insertMany(payload, { ordered: false });
+
+                const baseUrl = buildBaseUrl(req.headers);
+                const argumentUrl = `${baseUrl}/topics/${topicObjId.toString()}#argument-${created._id.toString()}`;
+                const topicRecipientIds = Array.from(reasonMap.entries())
+                    .filter(([, reason]) => reason === "topic")
+                    .map(([id]) => id);
+                const userRecipientIds = Array.from(reasonMap.entries())
+                    .filter(([, reason]) => reason === "user")
+                    .map(([id]) => id);
+
+                const topicSent = await sendNotificationEmails({
+                        recipientIds: topicRecipientIds,
+                        preferenceKey: "emailTopics",
+                        subject: "New post in a topic you follow",
+                        message: topicMessage,
+                        actionUrl: argumentUrl,
+                        actionLabel: "View post",
+                        preview: topicMessage,
+                    });
+                const remainingUserRecipients = userRecipientIds.filter((id) => !topicSent.includes(id));
+                await sendNotificationEmails({
+                        recipientIds: remainingUserRecipients,
+                        preferenceKey: "emailUsers",
+                        subject: "New post from someone you follow",
+                        message: userMessage,
+                        actionUrl: argumentUrl,
+                        actionLabel: "View post",
+                        preview: userMessage,
+                    });
             } catch (err) {
                 console.error("Follower notification dispatch failed", err);
             }
@@ -324,9 +392,12 @@ export async function PATCH(req: Request) {
                 const argumentUrl = `${baseUrl}/topics/${topicId}#argument-${targetId}`;
                 const name = author.name?.trim() || "there";
                 const subject = "Your post has been approved";
-                const html = `<p>Hi ${name},</p><p>Your post has been approved and is now visible.</p><p><a href="${argumentUrl}">View your post</a></p><p>Thanks,<br/>The Consensus Engine Team</p>`;
-                const text = `Hi ${name},\n\nYour post has been approved and is now visible.\n\nView your post: ${argumentUrl}\n\nThanks,\nThe Consensus Engine Team`;
-                sendEmail(author.email, subject, html, text);
+                const { html, text } = await renderEmail(PostApprovedEmail({
+                    name,
+                    postUrl: argumentUrl,
+                    label: "post",
+                }));
+                await sendEmail(author.email, subject, html, text);
             }
         } catch (err) {
             console.error("Failed to send post approval email", err);

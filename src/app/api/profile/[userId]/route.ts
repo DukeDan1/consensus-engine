@@ -24,6 +24,16 @@ type UserLean = {
     email?: string | null;
     isSuspended?: boolean;
     createdAt?: Date | null;
+    preferences?: {
+        notifications?: {
+            email?: boolean;
+            sms?: boolean;
+            push?: boolean;
+            emailTopics?: boolean;
+            emailArguments?: boolean;
+            emailUsers?: boolean;
+        };
+    };
 };
 
 type ProfileResponse = {
@@ -44,6 +54,14 @@ type ProfileResponse = {
             upvotes: number;
             followers: number;
         };
+        notificationPreferences?: {
+            email?: boolean;
+            sms?: boolean;
+            push?: boolean;
+            emailTopics?: boolean;
+            emailArguments?: boolean;
+            emailUsers?: boolean;
+        } | null;
     };
     recentArguments: Array<{
         id: string;
@@ -107,7 +125,17 @@ export async function GET(request: NextRequest, ctx: any) {
     await dbConnect();
 
     const userDoc = (await User.findById(userId)
-        .select({ name: 1, nickname: 1, bio: 1, avatarUrl: 1, avatarThumbUrl: 1, email: 1, createdAt: 1, isSuspended: 1 })
+        .select({
+            name: 1,
+            nickname: 1,
+            bio: 1,
+            avatarUrl: 1,
+            avatarThumbUrl: 1,
+            email: 1,
+            createdAt: 1,
+            isSuspended: 1,
+            "preferences.notifications": 1,
+        })
         .lean()
         .exec()) as UserLean | null;
 
@@ -123,6 +151,7 @@ export async function GET(request: NextRequest, ctx: any) {
 
     const viewerId = viewerUser?._id?.toString?.();
     const canViewEmail = !!viewerUser?.isAdmin || Boolean(viewerId && viewerId === userDoc._id.toString());
+    const canViewPreferences = Boolean(viewerId && viewerId === userDoc._id.toString());
 
     let avatarUrl = userDoc.avatarUrl ?? null;
     if (avatarUrl) {
@@ -236,6 +265,9 @@ export async function GET(request: NextRequest, ctx: any) {
                 upvotes: upvoteCount,
                 followers: followerCount,
             },
+            notificationPreferences: canViewPreferences
+                ? (userDoc.preferences?.notifications ?? null)
+                : null,
         },
         recentArguments,
         recentComments,

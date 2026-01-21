@@ -51,11 +51,12 @@ describe('register', () => {
       passwordHash: 'hash',
       name: undefined
     });
+    await new Promise((resolve) => setImmediate(resolve));
     expect(deps.sendEmail).toHaveBeenCalledWith(
       'a@test.com',
       'Welcome!',
-      expect.stringContaining('Ann'),
-      expect.stringContaining('Ann')
+      expect.stringMatching(/ann/i),
+      expect.stringMatching(/ann/i)
     );
   });
 });

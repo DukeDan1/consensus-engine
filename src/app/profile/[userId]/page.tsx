@@ -6,6 +6,7 @@ import ProfileHoverCard from "@/app/profile/ProfileHoverCard";
 import AdminUserActions from "@/app/profile/AdminUserActions";
 import ProfileHeaderClient from "@/app/profile/ProfileHeaderClient";
 import ProfileBioCard from "@/app/profile/ProfileBioCard";
+import ProfileNotificationSettings from "@/app/profile/ProfileNotificationSettings";
 
 const RECENT_LIMIT = 10;
 
@@ -27,6 +28,14 @@ type ProfileApiResponse = {
       upvotes: number;
       followers: number;
     };
+    notificationPreferences?: {
+      email?: boolean;
+      sms?: boolean;
+      push?: boolean;
+      emailTopics?: boolean;
+      emailArguments?: boolean;
+      emailUsers?: boolean;
+    } | null;
   };
   recentArguments: Array<{
     id: string;
@@ -191,6 +200,12 @@ export default async function UserProfilePage({ params }: any) {
       </div>
       <div className="mb-4">
         <ProfileBioCard userId={data.user.id} initialBio={data.user?.bio ?? null} />
+      </div>
+      <div className="mb-4">
+        <ProfileNotificationSettings
+          userId={data.user.id}
+          initialPreferences={data.user.notificationPreferences}
+        />
       </div>
 
       <div className="row g-4">
