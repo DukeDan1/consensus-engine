@@ -5,6 +5,12 @@ type UserSummary = {
   avatarUrl?: string | null;
   avatarThumbUrl?: string | null;
   createdAt?: string | null;
+  stats?: {
+    posts: number;
+    comments: number;
+    upvotes: number;
+    followers: number;
+  };
 };
 
 export type TopicApiResponse = {

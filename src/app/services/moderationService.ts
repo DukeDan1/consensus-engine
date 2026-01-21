@@ -36,28 +36,34 @@ function clamp0to100(value: unknown, fallback: number): number {
   return Math.max(0, Math.min(100, n));
 }
 
-function heuristicModeration(text: string, contentType?: ModerationContentType): ModerationResult {
+function heuristicModeration(
+  text: string,
+  contentType?: ModerationContentType,
+  evidenceCount = 0
+): ModerationResult {
   const urlCount = (text.match(/https?:\/\//g) || []).length;
   const hasRepeated = /(.)\1\1\1\1/.test(text); // 5x repeated chars
   const isVeryShort = text.trim().length < 10;
   const isVeryLong = text.length > 9000;
 
   const relaxedComments = contentType === 'comment';
+  const urlSignalThreshold = relaxedComments ? (evidenceCount > 0 ? 4 : 3) : (evidenceCount > 0 ? 3 : 2);
 
   const spamSignals = [
-    urlCount >= 2,
+    urlCount >= urlSignalThreshold,
     hasRepeated,
-    !relaxedComments && isVeryShort,
+    !relaxedComments && isVeryShort && evidenceCount === 0,
     /buy now|free money|work from home|crypto/i.test(text),
   ].filter(Boolean).length;
-  const spamLikelihood = Math.min(100, spamSignals * 25);
+  const spamLikelihoodRaw = Math.min(100, spamSignals * 25);
+  const spamLikelihood = Math.max(0, spamLikelihoodRaw - (evidenceCount > 0 ? 10 : 0));
 
-  const decision: ModerationDecision = spamLikelihood >= 60 ? 'review' : 'allow';
+  const decision: ModerationDecision = spamLikelihood >= (relaxedComments ? 70 : 60) ? 'review' : 'allow';
 
   return {
     decision,
-    severity: spamLikelihood >= 60 ? 'medium' : 'low',
-    categories: spamLikelihood >= 60 ? ['spam'] : [],
+    severity: spamLikelihood >= (relaxedComments ? 70 : 60) ? 'medium' : 'low',
+    categories: spamLikelihood >= (relaxedComments ? 70 : 60) ? ['spam'] : [],
     spamLikelihood,
     trollingLikelihood: 0,
     offTopicLikelihood: 0,
@@ -125,7 +131,7 @@ export async function moderateUserGeneratedText(params: {
 
   // If OpenAI key isn't configured, fall back to lightweight heuristics.
   if (!client) {
-    return heuristicModeration(contentWithEvidence, contentType);
+    return heuristicModeration(trimmed, contentType, evidenceUrls.length);
   }
 
   const score = normaliseTrustScore(userTrustScore);
@@ -150,6 +156,7 @@ export async function moderateUserGeneratedText(params: {
               ? ' Comments can be short and conversational; do not require new evidence or high verbosity. Only flag spam, obvious abuse/harassment, or clearly off-topic replies.'
               : ' For arguments and topics, prioritize substance and safety.'
             ) +
+            ' Evidence links/attachments are common and not inherently spammy. Do not penalize for one or two links or attached evidence.' +
             (topicTitle ? ` Topic title context: "${topicTitle}".` : '') +
             (strict ? ' The author is low-trust; be stricter on spam/trolling/low-quality.' : ''),
         },
@@ -199,7 +206,7 @@ export async function moderateUserGeneratedText(params: {
 
     const functionCallItem = response.output.find((item) => item.type === 'function_call');
     if (!functionCallItem || !('arguments' in functionCallItem)) {
-      return heuristicModeration(contentWithEvidence, contentType);
+      return heuristicModeration(trimmed, contentType, evidenceUrls.length);
     }
 
     const parsed = JSON.parse((functionCallItem as any).arguments);
@@ -218,10 +225,25 @@ export async function moderateUserGeneratedText(params: {
       model,
     };
 
+    if (evidenceUrls.length) {
+      result.spamLikelihood = clamp0to100(result.spamLikelihood - 10, result.spamLikelihood);
+      result.offTopicLikelihood = clamp0to100(result.offTopicLikelihood - 5, result.offTopicLikelihood);
+      result.quality = clamp0to100(result.quality + 5, result.quality);
+      if (
+        result.decision === 'review' &&
+        result.severity !== 'high' &&
+        result.illegalOrHarmfulLikelihood < 40 &&
+        result.spamLikelihood < (contentType === 'comment' ? 75 : 70)
+      ) {
+        result.decision = 'allow';
+        result.shortReason = 'OK';
+      }
+    }
+
     return result;
   } catch (err) {
     console.error('Moderation call failed; falling back to heuristic moderation.', err);
-    return heuristicModeration(trimmed, contentType);
+    return heuristicModeration(trimmed, contentType, evidenceUrls.length);
   }
 }
 
@@ -229,12 +251,14 @@ export function moderationToVisibility(params: {
   moderation: ModerationResult;
   userTrustTier?: TrustTier | string;
   contentType?: ModerationContentType;
+  evidenceCount?: number;
 }): {
   status: 'visible' | 'hidden' | 'needs_review' | 'blocked';
   rankPenalty: number;
 } {
-  const { moderation, userTrustTier, contentType } = params;
+  const { moderation, userTrustTier, contentType, evidenceCount = 0 } = params;
   const relaxedComments = contentType === 'comment';
+  const evidenceBoost = evidenceCount > 0 ? 10 : 0;
 
   if (moderation.decision === 'block') {
     return { status: 'blocked', rankPenalty: -1000 };
@@ -243,23 +267,23 @@ export function moderationToVisibility(params: {
   // Strict behavior for low-trust: default to hidden on suspicious signals.
   const strict = shouldApplyStrictPostingRules(userTrustTier);
   const strictSuspicious = strict && (
-    moderation.spamLikelihood >= 40 ||
-    moderation.trollingLikelihood >= 45 ||
+    moderation.spamLikelihood >= 40 + evidenceBoost ||
+    moderation.trollingLikelihood >= 45 + evidenceBoost ||
     moderation.illegalOrHarmfulLikelihood >= 30 ||
-    moderation.quality <= 35 ||
-    moderation.offTopicLikelihood >= 55
+    moderation.quality <= (relaxedComments ? 20 : 35) ||
+    moderation.offTopicLikelihood >= 55 + evidenceBoost
   );
 
   const suspicious = strictSuspicious || (relaxedComments
-    ? (moderation.spamLikelihood >= 70 ||
-      moderation.trollingLikelihood >= 70 ||
-      moderation.illegalOrHarmfulLikelihood >= 40 ||
-      moderation.offTopicLikelihood >= 80)
-    : (moderation.spamLikelihood >= 50 ||
-      moderation.trollingLikelihood >= 55 ||
+    ? (moderation.spamLikelihood >= 80 + evidenceBoost ||
+      moderation.trollingLikelihood >= 80 + evidenceBoost ||
+      moderation.illegalOrHarmfulLikelihood >= 45 ||
+      moderation.offTopicLikelihood >= 90 + evidenceBoost)
+    : (moderation.spamLikelihood >= 50 + evidenceBoost ||
+      moderation.trollingLikelihood >= 55 + evidenceBoost ||
       moderation.illegalOrHarmfulLikelihood >= 40 ||
       moderation.quality <= 25 ||
-      moderation.offTopicLikelihood >= 65));
+      moderation.offTopicLikelihood >= 65 + evidenceBoost));
 
   if (moderation.decision === 'review') {
     return { status: 'hidden', rankPenalty: -25 };
@@ -267,8 +291,12 @@ export function moderationToVisibility(params: {
 
   // Allowed but a bit sketchy: visible, but demote.
   const borderline = relaxedComments
-    ? (moderation.spamLikelihood >= 50 || moderation.trollingLikelihood >= 55 || moderation.offTopicLikelihood >= 70)
-    : (moderation.spamLikelihood >= 35 || moderation.trollingLikelihood >= 40 || moderation.quality < 40);
+    ? (moderation.spamLikelihood >= 70 + evidenceBoost ||
+      moderation.trollingLikelihood >= 70 + evidenceBoost ||
+      moderation.offTopicLikelihood >= 85 + evidenceBoost)
+    : (moderation.spamLikelihood >= 35 + evidenceBoost ||
+      moderation.trollingLikelihood >= 40 + evidenceBoost ||
+      moderation.quality < 40);
 
   if (suspicious) {
     return { status: 'hidden', rankPenalty: -25 };

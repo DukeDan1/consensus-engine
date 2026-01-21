@@ -440,11 +440,11 @@ export default function ModerationQueue({
 
       <section>
         <div className="d-flex align-items-center justify-content-between mb-2">
-          <h2 className="h5 mb-0">Arguments held for review</h2>
+          <h2 className="h5 mb-0">Posts held for review</h2>
           <span className="badge text-bg-secondary">{argumentsList.length}</span>
         </div>
         {argumentsList.length === 0 ? (
-          <div className="alert alert-light">No arguments awaiting review.</div>
+          <div className="alert alert-light">No posts awaiting review.</div>
         ) : (
           <div className="d-flex flex-column gap-3">
             {argumentsList.map((argument) => {
@@ -461,7 +461,7 @@ export default function ModerationQueue({
                     <div className="d-flex flex-wrap justify-content-between gap-2">
                       <div>
                         <Link href={topicHref} className="h6 text-decoration-none">
-                          {argument.topic?.title || "View argument"}
+                          {argument.topic?.title || "View post"}
                         </Link>
                         <div className="text-muted small">
                           {renderUserLink(argument.createdBy)} - {formatTime(argument.createdAt)}

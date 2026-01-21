@@ -17,6 +17,12 @@ type UserIdentityProps = {
   fallbackLabel?: string;
   showTooltip?: boolean;
   tooltipPlacement?: "top" | "bottom" | "left" | "right";
+  stats?: {
+    posts: number;
+    comments: number;
+    upvotes: number;
+    followers: number;
+  };
 };
 
 function getDisplayName(name?: string | null, nickname?: string | null, fallback = "Member") {
@@ -63,6 +69,7 @@ export default function UserIdentity({
   fallbackLabel = "Member",
   showTooltip = true,
   tooltipPlacement = "top",
+  stats,
 }: UserIdentityProps) {
   const tooltipRef = useRef<HTMLSpanElement | null>(null);
   const tooltipInstance = useRef<any | null>(null);
@@ -84,16 +91,27 @@ export default function UserIdentity({
       ? `<img src="${safeAvatar}" alt="${safeName}" class="user-tooltip-avatar" />`
       : `<div class="user-tooltip-avatar user-tooltip-initials">${safeInitials}</div>`;
     const metaMarkup = joinedLabel ? `<div class="user-tooltip-meta">${joinedLabel}</div>` : "";
+    const statsMarkup = stats
+      ? `
+        <div class="user-tooltip-stats">
+          <span><i class="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i>${stats.posts}</span>
+          <span><i class="fa-regular fa-comments me-1" aria-hidden="true"></i>${stats.comments}</span>
+          <span><i class="fa-solid fa-thumbs-up me-1" aria-hidden="true"></i>${stats.upvotes}</span>
+          <span><i class="fa-solid fa-user-group me-1" aria-hidden="true"></i>${stats.followers}</span>
+        </div>
+      `.trim()
+      : "";
     return `
       <div class="user-tooltip-card">
         ${avatarMarkup}
         <div>
           <div class="user-tooltip-name">${safeName}</div>
           ${metaMarkup}
+          ${statsMarkup}
         </div>
       </div>
     `.trim();
-  }, [displayName, initials, memberSince, shouldShowTooltip, resolvedAvatarUrl]);
+  }, [displayName, initials, memberSince, shouldShowTooltip, resolvedAvatarUrl, stats]);
 
   useEffect(() => {
     let active = true;

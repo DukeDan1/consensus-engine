@@ -95,6 +95,20 @@ body {
   color: #d1d5db;
 }
 
+.user-tooltip-stats {
+  margin-top: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  color: #e5e7eb;
+}
+
+.user-tooltip-stats span {
+  display: inline-flex;
+  align-items: center;
+}
+
 .notifications-backdrop {
   position: fixed;
   inset: 0;

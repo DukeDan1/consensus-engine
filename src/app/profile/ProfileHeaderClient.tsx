@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import UserAvatar from "@/app/components/users/UserAvatar";
 import ProfileAvatarUploader from "@/app/profile/ProfileAvatarUploader";
+import UserFollowButton from "@/app/components/users/UserFollowButton";
 
 type Props = {
   userId: string;
@@ -14,6 +15,12 @@ type Props = {
   email?: string | null;
   canViewEmail?: boolean;
   isSuspended?: boolean;
+  stats?: {
+    posts: number;
+    comments: number;
+    upvotes: number;
+    followers: number;
+  };
 };
 
 export default function ProfileHeaderClient({
@@ -25,6 +32,7 @@ export default function ProfileHeaderClient({
   email,
   canViewEmail = false,
   isSuspended = false,
+  stats,
 }: Props) {
   const { data: session } = useSession();
   const isOwner = !!session?.user?.id && session.user.id === userId;
@@ -32,6 +40,11 @@ export default function ProfileHeaderClient({
   const canManageAvatar = isOwner || isAdmin;
   const [showEmail, setShowEmail] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(avatarUrl ?? avatarThumbUrl ?? null);
+  const [followerCount, setFollowerCount] = useState(stats?.followers ?? 0);
+
+  useEffect(() => {
+    setFollowerCount(stats?.followers ?? 0);
+  }, [stats?.followers]);
 
   useEffect(() => {
     setAvatarPreview(avatarUrl ?? avatarThumbUrl ?? null);
@@ -76,6 +89,22 @@ export default function ProfileHeaderClient({
           {isSuspended && <span className="badge text-bg-danger">SUSPENDED</span>}
         </div>
         {memberSince && <p className="text-muted small mb-2">Member since {memberSince}</p>}
+        {stats && (
+          <div className="d-flex flex-wrap justify-content-center justify-content-md-start gap-3 small text-muted mb-2">
+            <span><i className="fa-solid fa-pen-to-square me-1" aria-hidden="true"></i>{stats.posts} posts</span>
+            <span><i className="fa-regular fa-comments me-1" aria-hidden="true"></i>{stats.comments} comments</span>
+            <span><i className="fa-solid fa-thumbs-up me-1" aria-hidden="true"></i>{stats.upvotes} upvotes</span>
+            <span><i className="fa-solid fa-user-group me-1" aria-hidden="true"></i>{followerCount} followers</span>
+          </div>
+        )}
+        <div className="d-flex flex-wrap justify-content-center justify-content-md-start gap-2 mb-2">
+          <UserFollowButton
+            targetUserId={userId}
+            onFollowChange={(isFollowing) => {
+              setFollowerCount((prev) => Math.max(0, prev + (isFollowing ? 1 : -1)));
+            }}
+          />
+        </div>
         {canViewEmail && email && (
           <div className="d-flex flex-column gap-1">
             <button

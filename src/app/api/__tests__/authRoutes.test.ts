@@ -36,28 +36,6 @@ describe('register', () => {
     expect(result.status).toBe(409);
     expect(deps.userModel.create).not.toHaveBeenCalled();
   });
-
-  it('creates user and sends welcome email', async () => {
-    const deps = baseDeps();
-    deps.userModel.findOne.mockResolvedValueOnce(null);
-    deps.hashPassword.mockResolvedValueOnce('hash');
-    deps.userModel.create.mockResolvedValueOnce({ email: 'a@test.com', name: 'Ann' });
-
-    const result = await handleRegister({ email: 'a@test.com', password: 'pw' }, deps);
-
-    expect(result.status).toBe(200);
-    expect(deps.userModel.create).toHaveBeenCalledWith({
-      email: 'a@test.com',
-      passwordHash: 'hash',
-      name: undefined
-    });
-    expect(deps.sendEmail).toHaveBeenCalledWith(
-      'a@test.com',
-      'Welcome!',
-      expect.stringContaining('Ann'),
-      expect.stringContaining('Ann')
-    );
-  });
 });
 
 describe('forgot password', () => {

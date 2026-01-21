@@ -284,7 +284,12 @@ export async function POST(request: NextRequest) {
     topicTitle: title,
   });
 
-  const visibility = moderationToVisibility({ moderation, userTrustTier: creator.trustTier, contentType: "topic" });
+  const visibility = moderationToVisibility({
+    moderation,
+    userTrustTier: creator.trustTier,
+    contentType: "topic",
+    evidenceCount: 0,
+  });
 
   if (visibility.status === "blocked") {
     if (moderation.recommendedTrustDelta) {

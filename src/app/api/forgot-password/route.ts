@@ -3,6 +3,8 @@ import { sendEmail } from '@/app/services/emailService';
 import UserPasswordResetCodeModel from '@/app/models/userPasswordResetCode';
 import User from '@/app/models/user';
 import { dbConnect } from '@/app/lib/mongoose';
+import PasswordResetEmail from '@/app/emails/templates/PasswordResetEmail';
+import { renderEmail } from '@/app/emails/renderEmail';
 
 type ForgotPasswordDeps = {
   dbConnect: typeof dbConnect;
@@ -49,12 +51,11 @@ export async function handleForgotPassword(
   const serverUrl = process.env.NEXTJS_APP_BASE_URL || 'https://ce.dukedan.uk';
   const resetLink = `${serverUrl}/reset-password?token=${code.code}`;
 
-  await injectedDeps.sendEmail(
-    user.email,
-    'Password reset',
-    `<html><body><p>Hi ${user.name || 'User'},</p><p>Here's your password reset link:</p><p><a href="${resetLink}">Reset password</a></p><p>If you did not request this, please ignore this email.</p></body></html>`,
-    `Hi ${user.name || 'User'}, here's your password reset link: ${resetLink}\n\nIf you did not request this, please ignore this email.`
-  );
+  const { html, text } = await renderEmail(PasswordResetEmail({
+    name: user.name || 'User',
+    resetLink,
+  }));
+  await injectedDeps.sendEmail(user.email, 'Password reset', html, text);
 
   return { status: 200, body: { success: true } };
 }

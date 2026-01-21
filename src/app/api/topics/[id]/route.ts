@@ -9,6 +9,7 @@ import User from "@/app/models/user";
 import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
 import { getServerSession } from "next-auth";
 import { NotificationSubscription } from "@/app/models/notificationSubscription";
+import { UserFollow } from "@/app/models/userFollow";
 
 async function signEvidence(evidence: any[] = []) {
   return Promise.all(
@@ -34,7 +35,14 @@ async function signAvatarUrl(url?: string | null) {
   return getSignedReadUrlFromUrl(url).catch(() => url);
 }
 
-async function mapUserSummary(user: any) {
+type UserStats = {
+  posts: number;
+  comments: number;
+  upvotes: number;
+  followers: number;
+};
+
+async function mapUserSummary(user: any, stats?: UserStats) {
   if (!user) return undefined;
   const id = user?._id?.toString?.() ?? undefined;
   const avatarUrl = await signAvatarUrl(user?.avatarUrl ?? null);
@@ -46,6 +54,7 @@ async function mapUserSummary(user: any) {
     avatarUrl,
     avatarThumbUrl,
     createdAt: user?.createdAt ?? undefined,
+    stats,
   };
 }
 
@@ -149,6 +158,7 @@ export async function GET(
   // Fetch comments for each argument, ordering by relevancy (approx: newest first for now) or could extend with score if added later
   const argumentIds = argumentsList.map((a) => a._id);
   const commentsByArgument: Record<string, any[]> = {};
+  let commentDocs: any[] = [];
   if (argumentIds.length) {
     const commentFilters: Record<string, any> = canSeeModeration
       ? { argument: { $in: argumentIds } }
@@ -160,19 +170,89 @@ export async function GET(
     if (commentTextQuery) {
       commentFilters.body = { $regex: escapeRegex(commentTextQuery), $options: "i" };
     }
-    const comments = await Comment.find(commentFilters)
+    commentDocs = await Comment.find(commentFilters)
       .sort({ createdAt: -1 })
       .limit(500)
       .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt" })
       .lean();
-    for (const c of comments) {
+  }
+
+  const statsMap = new Map<string, UserStats>();
+  {
+    const userIdSet = new Set<string>();
+    const addUserId = (value: any) => {
+      const id = value?._id?.toString?.() ?? value?.toString?.() ?? "";
+      if (id) userIdSet.add(id);
+    };
+    addUserId(topic.createdBy);
+    argumentsList.forEach((arg) => addUserId(arg.createdBy));
+    commentDocs.forEach((comment) => addUserId(comment.createdBy));
+
+    const userIds = Array.from(userIdSet);
+    if (userIds.length) {
+      const objectIds = userIds.map((id) => new mongoose.Types.ObjectId(id));
+      const [argumentStats, commentStats, followerStats] = await Promise.all([
+        Argument.aggregate([
+          { $match: { createdBy: { $in: objectIds }, isRemoved: false } },
+          { $group: { _id: "$createdBy", count: { $sum: 1 }, upvotes: { $sum: { $ifNull: ["$upvoteCount", 0] } } } },
+        ]),
+        Comment.aggregate([
+          { $match: { createdBy: { $in: objectIds }, isRemoved: false } },
+          { $group: { _id: "$createdBy", count: { $sum: 1 }, upvotes: { $sum: { $ifNull: ["$upvoteCount", 0] } } } },
+        ]),
+        UserFollow.aggregate([
+          { $match: { targetUserId: { $in: objectIds } } },
+          { $group: { _id: "$targetUserId", count: { $sum: 1 } } },
+        ]),
+      ]);
+
+      const statsById = new Map<string, UserStats>();
+      userIds.forEach((id) => {
+        statsById.set(id, { posts: 0, comments: 0, upvotes: 0, followers: 0 });
+      });
+
+      argumentStats.forEach((row: any) => {
+        const id = row?._id?.toString?.() ?? "";
+        if (!id) return;
+        const existing = statsById.get(id) ?? { posts: 0, comments: 0, upvotes: 0, followers: 0 };
+        existing.posts = row.count ?? existing.posts;
+        existing.upvotes += row.upvotes ?? 0;
+        statsById.set(id, existing);
+      });
+
+      commentStats.forEach((row: any) => {
+        const id = row?._id?.toString?.() ?? "";
+        if (!id) return;
+        const existing = statsById.get(id) ?? { posts: 0, comments: 0, upvotes: 0, followers: 0 };
+        existing.comments = row.count ?? existing.comments;
+        existing.upvotes += row.upvotes ?? 0;
+        statsById.set(id, existing);
+      });
+
+      followerStats.forEach((row: any) => {
+        const id = row?._id?.toString?.() ?? "";
+        if (!id) return;
+        const existing = statsById.get(id) ?? { posts: 0, comments: 0, upvotes: 0, followers: 0 };
+        existing.followers = row.count ?? existing.followers;
+        statsById.set(id, existing);
+      });
+
+      statsById.forEach((value, key) => {
+        statsMap.set(key, value);
+      });
+    }
+  }
+
+  if (commentDocs.length) {
+    for (const c of commentDocs) {
       const key = c.argument.toString();
       if (
         commentCategoryFilter.length === 0 ||
         (Array.isArray(c.ontologyCategories) && c.ontologyCategories.some((cat: any) => commentCategoryFilter.includes(cat?.id)))
       ) {
         const signedEvidence = await signEvidence(c.evidence ?? []);
-        const createdBy = await mapUserSummary(c.createdBy);
+        const commenterId = c.createdBy?._id?.toString?.() ?? "";
+        const createdBy = await mapUserSummary(c.createdBy, statsMap.get(commenterId));
         (commentsByArgument[key] = commentsByArgument[key] || []).push({
           id: c._id,
           body: c.body,
@@ -221,7 +301,10 @@ export async function GET(
       id: topic._id,
       title: topic.title,
       description: topic.description,
-      createdBy: await mapUserSummary(topic.createdBy),
+      createdBy: await mapUserSummary(
+        topic.createdBy,
+        statsMap.get(topic.createdBy?._id?.toString?.() ?? "")
+      ),
       ontologyCategories: topic.ontologyCategories ?? [],
       isActive: topic.isActive,
       argumentCounts: topic.argumentCounts,
@@ -246,7 +329,8 @@ export async function GET(
         const normalisedSide = rawSide === "pro" ? "for" : (rawSide === "con" ? "against" : rawSide);
         const commentList = commentsByArgument[a._id.toString()] || [];
         const signedEvidence = await signEvidence(a.evidence ?? []);
-        const createdBy = await mapUserSummary(a.createdBy);
+        const createdById = a.createdBy?._id?.toString?.() ?? "";
+        const createdBy = await mapUserSummary(a.createdBy, statsMap.get(createdById));
         const argumentSubscription = (() => {
           if (!viewerId) return undefined;
           const key = `argument:${a._id.toString()}`;
@@ -254,12 +338,12 @@ export async function GET(
           if (sub) {
             return { isSubscribed: !sub.muted };
           }
-          const createdById = createdBy?._id?.toString?.() ?? "";
+          const createdByIdValue = createdById || (createdBy?._id?.toString?.() ?? "");
           const hasCommented = commentList.some((comment) => {
             const commenterId = comment?.createdBy?._id?.toString?.() ?? "";
             return commenterId && commenterId === viewerId;
           });
-          const isAuthor = createdById && createdById === viewerId;
+          const isAuthor = createdByIdValue && createdByIdValue === viewerId;
           return { isSubscribed: isAuthor || hasCommented };
         })();
         return {

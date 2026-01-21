@@ -16,6 +16,10 @@ import { buildBaseUrl } from "@/app/lib/commonFunctions";
 import { Notification } from "@/app/models/notification";
 import { NotificationSubscription } from "@/app/models/notificationSubscription";
 import { Topic } from "@/app/models/topic";
+import PostApprovedEmail from "@/app/emails/templates/PostApprovedEmail";
+import { renderEmail } from "@/app/emails/renderEmail";
+import { UserFollow } from "@/app/models/userFollow";
+import { sendNotificationEmails } from "@/app/services/notificationEmailService";
 
 type Body = {
     argumentId: string;
@@ -71,7 +75,12 @@ export async function POST(req: Request) {
             evidence: safeEvidence,
         });
 
-        const visibility = moderationToVisibility({ moderation, userTrustTier: user.trustTier, contentType: "comment" });
+        const visibility = moderationToVisibility({
+            moderation,
+            userTrustTier: user.trustTier,
+            contentType: "comment",
+            evidenceCount: safeEvidence.length,
+        });
 
         if (visibility.status === "blocked") {
             if (moderation.recommendedTrustDelta) {
@@ -150,7 +159,7 @@ export async function POST(req: Request) {
                 const commentSnippet = trimmed.slice(0, 180);
                 const commenterName = user.name?.trim() || user.nickname?.trim() || "Someone";
 
-                const [commenterIds, argumentSubscriptions, topicSubscriptions] = await Promise.all([
+                const [commenterIds, argumentSubscriptions, topicSubscriptions, followerDocs] = await Promise.all([
                     Comment.distinct("createdBy", { argument: argObjId }),
                     NotificationSubscription.find({ targetType: "argument", targetId: argObjId })
                         .select({ userId: 1, muted: 1 })
@@ -158,51 +167,118 @@ export async function POST(req: Request) {
                     NotificationSubscription.find({ targetType: "topic", targetId: parentArgument.topic })
                         .select({ userId: 1, muted: 1 })
                         .lean(),
+                    UserFollow.find({ targetUserId: user._id }).select({ followerId: 1 }).lean(),
                 ]);
 
-                const recipientIds = new Set<string>();
-                const mutedIds = new Set<string>();
+                const argumentRecipients = new Set<string>();
+                const topicRecipients = new Set<string>();
+                const userRecipients = new Set<string>();
+                const mutedArgumentIds = new Set<string>();
+                const mutedTopicIds = new Set<string>();
 
-                const addRecipient = (value: any) => {
+                commenterIds.forEach((value: any) => {
                     const id = value?.toString?.() ?? "";
-                    if (id) recipientIds.add(id);
-                };
-                const addMuted = (value: any) => {
-                    const id = value?.toString?.() ?? "";
-                    if (id) mutedIds.add(id);
-                };
+                    if (id) argumentRecipients.add(id);
+                });
 
-                commenterIds.forEach(addRecipient);
-                addRecipient(parentArgument.createdBy);
                 argumentSubscriptions.forEach((sub) => {
-                    if (sub.muted) addMuted(sub.userId);
-                    else addRecipient(sub.userId);
+                    const id = sub.userId?.toString?.() ?? "";
+                    if (!id) return;
+                    if (sub.muted) mutedArgumentIds.add(id);
+                    else argumentRecipients.add(id);
                 });
                 topicSubscriptions.forEach((sub) => {
-                    if (sub.muted) addMuted(sub.userId);
-                    else addRecipient(sub.userId);
+                    const id = sub.userId?.toString?.() ?? "";
+                    if (!id) return;
+                    if (sub.muted) mutedTopicIds.add(id);
+                    else topicRecipients.add(id);
+                });
+                followerDocs.forEach((doc) => {
+                    const id = doc.followerId?.toString?.() ?? "";
+                    if (id) userRecipients.add(id);
                 });
 
                 const actorId = user._id?.toString?.() ?? "";
-                if (actorId) recipientIds.delete(actorId);
-                mutedIds.forEach((id) => recipientIds.delete(id));
+                [argumentRecipients, topicRecipients, userRecipients].forEach((set) => set.delete(actorId));
+                mutedArgumentIds.forEach((id) => argumentRecipients.delete(id));
+                mutedTopicIds.forEach((id) => topicRecipients.delete(id));
 
-                if (!recipientIds.size) return;
+                const reasonMap = new Map<string, "argument" | "topic" | "user">();
+                const addRecipients = (ids: Set<string>, reason: "argument" | "topic" | "user") => {
+                    ids.forEach((id) => {
+                        if (!reasonMap.has(id)) {
+                            reasonMap.set(id, reason);
+                        }
+                    });
+                };
+                addRecipients(argumentRecipients, "argument");
+                addRecipients(topicRecipients, "topic");
+                addRecipients(userRecipients, "user");
 
-                const payload = Array.from(recipientIds).map((recipientId) => ({
+                if (!reasonMap.size) return;
+
+                const argumentMessage = `${commenterName} commented on a post you follow`;
+                const topicMessage = `${commenterName} commented on ${topicTitle}`;
+                const userMessage = `${commenterName} commented on ${topicTitle}`;
+
+                const payload = Array.from(reasonMap.entries()).map(([recipientId, reason]) => ({
                     recipient: recipientId,
                     actor: user._id,
-                    type: "comment_reply",
+                    type: reason === "argument" ? "argument_reply" : reason === "topic" ? "topic_activity" : "user_activity",
                     topic: parentArgument.topic,
                     argument: argObjId,
                     comment: created._id,
-                    message: `${commenterName} replied to an argument you follow`,
+                    message: reason === "argument" ? argumentMessage : reason === "topic" ? topicMessage : userMessage,
                     topicTitle,
                     argumentSnippet,
                     commentSnippet,
                 }));
 
                 await Notification.insertMany(payload, { ordered: false });
+
+                const baseUrl = buildBaseUrl(req.headers);
+                const commentUrl = `${baseUrl}/topics/${parentArgument.topic.toString()}#comment-${created._id.toString()}`;
+                const argumentRecipientIds = Array.from(reasonMap.entries())
+                    .filter(([, reason]) => reason === "argument")
+                    .map(([id]) => id);
+                const topicRecipientIds = Array.from(reasonMap.entries())
+                    .filter(([, reason]) => reason === "topic")
+                    .map(([id]) => id);
+                const userRecipientIds = Array.from(reasonMap.entries())
+                    .filter(([, reason]) => reason === "user")
+                    .map(([id]) => id);
+
+                const argumentSent = await sendNotificationEmails({
+                    recipientIds: argumentRecipientIds,
+                    preferenceKey: "emailArguments",
+                    subject: "New reply on a post you follow",
+                    message: argumentMessage,
+                    actionUrl: commentUrl,
+                    actionLabel: "View comment",
+                    preview: argumentMessage,
+                });
+                const remainingTopicRecipients = topicRecipientIds.filter((id) => !argumentSent.includes(id));
+                const topicSent = await sendNotificationEmails({
+                    recipientIds: remainingTopicRecipients,
+                    preferenceKey: "emailTopics",
+                    subject: "New comment in a topic you follow",
+                    message: topicMessage,
+                    actionUrl: commentUrl,
+                    actionLabel: "View comment",
+                    preview: topicMessage,
+                });
+                const remainingUserRecipients = userRecipientIds
+                    .filter((id) => !argumentSent.includes(id))
+                    .filter((id) => !topicSent.includes(id));
+                await sendNotificationEmails({
+                    recipientIds: remainingUserRecipients,
+                    preferenceKey: "emailUsers",
+                    subject: "New comment from someone you follow",
+                    message: userMessage,
+                    actionUrl: commentUrl,
+                    actionLabel: "View comment",
+                    preview: userMessage,
+                });
             } catch (err) {
                 console.error("Notification dispatch failed", err);
             }
@@ -329,9 +405,12 @@ export async function PATCH(req: Request) {
                 const baseUrl = buildBaseUrl(req.headers);
                 const commentUrl = `${baseUrl}/topics/${topicId}#comment-${targetId}`;
                 const name = author.name?.trim() || "there";
-                const subject = "Your post has been approved";
-                const html = `<p>Hi ${name},</p><p>Your post has been approved and is now visible.</p><p><a href="${commentUrl}">View your post</a></p>`;
-                const text = `Hi ${name},\n\nYour post has been approved and is now visible.\n\nView your post: ${commentUrl}`;
+                const subject = "Your comment has been approved";
+                const { html, text } = await renderEmail(PostApprovedEmail({
+                    name,
+                    postUrl: commentUrl,
+                    label: "comment",
+                }));
                 await sendEmail(author.email, subject, html, text);
             }
         } catch (err) {

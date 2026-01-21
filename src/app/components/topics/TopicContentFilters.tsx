@@ -80,10 +80,10 @@ export default function TopicContentFilters({
         <h2 className="h6 mb-3">Search discussion content</h2>
         <div className="row g-3">
           <div className="col-12 col-lg-6">
-            <label className="form-label">Arguments</label>
+            <label className="form-label">Posts</label>
             <input
               className="form-control"
-              placeholder="Search argument text"
+              placeholder="Search post text"
               value={argumentText}
               onChange={(event) => setArgumentText(event.target.value)}
             />

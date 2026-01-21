@@ -29,6 +29,12 @@ type UserSummary = {
     avatarUrl?: string | null;
     avatarThumbUrl?: string | null;
     createdAt?: string | Date | null;
+    stats?: {
+        posts: number;
+        comments: number;
+        upvotes: number;
+        followers: number;
+    };
 };
 
 function resolveUserSummary(value: any): UserSummary {
@@ -44,6 +50,7 @@ function resolveUserSummary(value: any): UserSummary {
             avatarUrl: value.avatarUrl ?? null,
             avatarThumbUrl: value.avatarThumbUrl ?? null,
             createdAt: value.createdAt ?? null,
+            stats: value.stats ?? undefined,
         };
     }
     return {};
@@ -436,6 +443,7 @@ export default function ArgumentCard({
                                     size={36}
                                     nameClassName="author-link fw-semibold"
                                     fallbackLabel="Anonymous"
+                                    stats={author.stats}
                                 />
                                 <small className="text-muted d-block">{createdLabel}</small>
                             </div>
@@ -544,6 +552,7 @@ export default function ArgumentCard({
                                                             className="small text-muted fw-semibold"
                                                             nameClassName="author-link fw-semibold text-muted"
                                                             fallbackLabel="Anonymous"
+                                                            stats={commenter.stats}
                                                         />
                                                         <span className="text-muted small">{c.createdAt ? timeAgo(c.createdAt) : ""}</span>
                                                     </div>

@@ -6,6 +6,7 @@ import User from "@/app/models/user";
 import { Argument } from "@/app/models/argument";
 import { Comment } from "@/app/models/comment";
 import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
+import { UserFollow } from "@/app/models/userFollow";
 import "@/app/models/topic";
 
 const DEFAULT_LIMIT = 10;
@@ -23,6 +24,16 @@ type UserLean = {
     email?: string | null;
     isSuspended?: boolean;
     createdAt?: Date | null;
+    preferences?: {
+        notifications?: {
+            email?: boolean;
+            sms?: boolean;
+            push?: boolean;
+            emailTopics?: boolean;
+            emailArguments?: boolean;
+            emailUsers?: boolean;
+        };
+    };
 };
 
 type ProfileResponse = {
@@ -37,6 +48,20 @@ type ProfileResponse = {
         canViewEmail?: boolean;
         isSuspended?: boolean;
         createdAt: string | null;
+        stats?: {
+            posts: number;
+            comments: number;
+            upvotes: number;
+            followers: number;
+        };
+        notificationPreferences?: {
+            email?: boolean;
+            sms?: boolean;
+            push?: boolean;
+            emailTopics?: boolean;
+            emailArguments?: boolean;
+            emailUsers?: boolean;
+        } | null;
     };
     recentArguments: Array<{
         id: string;
@@ -100,7 +125,17 @@ export async function GET(request: NextRequest, ctx: any) {
     await dbConnect();
 
     const userDoc = (await User.findById(userId)
-        .select({ name: 1, nickname: 1, bio: 1, avatarUrl: 1, avatarThumbUrl: 1, email: 1, createdAt: 1, isSuspended: 1 })
+        .select({
+            name: 1,
+            nickname: 1,
+            bio: 1,
+            avatarUrl: 1,
+            avatarThumbUrl: 1,
+            email: 1,
+            createdAt: 1,
+            isSuspended: 1,
+            "preferences.notifications": 1,
+        })
         .lean()
         .exec()) as UserLean | null;
 
@@ -116,6 +151,7 @@ export async function GET(request: NextRequest, ctx: any) {
 
     const viewerId = viewerUser?._id?.toString?.();
     const canViewEmail = !!viewerUser?.isAdmin || Boolean(viewerId && viewerId === userDoc._id.toString());
+    const canViewPreferences = Boolean(viewerId && viewerId === userDoc._id.toString());
 
     let avatarUrl = userDoc.avatarUrl ?? null;
     if (avatarUrl) {
@@ -129,7 +165,7 @@ export async function GET(request: NextRequest, ctx: any) {
     const { searchParams } = new URL(request.url);
     const limit = sanitiseLimit(searchParams.get("limit"));
 
-    const [argumentDocsRaw, commentDocsRaw] = await Promise.all([
+    const [argumentDocsRaw, commentDocsRaw, argumentStats, commentStats, followerStats] = await Promise.all([
         Argument.find({ createdBy: userDoc._id, isRemoved: false })
             .sort({ createdAt: -1 })
             .limit(limit)
@@ -146,6 +182,18 @@ export async function GET(request: NextRequest, ctx: any) {
             })
             .lean()
             .exec(),
+        Argument.aggregate([
+            { $match: { createdBy: userDoc._id, isRemoved: false } },
+            { $group: { _id: "$createdBy", count: { $sum: 1 }, upvotes: { $sum: { $ifNull: ["$upvoteCount", 0] } } } },
+        ]),
+        Comment.aggregate([
+            { $match: { createdBy: userDoc._id, isRemoved: false } },
+            { $group: { _id: "$createdBy", count: { $sum: 1 }, upvotes: { $sum: { $ifNull: ["$upvoteCount", 0] } } } },
+        ]),
+        UserFollow.aggregate([
+            { $match: { targetUserId: userDoc._id } },
+            { $group: { _id: "$targetUserId", count: { $sum: 1 } } },
+        ]),
     ]);
 
     const argumentDocs = (argumentDocsRaw ?? []) as any[];
@@ -194,6 +242,11 @@ export async function GET(request: NextRequest, ctx: any) {
         };
     });
 
+    const postCount = argumentStats?.[0]?.count ?? 0;
+    const commentCount = commentStats?.[0]?.count ?? 0;
+    const upvoteCount = (argumentStats?.[0]?.upvotes ?? 0) + (commentStats?.[0]?.upvotes ?? 0);
+    const followerCount = followerStats?.[0]?.count ?? 0;
+
     const response: ProfileResponse = {
         user: {
             id: userDoc._id.toString(),
@@ -206,6 +259,15 @@ export async function GET(request: NextRequest, ctx: any) {
             canViewEmail,
             isSuspended: !!userDoc.isSuspended,
             createdAt: userDoc.createdAt ? userDoc.createdAt.toISOString() : null,
+            stats: {
+                posts: postCount,
+                comments: commentCount,
+                upvotes: upvoteCount,
+                followers: followerCount,
+            },
+            notificationPreferences: canViewPreferences
+                ? (userDoc.preferences?.notifications ?? null)
+                : null,
         },
         recentArguments,
         recentComments,

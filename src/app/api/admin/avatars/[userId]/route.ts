@@ -5,6 +5,8 @@ import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
 import { updateUserProfileById } from "@/app/services/userProfileService";
 import { sendEmail } from "@/app/services/emailService";
+import AvatarModerationEmail from "@/app/emails/templates/AvatarModerationEmail";
+import { renderEmail } from "@/app/emails/renderEmail";
 
 type Action = "approve" | "remove";
 
@@ -32,19 +34,19 @@ function buildModerationUpdate(existing: any, status: "approved" | "removed", re
   };
 }
 
-async function notifyAvatarOutcome(user: { email?: string | null; name?: string | null }, action: Action) {
+async function notifyAvatarOutcome(
+  user: { email?: string | null; name?: string | null; id?: string | null },
+  action: Action
+) {
   if (!user?.email) return;
   const name = user?.name?.trim() || "there";
   const subject = action === "approve" ? "Your avatar has been approved" : "Your avatar has been removed";
-  const bodyText = action === "approve"
-    ? `Hi ${name},\n\nYour avatar has been approved by a moderator and is now visible on your profile.\n\nThanks,\nThe Consensus Engine Team`
-    : `Hi ${name},\n\nYour avatar has been removed by a moderator. You can upload a new avatar at any time.\n\nThanks,\nThe Consensus Engine Team`;
-  const bodyHtml = action === "approve"
-    ? `<p>Hi ${name},</p><p>Your avatar has been approved by a moderator and is now visible on your profile.</p><p>Thanks,<br/>The Consensus Engine Team</p>`
-    : `<p>Hi ${name},</p><p>Your avatar has been removed by a moderator. You can upload a new avatar at any time.</p><p>Thanks,<br/>The Consensus Engine Team</p>`;
+  const baseUrl = process.env.NEXTJS_APP_BASE_URL || "https://ce.dukedan.uk";
+  const profileUrl = user?.id ? `${baseUrl}/profile/${user.id}` : `${baseUrl}/profile`;
+  const { html, text } = await renderEmail(AvatarModerationEmail({ name, action, profileUrl }));
 
   try {
-    await sendEmail(user.email, subject, bodyHtml, bodyText);
+    await sendEmail(user.email, subject, html, text);
   } catch (err) {
     console.error("Failed to send avatar moderation email", err);
   }
@@ -107,7 +109,7 @@ export async function POST(req: Request, ctx: any) {
     }, { allowModeration: true });
   }
 
-  notifyAvatarOutcome({ email: user.email, name: user.name }, action);
+  void notifyAvatarOutcome({ email: user.email, name: user.name, id: userId }, action);
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }

@@ -289,14 +289,14 @@ export default function ProfileAvatarUploader({
                     />
                     <div className="form-text">PNG or JPEG images only. You can also paste an image.</div>
                   </div>
-                  <div
-                    className={`border rounded-2 p-2 bg-light-subtle small text-muted${inputsDisabled ? " opacity-50" : ""}`}
-                    tabIndex={inputsDisabled ? -1 : 0}
+                    <input
+                    type="text"
+                    className={`form-control${inputsDisabled ? " opacity-50" : ""}`}
+                    placeholder="Paste an image here to update the preview"
+                    disabled={inputsDisabled}
                     onPaste={handlePaste}
-                    aria-disabled={inputsDisabled}
-                  >
-                    Paste an image here to update the preview.
-                  </div>
+                    aria-label="Paste image"
+                    />
                 </div>
               </div>
               <div className="col-12 col-lg-6">

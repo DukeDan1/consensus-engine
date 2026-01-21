@@ -75,7 +75,9 @@ export async function GET(req: Request) {
     const href = topicId
       ? commentId
         ? `/topics/${topicId}#comment-${commentId}`
-        : `/topics/${topicId}`
+        : argumentId
+          ? `/topics/${topicId}#argument-${argumentId}`
+          : `/topics/${topicId}`
       : undefined;
     return {
       id: item._id?.toString?.() ?? "",

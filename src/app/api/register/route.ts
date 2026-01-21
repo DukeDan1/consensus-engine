@@ -4,6 +4,8 @@ import { validate } from 'email-validator';
 import { sendEmail } from '@/app/services/emailService';
 import { hashPassword } from '@/app/services/passwordService';
 import { dbConnect } from '@/app/lib/mongoose';
+import WelcomeEmail from '@/app/emails/templates/WelcomeEmail';
+import { renderEmail } from '@/app/emails/renderEmail';
 
 type RegisterDeps = {
   dbConnect: typeof dbConnect;
@@ -19,21 +21,18 @@ const deps: RegisterDeps = {
   sendEmail
 };
 
-function queueWelcomeEmail(
+async function queueWelcomeEmail(
   emailAddress: string,
   name: string,
   sendEmailFn: typeof sendEmail
-): void {
-  Promise.resolve(
-    sendEmailFn(
-      emailAddress,
-      'Welcome!',
-      `<p>Thank you for signing up, ${name}!</p>`,
-      `Thank you for signing up, ${name}!`
-    )
-  ).catch((err: unknown) => {
+): Promise<void> {
+  try {
+    const appUrl = process.env.NEXTJS_APP_BASE_URL || 'https://ce.dukedan.uk';
+    const { html, text } = await renderEmail(WelcomeEmail({ name, appUrl }));
+    await sendEmailFn(emailAddress, 'Welcome!', html, text);
+  } catch (err: unknown) {
     console.error('Failed to send welcome email:', err);
-  });
+  }
 }
 
 export async function handleRegister(
@@ -60,7 +59,7 @@ export async function handleRegister(
   const hash = await injectedDeps.hashPassword(password);
   const user = await injectedDeps.userModel.create({ email, passwordHash: hash, name });
 
-  queueWelcomeEmail(user.email, user.name || 'User', injectedDeps.sendEmail);
+  void queueWelcomeEmail(user.email, user.name || 'User', injectedDeps.sendEmail);
   return { status: 200, body: { success: true } };
 }
 
