@@ -5,7 +5,7 @@ import { processImageBuffer } from "@/app/services/imageProcessingService";
 
 export const runtime = "nodejs";
 
-const MAX_FILE_BYTES = 100 * 1024 * 1024; // 100MB hard cap
+const MAX_FILE_BYTES = 30 * 1024 * 1024; // 30MB hard cap
 const allowedPrefixes = ["image/", "application/pdf", "text/", "video/", "audio/"];
 const imageProcessingEnabled = process.env.IMAGE_PROCESSING_ENABLED !== "false";
 

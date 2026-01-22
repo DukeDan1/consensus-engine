@@ -47,7 +47,7 @@ export default function EvidencePicker({
         </button>
       </div>
       <div className="mb-2">
-        <label className="form-label small">Upload a file</label>
+        <label className="form-label small">Upload a file <span className="text-muted small">(Max 30MB per file)</span></label>
         <input type="file" className="form-control" onChange={onFileChange} multiple disabled={!canAddMore} />
       </div>
       {evidence.length > 0 && (
