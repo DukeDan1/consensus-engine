@@ -40,13 +40,12 @@ export async function PATCH(req: Request, ctx: any) {
   const payload = await req.json().catch(() => ({}));
   const suspended = payload?.suspended;
   const hasSuspended = typeof suspended === "boolean";
-  const revokeSessions = payload?.revokeSessions === true;
   const hasAvatar = Object.prototype.hasOwnProperty.call(payload, "avatarUrl");
   const hasAvatarThumb = Object.prototype.hasOwnProperty.call(payload, "avatarThumbUrl");
   const hasAvatarOriginal = Object.prototype.hasOwnProperty.call(payload, "avatarOriginalUrl");
   const hasAvatarOriginalThumb = Object.prototype.hasOwnProperty.call(payload, "avatarOriginalThumbUrl");
   const hasAvatarModeration = Object.prototype.hasOwnProperty.call(payload, "avatarModeration");
-  if (!hasSuspended && !revokeSessions && !hasAvatar && !hasAvatarThumb && !hasAvatarOriginal && !hasAvatarOriginalThumb && !hasAvatarModeration) {
+  if (!hasSuspended && !hasAvatar && !hasAvatarThumb && !hasAvatarOriginal && !hasAvatarOriginalThumb && !hasAvatarModeration) {
     return NextResponse.json({ error: "Missing update payload" }, { status: 400 });
   }
   if (hasAvatar && payload.avatarUrl !== null && typeof payload.avatarUrl !== "string") {
@@ -78,16 +77,12 @@ export async function PATCH(req: Request, ctx: any) {
     }
   }
 
-  if (hasSuspended || revokeSessions) {
-    const shouldRevokeSessions = revokeSessions || suspended === true;
+  if (hasSuspended) {
     const update: Record<string, any> = {};
     if (hasSuspended) {
       update.$set = suspended
         ? { isSuspended: true, suspendedAt: new Date() }
         : { isSuspended: false, suspendedAt: null };
-    }
-    if (shouldRevokeSessions) {
-      update.$inc = { sessionVersion: 1 };
     }
 
     const updated = await User.findByIdAndUpdate(userId, update, { new: true })

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { dbConnect } from "@/app/lib/mongoose";
+import User from "@/app/models/user";
 
 const PUBLIC_ROUTES = new Set([
   "/",
@@ -23,6 +25,12 @@ function isPublicRoute(pathname: string) {
   return PUBLIC_API_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
+async function isUserSuspended(token: any) {
+  await dbConnect();
+  const user = await User.findById(token.id).select({ isSuspended: 1 }).lean();
+  return !!user?.isSuspended;
+}
+
 export async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
   const normalisedPath = pathname !== "/" && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
@@ -33,7 +41,8 @@ export async function proxy(req: NextRequest) {
 
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-  if (!token) {
+  const suspended = token ? await isUserSuspended(token) : false;
+  if (!token || suspended) {
     if (pathname.startsWith("/api")) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
     }
@@ -41,7 +50,12 @@ export async function proxy(req: NextRequest) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("callbackUrl", req.nextUrl.pathname);
     loginUrl.searchParams.set("unauthed", "true");
-    return NextResponse.redirect(loginUrl);
+    const response = NextResponse.redirect(loginUrl);
+    if (suspended) {
+      response.cookies.set("next-auth.session-token", "", { maxAge: 0, path: "/" });
+      response.cookies.set("__Secure-next-auth.session-token", "", { maxAge: 0, path: "/" });
+    }
+    return response;
   }
 
   return NextResponse.next();

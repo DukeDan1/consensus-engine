@@ -19,7 +19,6 @@ export default function AdminUserActions({ userId, initialSuspended, displayName
   const [pending, setPending] = useState(false);
   const [showSuspend, setShowSuspend] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
-  const [showRevoke, setShowRevoke] = useState(false);
 
   if (!session?.user?.isAdmin) {
     return null;
@@ -45,28 +44,6 @@ export default function AdminUserActions({ userId, initialSuspended, displayName
     } finally {
       setPending(false);
       setShowSuspend(false);
-    }
-  }
-
-  async function handleRevokeSessions() {
-    setPending(true);
-    try {
-      const res = await fetch(`/api/admin/users/${userId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ revokeSessions: true }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data?.error || "Failed to revoke sessions");
-      }
-      toast.success("User logged out on all devices");
-      router.refresh();
-    } catch (err: any) {
-      toast.error(err?.message || "Unable to revoke sessions");
-    } finally {
-      setPending(false);
-      setShowRevoke(false);
     }
   }
 
@@ -112,14 +89,6 @@ export default function AdminUserActions({ userId, initialSuspended, displayName
       >
         Delete user
       </button>
-      <button
-        type="button"
-        className="btn btn-sm btn-outline-secondary"
-        onClick={() => setShowRevoke(true)}
-        disabled={pending}
-      >
-        Log out everywhere
-      </button>
       <ConfirmModal
         isOpen={showSuspend}
         title={suspendLabel}
@@ -130,17 +99,6 @@ export default function AdminUserActions({ userId, initialSuspended, displayName
         isBusy={pending}
         onCancel={() => setShowSuspend(false)}
         onConfirm={() => handleSuspend(!isSuspended)}
-      />
-      <ConfirmModal
-        isOpen={showRevoke}
-        title="Log out user"
-        body={<p className="mb-0">Log {displayName} out of all devices?</p>}
-        confirmLabel="Log out everywhere"
-        confirmVariant="secondary"
-        confirmIconClass="fa-solid fa-arrow-right-from-bracket"
-        isBusy={pending}
-        onCancel={() => setShowRevoke(false)}
-        onConfirm={handleRevokeSessions}
       />
       <ConfirmModal
         isOpen={showDelete}

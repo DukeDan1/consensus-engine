@@ -21,7 +21,6 @@ declare module 'next-auth' {
       image?: string | null;
       avatarUrl?: string | null;
       isAdmin?: boolean;
-      sessionVersion?: number;
     };
   }
 }
@@ -31,7 +30,6 @@ declare module 'next-auth/jwt' {
     id?: string;
     isAdmin?: boolean;
     avatarUrl?: string | null;
-    sessionVersion?: number;
     error?: string;
   }
 }
@@ -81,7 +79,6 @@ const handler = NextAuth({
           email: user.email,
           name: user.name,
           avatarUrl: user.avatarUrl ?? null,
-          sessionVersion: typeof user.sessionVersion === 'number' ? user.sessionVersion : 1,
           isAdmin: !!user.isAdmin,
         };
       },
@@ -117,25 +114,11 @@ const handler = NextAuth({
         token.avatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
       }
 
-      if (typeof (user as { sessionVersion?: number } | undefined)?.sessionVersion === 'number') {
-        token.sessionVersion = (user as { sessionVersion?: number }).sessionVersion;
-      }
-
-      const sessionOverride = trigger === 'update'
-        ? (typeof (session as any)?.user?.sessionVersion === 'number'
-          ? (session as any).user.sessionVersion
-          : (typeof (session as any)?.sessionVersion === 'number' ? (session as any).sessionVersion : undefined))
-        : undefined;
-
-      if (typeof sessionOverride === 'number') {
-        token.sessionVersion = sessionOverride;
-      }
-
       if (!token.id) return token;
 
       await dbConnect();
       const dbUser = await User.findById(token.id)
-        .select({ isAdmin: 1, avatarUrl: 1, sessionVersion: 1, isSuspended: 1 })
+        .select({ isAdmin: 1, avatarUrl: 1, isSuspended: 1 })
         .lean();
 
       if (!dbUser || dbUser.isSuspended) {
@@ -143,14 +126,6 @@ const handler = NextAuth({
         return token;
       }
 
-      const dbSessionVersion = typeof dbUser.sessionVersion === 'number' ? dbUser.sessionVersion : 1;
-      const tokenSessionVersion = typeof token.sessionVersion === 'number' ? token.sessionVersion : dbSessionVersion;
-      if (dbSessionVersion !== tokenSessionVersion) {
-        token.error = 'SESSION_REVOKED';
-        return token;
-      }
-
-      token.sessionVersion = dbSessionVersion;
       token.isAdmin = !!dbUser.isAdmin;
       token.avatarUrl = dbUser.avatarUrl ?? null;
       return token;
@@ -158,7 +133,7 @@ const handler = NextAuth({
 
     async session({ session, token }) {
       if (token?.error) {
-        return null as any;
+        return {} as any;
       }
       if (!session.user) {
         session.user = {};
@@ -167,7 +142,6 @@ const handler = NextAuth({
       if (token?.id) session.user.id = typeof token.id === 'string' ? token.id : String(token.id);
       session.user.isAdmin = typeof token.isAdmin === 'boolean' ? token.isAdmin : undefined;
       session.user.avatarUrl = typeof token.avatarUrl === 'string' ? token.avatarUrl : null;
-      session.user.sessionVersion = typeof token.sessionVersion === 'number' ? token.sessionVersion : undefined;
       
       const avatarUrl = session.user.avatarUrl;
       if (avatarUrl) {
