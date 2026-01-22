@@ -105,7 +105,7 @@ const handler = NextAuth({
       return true;
     },
 
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user }) {
       if (user?.id) token.id = user.id;
       if (typeof (user as { isAdmin?: boolean } | undefined)?.isAdmin === 'boolean') {
         token.isAdmin = (user as { isAdmin?: boolean }).isAdmin;
