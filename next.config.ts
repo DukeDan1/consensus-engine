@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    proxyClientMaxBodySize: '30mb',
+    proxyClientMaxBodySize: '100mb',
   },
 };
 
