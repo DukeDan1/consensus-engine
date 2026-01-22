@@ -116,6 +116,7 @@ export function useEvidenceAttachments(options: Options = {}) {
 
   async function handlePaste(e: ClipboardEvent<HTMLTextAreaElement>) {
     const files = Array.from(e.clipboardData?.files ?? []);
+    toast.success("Uploading the file(s) you pasted...");
     if (!files.length) return;
     e.preventDefault();
     const remaining = maxItems - evidence.length;
