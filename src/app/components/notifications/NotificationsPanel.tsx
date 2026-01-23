@@ -21,17 +21,54 @@ type NotificationItem = {
   } | null;
 };
 
+const POLL_INTERVAL_MS = 30000; // 30 seconds
+
 export default function NotificationsPanel() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [badgeCount, setBadgeCount] = useState(0);
 
   const unreadCount = useMemo(
     () => notifications.filter((item) => !item.readAt).length,
     [notifications]
   );
+
+  // Sync badge count when notifications are loaded (panel open)
+  useEffect(() => {
+    if (notifications.length > 0 || open) {
+      setBadgeCount(unreadCount);
+    }
+  }, [unreadCount, notifications.length, open]);
+
+  // Poll for unread count in the background (even when panel is closed)
+  useEffect(() => {
+    if (!session?.user) return;
+
+    const fetchUnreadCount = async () => {
+      try {
+        const res = await fetch("/api/notifications?countOnly=1");
+        if (res.ok) {
+          const data = await res.json();
+          if (typeof data?.unreadCount === "number") {
+            setBadgeCount(data.unreadCount);
+          }
+        }
+      } catch {
+        // Silently fail - badge will update when panel opens
+      }
+    };
+
+    // Fetch immediately on mount
+    fetchUnreadCount();
+
+    // Then poll periodically
+    const intervalId = setInterval(fetchUnreadCount, POLL_INTERVAL_MS);
+
+    return () => clearInterval(intervalId);
+  }, [session?.user]);
 
   useEffect(() => {
     if (!open) return;
@@ -108,9 +145,9 @@ export default function NotificationsPanel() {
         aria-label="Open notifications"
       >
         <i className="fa-regular fa-bell" aria-hidden="true"></i>
-        {unreadCount > 0 ? (
+        {badgeCount > 0 ? (
           <span className="notifications-badge" aria-hidden="true">
-            {unreadCount > 9 ? "9+" : unreadCount}
+            {badgeCount > 9 ? "9+" : badgeCount}
           </span>
         ) : null}
       </button>

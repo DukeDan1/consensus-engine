@@ -32,6 +32,13 @@ export async function GET(req: Request) {
   const limitRaw = parseInt(searchParams.get("limit") || "20", 10);
   const limit = clampLimit(Number.isFinite(limitRaw) ? limitRaw : 20, 1, 50);
   const unreadOnly = searchParams.get("unreadOnly") === "1";
+  const countOnly = searchParams.get("countOnly") === "1";
+
+  // If only count is requested, return just the unread count (efficient for polling)
+  if (countOnly) {
+    const unreadCount = await Notification.countDocuments({ recipient: user._id, readAt: { $exists: false } });
+    return NextResponse.json({ unreadCount }, { status: 200 });
+  }
 
   const filter: Record<string, any> = { recipient: user._id };
   if (unreadOnly) {
