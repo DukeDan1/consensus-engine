@@ -23,6 +23,8 @@ export interface ITopic extends Document {
   createdAt: Date;
   updatedAt: Date;
   slug: string;           // for friendly URLs
+  moderators?: Types.ObjectId[];
+  autoModeratorEnabled?: boolean;
 
   visibility?: {
     status: 'visible' | 'hidden' | 'needs_review' | 'blocked';
@@ -76,6 +78,8 @@ const TopicSchema = new Schema<ITopic>({
     quality: { type: Number },
     model: { type: String },
   },
+  moderators: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
+  autoModeratorEnabled: { type: Boolean, default: true },
 }, { timestamps: true });
 
 TopicSchema.index({ createdAt: -1 });
@@ -83,4 +87,5 @@ TopicSchema.index({ score: -1 });
 TopicSchema.index({ "ontologyCategories.id": 1, createdAt: -1 });
 TopicSchema.index({ "visibility.status": 1, createdAt: -1 });
 
-export const Topic = (mongoose.models.Topic as mongoose.Model<ITopic>) || mongoose.model<ITopic>("Topic", TopicSchema);
+
+export default mongoose.models.Topic || mongoose.model<ITopic>("Topic", TopicSchema);

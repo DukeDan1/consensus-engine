@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
-import { NotificationSubscription } from "@/app/models/notificationSubscription";
+import NotificationSubscription from "@/app/models/notificationSubscription";
 
 function isTargetType(value: string): value is "topic" | "argument" {
   return value === "topic" || value === "argument";

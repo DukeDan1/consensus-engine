@@ -20,6 +20,7 @@ type ProfileApiResponse = {
     avatarThumbUrl?: string | null;
     email?: string | null;
     canViewEmail?: boolean;
+    isAdmin?: boolean;
     isSuspended?: boolean;
     createdAt?: string | null;
     stats?: {
@@ -35,6 +36,7 @@ type ProfileApiResponse = {
       emailTopics?: boolean;
       emailArguments?: boolean;
       emailUsers?: boolean;
+      emailModeration?: boolean;
     } | null;
   };
   recentArguments: Array<{
@@ -137,6 +139,7 @@ export default async function UserProfilePage({ params }: any) {
   const avatarThumbUrl = data.user?.avatarThumbUrl ?? null;
   const email = data.user?.email ?? null;
   const canViewEmail = !!data.user?.canViewEmail;
+  const profileIsAdmin = !!data.user?.isAdmin;
 
   const memberSinceDate = data.user?.createdAt ? new Date(data.user.createdAt) : null;
   const memberSince = memberSinceDate
@@ -192,6 +195,7 @@ export default async function UserProfilePage({ params }: any) {
         avatarThumbUrl={avatarThumbUrl}
         email={email}
         canViewEmail={canViewEmail}
+        isAdmin={profileIsAdmin}
         isSuspended={isSuspended}
         stats={data.user.stats}
       />

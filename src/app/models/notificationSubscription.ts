@@ -26,6 +26,5 @@ NotificationSubscriptionSchema.index(
   { unique: true }
 );
 
-export const NotificationSubscription =
-  (mongoose.models.NotificationSubscription as mongoose.Model<INotificationSubscription>) ||
-  mongoose.model<INotificationSubscription>("NotificationSubscription", NotificationSubscriptionSchema);
+
+export default mongoose.models.NotificationSubscription || mongoose.model<INotificationSubscription>("NotificationSubscription", NotificationSubscriptionSchema);

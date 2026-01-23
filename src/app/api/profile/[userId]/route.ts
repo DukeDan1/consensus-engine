@@ -3,10 +3,10 @@ import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
 import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
-import { Argument } from "@/app/models/argument";
-import { Comment } from "@/app/models/comment";
+import Argument from "@/app/models/argument";
+import Comment from "@/app/models/comment";
 import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
-import { UserFollow } from "@/app/models/userFollow";
+import UserFollow from "@/app/models/userFollow";
 import "@/app/models/topic";
 
 const DEFAULT_LIMIT = 10;
@@ -22,6 +22,7 @@ type UserLean = {
     avatarUrl?: string | null;
     avatarThumbUrl?: string | null;
     email?: string | null;
+    isAdmin?: boolean;
     isSuspended?: boolean;
     createdAt?: Date | null;
     preferences?: {
@@ -32,6 +33,7 @@ type UserLean = {
             emailTopics?: boolean;
             emailArguments?: boolean;
             emailUsers?: boolean;
+            emailModeration?: boolean;
         };
     };
 };
@@ -46,6 +48,7 @@ type ProfileResponse = {
         avatarThumbUrl?: string | null;
         email?: string | null;
         canViewEmail?: boolean;
+        isAdmin?: boolean;
         isSuspended?: boolean;
         createdAt: string | null;
         stats?: {
@@ -61,6 +64,7 @@ type ProfileResponse = {
             emailTopics?: boolean;
             emailArguments?: boolean;
             emailUsers?: boolean;
+            emailModeration?: boolean;
         } | null;
     };
     recentArguments: Array<{
@@ -132,6 +136,7 @@ export async function GET(request: NextRequest, ctx: any) {
             avatarUrl: 1,
             avatarThumbUrl: 1,
             email: 1,
+            isAdmin: 1,
             createdAt: 1,
             isSuspended: 1,
             "preferences.notifications": 1,
@@ -257,6 +262,7 @@ export async function GET(request: NextRequest, ctx: any) {
             avatarThumbUrl,
             email: canViewEmail ? userDoc.email ?? null : null,
             canViewEmail,
+            isAdmin: !!userDoc.isAdmin,
             isSuspended: !!userDoc.isSuspended,
             createdAt: userDoc.createdAt ? userDoc.createdAt.toISOString() : null,
             stats: {

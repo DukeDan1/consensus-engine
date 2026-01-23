@@ -5,6 +5,8 @@ type UserSummary = {
   avatarUrl?: string | null;
   avatarThumbUrl?: string | null;
   createdAt?: string | null;
+  isAdmin?: boolean;
+  isModerator?: boolean;
   stats?: {
     posts: number;
     comments: number;
@@ -129,5 +131,14 @@ export type TopicApiResponse = {
     sourceArgument: string; // argument id fact was derived from
     createdAt?: string;
   }>;
-  meta: { ordering: "relevant" | "newest"; returnedArguments: number; requestedArguments: number };
+  meta: {
+    ordering: "relevant" | "newest";
+    returnedArguments: number;
+    requestedArguments: number;
+    viewer?: {
+      isAdmin?: boolean;
+      isModerator?: boolean;
+      canModerate?: boolean;
+    };
+  };
 };

@@ -18,4 +18,6 @@ const FactSchema = new Schema<IFact>({
 
 FactSchema.index({ topic: 1, createdAt: -1 });
 
-export const Fact = mongoose.models.Fact || mongoose.model<IFact>("Fact", FactSchema);
+
+
+export default mongoose.models.Fact || mongoose.model<IFact>("Fact", FactSchema);

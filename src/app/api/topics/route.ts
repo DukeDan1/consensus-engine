@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
-import { Topic } from "@/app/models/topic";
+import Topic from "@/app/models/topic";
 import User from "@/app/models/user";
 import { getServerSession } from "next-auth";
 import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
 import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
 import { moderateUserGeneratedText, moderationToVisibility } from "@/app/services/moderationService";
 import { applyTrustDelta } from "@/app/services/trustService";
+import { maybeAutoPromoteModerator } from "@/app/services/topicModeratorService";
+import { buildBaseUrl } from "@/app/lib/commonFunctions";
+import { notifyModeratorStatusChange } from "@/app/services/moderatorNotificationService";
 
 function slugify(input: string) {
   const base = input
@@ -352,6 +355,28 @@ export async function POST(request: NextRequest) {
 
   trackBackgroundTask(backgroundTask);
 
+  let moderatorPromotion = { promoted: false };
+  try {
+    moderatorPromotion = await maybeAutoPromoteModerator({
+      userId: creator._id.toString(),
+      topicId: doc._id.toString(),
+    });
+  } catch (err) {
+    console.error("Auto-promote moderator failed", err);
+  }
+
+  if (moderatorPromotion?.promoted) {
+    const baseUrl = buildBaseUrl(request.headers);
+    void notifyModeratorStatusChange({
+      recipientId: creator._id.toString(),
+      topicId: doc._id.toString(),
+      topicTitle: doc.title ?? "this topic",
+      action: "promoted",
+      source: "auto",
+      baseUrl,
+    });
+  }
+
   return NextResponse.json(
     {
       id: doc._id,
@@ -365,6 +390,9 @@ export async function POST(request: NextRequest) {
       totalVotes: 0,
       creatorName: creator.name || "Unknown",
       visibility: visibility.status,
+      moderatorPromotion: moderatorPromotion?.promoted
+        ? { promoted: true, topicId: doc._id.toString(), topicTitle: doc.title }
+        : { promoted: false },
     },
     { status: 201 }
   );

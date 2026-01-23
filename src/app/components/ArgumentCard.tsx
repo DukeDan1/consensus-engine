@@ -29,6 +29,8 @@ type UserSummary = {
     avatarUrl?: string | null;
     avatarThumbUrl?: string | null;
     createdAt?: string | Date | null;
+    isAdmin?: boolean;
+    isModerator?: boolean;
     stats?: {
         posts: number;
         comments: number;
@@ -50,6 +52,8 @@ function resolveUserSummary(value: any): UserSummary {
             avatarUrl: value.avatarUrl ?? null,
             avatarThumbUrl: value.avatarThumbUrl ?? null,
             createdAt: value.createdAt ?? null,
+            isAdmin: !!value.isAdmin,
+            isModerator: !!value.isModerator,
             stats: value.stats ?? undefined,
         };
     }
@@ -194,9 +198,11 @@ function EvidenceList({ evidence }: { evidence?: any[] }) {
 export default function ArgumentCard({
     argument,
     moderatorMode = false,
+    topicId,
 }: {
     argument: TopicApiResponse["arguments"][number];
     moderatorMode?: boolean;
+    topicId?: string;
 }) {
     const { data: session } = useSession();
     const router = useRouter();
@@ -212,6 +218,8 @@ export default function ArgumentCard({
     const [restoringCommentId, setRestoringCommentId] = useState<string | null>(null);
     const [argumentVisibility, setArgumentVisibility] = useState(argument.visibility);
     const [argumentRemoved, setArgumentRemoved] = useState(!!argument.isRemoved);
+    const [moderatorOverrides, setModeratorOverrides] = useState<Record<string, boolean>>({});
+    const [moderatorUpdatingId, setModeratorUpdatingId] = useState<string | null>(null);
 
     useEffect(() => {
         setCommentStates(argument.comments?.map((c) => ({ ...c })) ?? []);
@@ -415,14 +423,47 @@ export default function ArgumentCard({
     const author = resolveUserSummary(argument.createdBy);
     const authorId = author.id;
     const currentUserId = session?.user?.id;
-    const isAdmin = !!session?.user?.isAdmin;
-    const canModerate = isAdmin && moderatorMode;
+    const canModerate = !!moderatorMode;
+    const canManageModerators = !!session?.user?.isAdmin && moderatorMode && !!topicId;
     const ownsArgument = currentUserId && authorId && currentUserId === authorId;
     const canDeleteArgument = ownsArgument || canModerate;
     const argumentStatus = argumentVisibility?.status;
     const argumentStatusLabel = getVisibilityLabel(argumentStatus);
     const canRestoreArgument = canModerate && !argumentRemoved && argumentStatusLabel;
     const showArgumentStatus = moderatorMode && (argumentRemoved || !!argumentStatusLabel);
+
+    const getIsModerator = (userId?: string, fallback?: boolean) => {
+        if (!userId) return false;
+        if (Object.prototype.hasOwnProperty.call(moderatorOverrides, userId)) {
+            return !!moderatorOverrides[userId];
+        }
+        return !!fallback;
+    };
+
+    async function handleModeratorToggle(targetId: string | undefined, shouldPromote: boolean, label: string) {
+        if (!topicId || !targetId) return;
+        setModeratorUpdatingId(targetId);
+        try {
+            const res = await fetch(`/api/topics/${topicId}/moderators`, {
+                method: shouldPromote ? "POST" : "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: targetId }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error(data?.error || "Failed to update moderator");
+            }
+            setModeratorOverrides((prev) => ({ ...prev, [targetId]: shouldPromote }));
+            toast.success(shouldPromote
+                ? `${label} promoted to moderator.`
+                : `${label} removed as moderator.`);
+            router.refresh();
+        } catch (err: any) {
+            toast.error(err?.message || "Unable to update moderator");
+        } finally {
+            setModeratorUpdatingId(null);
+        }
+    }
 
     if (argumentDeleted) return null;
 
@@ -433,18 +474,36 @@ export default function ArgumentCard({
                     <div className="card-body">
                         <div className="d-flex align-items-start justify-content-between mb-3">
                             <div className="d-flex flex-column gap-1">
-                                <UserIdentity
-                                    userId={author.id}
-                                    name={author.name}
-                                    nickname={author.nickname}
-                                    avatarUrl={author.avatarUrl ?? undefined}
-                                    avatarThumbUrl={author.avatarThumbUrl ?? undefined}
-                                    createdAt={author.createdAt}
-                                    size={36}
-                                    nameClassName="author-link fw-semibold"
-                                    fallbackLabel="Anonymous"
-                                    stats={author.stats}
-                                />
+                                <div className="d-flex flex-wrap align-items-center gap-2">
+                                    <UserIdentity
+                                        userId={author.id}
+                                        name={author.name}
+                                        nickname={author.nickname}
+                                        avatarUrl={author.avatarUrl ?? undefined}
+                                        avatarThumbUrl={author.avatarThumbUrl ?? undefined}
+                                        createdAt={author.createdAt}
+                                        size={36}
+                                        nameClassName="author-link fw-semibold"
+                                        fallbackLabel="Anonymous"
+                                        badges={getIsModerator(author.id, author.isModerator) ? [{ label: "MOD", variant: "secondary" }] : undefined}
+                                        tooltipBadges={author.isAdmin ? [{ label: "ADMIN", variant: "danger" }] : undefined}
+                                        stats={author.stats}
+                                    />
+                                    {canManageModerators && author.id && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary btn-sm"
+                                            onClick={() => handleModeratorToggle(
+                                                author.id,
+                                                !getIsModerator(author.id, author.isModerator),
+                                                author.name || author.nickname || "User"
+                                            )}
+                                            disabled={moderatorUpdatingId === author.id}
+                                        >
+                                            {getIsModerator(author.id, author.isModerator) ? "Remove Moderator" : "Promote to Moderator"}
+                                        </button>
+                                    )}
+                                </div>
                                 <small className="text-muted d-block">{createdLabel}</small>
                             </div>
 
@@ -532,6 +591,7 @@ export default function ArgumentCard({
                                         const commentRemoved = c.isRemoved;
                                         const showCommentStatus = moderatorMode && (commentRemoved || !!commentStatusLabel);
                                         const canRestoreComment = canModerate && !commentRemoved && commentStatusLabel;
+                                        const commenterIsModerator = getIsModerator(commenter.id, commenter.isModerator);
                                         return (
                                             <li
                                                 id={`comment-${c.id}`}
@@ -552,8 +612,24 @@ export default function ArgumentCard({
                                                             className="small text-muted fw-semibold"
                                                             nameClassName="author-link fw-semibold text-muted"
                                                             fallbackLabel="Anonymous"
+                                                            badges={commenterIsModerator ? [{ label: "MOD", variant: "secondary" }] : undefined}
+                                                            tooltipBadges={commenter.isAdmin ? [{ label: "ADMIN", variant: "danger" }] : undefined}
                                                             stats={commenter.stats}
                                                         />
+                                                        {canManageModerators && commenter.id && (
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-outline-secondary btn-sm"
+                                                                onClick={() => handleModeratorToggle(
+                                                                    commenter.id,
+                                                                    !commenterIsModerator,
+                                                                    commenter.name || commenter.nickname || "User"
+                                                                )}
+                                                                disabled={moderatorUpdatingId === commenter.id}
+                                                            >
+                                                                {commenterIsModerator ? "Remove Moderator" : "Promote to Moderator"}
+                                                            </button>
+                                                        )}
                                                         <span className="text-muted small">{c.createdAt ? timeAgo(c.createdAt) : ""}</span>
                                                     </div>
                                                     <div className="d-flex align-items-center gap-2">

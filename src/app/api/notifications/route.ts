@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
-import { Notification } from "@/app/models/notification";
+import Notification from "@/app/models/notification";
 import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
 
 function clampLimit(value: number, min: number, max: number) {

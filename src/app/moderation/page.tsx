@@ -2,9 +2,9 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
-import { Topic } from "@/app/models/topic";
-import { Argument } from "@/app/models/argument";
-import { Comment } from "@/app/models/comment";
+import Topic from "@/app/models/topic";
+import Argument from "@/app/models/argument";
+import Comment from "@/app/models/comment";
 import ModerationQueue from "@/app/components/moderation/ModerationQueue";
 import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
 

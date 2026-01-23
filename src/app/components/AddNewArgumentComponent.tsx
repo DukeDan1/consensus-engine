@@ -80,6 +80,10 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
             } else if (status === "visible") {
                 toast.success("Posted successfully");
             }
+            if (data?.moderatorPromotion?.promoted) {
+                const topicTitle = data?.moderatorPromotion?.topicTitle;
+                toast.success(topicTitle ? `You're now a moderator for "${topicTitle}".` : "You're now a moderator for this topic.");
+            }
         } catch (err) {
             console.error("Submit argument failed", err);
             toast.error("Unable to post right now. Please try again.");

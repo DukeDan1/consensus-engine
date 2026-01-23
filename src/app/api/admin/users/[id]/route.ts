@@ -3,11 +3,11 @@ import { getServerSession } from "next-auth";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
-import { Topic } from "@/app/models/topic";
-import { Argument } from "@/app/models/argument";
-import { Comment } from "@/app/models/comment";
-import { Fact } from "@/app/models/facts";
-import { Vote } from "@/app/models/vote";
+import Topic from "@/app/models/topic";
+import Argument  from "@/app/models/argument";
+import Comment from "@/app/models/comment";
+import Fact from "@/app/models/facts";
+import Vote from "@/app/models/vote";
 import { deleteEvidenceFilesForDocuments } from "@/app/services/evidenceCleanupService";
 import { updateUserProfileById } from "@/app/services/userProfileService";
 

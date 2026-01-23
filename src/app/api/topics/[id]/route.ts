@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
-import { Topic } from "@/app/models/topic";
-import { Argument } from "@/app/models/argument";
-import { Comment } from "@/app/models/comment";
-import { Fact } from "@/app/models/facts";
+import Topic from "@/app/models/topic";
+import Argument from "@/app/models/argument";
+import Comment from "@/app/models/comment";
+import Fact from "@/app/models/facts";
 import User from "@/app/models/user";
 import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
 import { getServerSession } from "next-auth";
-import { NotificationSubscription } from "@/app/models/notificationSubscription";
-import { UserFollow } from "@/app/models/userFollow";
+import NotificationSubscription from "@/app/models/notificationSubscription";
+import UserFollow from "@/app/models/userFollow";
+import { hasTopicModeratorRole } from "@/app/services/topicModeratorService";
 
 async function signEvidence(evidence: any[] = []) {
   return Promise.all(
@@ -42,7 +43,7 @@ type UserStats = {
   followers: number;
 };
 
-async function mapUserSummary(user: any, stats?: UserStats) {
+async function mapUserSummary(user: any, stats?: UserStats, moderatorIds?: Set<string>) {
   if (!user) return undefined;
   const id = user?._id?.toString?.() ?? undefined;
   const avatarUrl = await signAvatarUrl(user?.avatarUrl ?? null);
@@ -55,6 +56,8 @@ async function mapUserSummary(user: any, stats?: UserStats) {
     avatarThumbUrl,
     createdAt: user?.createdAt ?? undefined,
     stats,
+    isAdmin: !!user?.isAdmin,
+    isModerator: id ? !!moderatorIds?.has(id) : false,
   };
 }
 
@@ -113,22 +116,28 @@ export async function GET(
   }
 
   const topic = await Topic.findById(id)
-    .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt" })
+    .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt isAdmin" })
     .lean();
 
   if (!topic) {
     return NextResponse.json({ error: "Topic not found" }, { status: 404 });
   }
 
+  const isModerator = !!viewerId && hasTopicModeratorRole(topic, viewerId);
+  const canModerate = isAdmin || isModerator;
+  const moderatorIds = new Set(
+    (topic.moderators ?? []).map((value: any) => value?.toString?.()).filter(Boolean)
+  );
+
   const visibilityStatus = topic.visibility?.status;
   const isHidden = !!visibilityStatus && ["hidden", "blocked", "needs_review"].includes(visibilityStatus);
   if (topic.isActive === false || isHidden) {
-    if (!isAdmin) {
+    if (!canModerate) {
       return NextResponse.json({ error: "Topic not found" }, { status: 404 });
     }
   }
 
-  const canSeeModeration = includeModeration && isAdmin;
+  const canSeeModeration = includeModeration && canModerate;
 
   // Arguments ordering: relevant -> score desc then createdAt desc; newest -> createdAt desc
   const argSort: Record<string, 1 | -1> = isRelevant
@@ -152,7 +161,7 @@ export async function GET(
   const argumentsList = await Argument.find(argumentFilters)
     .sort(argSort)
     .limit(numArguments)
-    .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt" })
+    .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt isAdmin" })
     .lean();
 
   // Fetch comments for each argument, ordering by relevancy (approx: newest first for now) or could extend with score if added later
@@ -173,7 +182,7 @@ export async function GET(
     commentDocs = await Comment.find(commentFilters)
       .sort({ createdAt: -1 })
       .limit(500)
-      .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt" })
+      .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt isAdmin" })
       .lean();
   }
 
@@ -252,7 +261,7 @@ export async function GET(
       ) {
         const signedEvidence = await signEvidence(c.evidence ?? []);
         const commenterId = c.createdBy?._id?.toString?.() ?? "";
-        const createdBy = await mapUserSummary(c.createdBy, statsMap.get(commenterId));
+        const createdBy = await mapUserSummary(c.createdBy, statsMap.get(commenterId), moderatorIds as Set<string>);
         (commentsByArgument[key] = commentsByArgument[key] || []).push({
           id: c._id,
           body: c.body,
@@ -303,7 +312,8 @@ export async function GET(
       description: topic.description,
       createdBy: await mapUserSummary(
         topic.createdBy,
-        statsMap.get(topic.createdBy?._id?.toString?.() ?? "")
+        statsMap.get(topic.createdBy?._id?.toString?.() ?? ""),
+        moderatorIds as Set<string>
       ),
       ontologyCategories: topic.ontologyCategories ?? [],
       isActive: topic.isActive,
@@ -330,7 +340,7 @@ export async function GET(
         const commentList = commentsByArgument[a._id.toString()] || [];
         const signedEvidence = await signEvidence(a.evidence ?? []);
         const createdById = a.createdBy?._id?.toString?.() ?? "";
-        const createdBy = await mapUserSummary(a.createdBy, statsMap.get(createdById));
+        const createdBy = await mapUserSummary(a.createdBy, statsMap.get(createdById), moderatorIds as Set<string>);
         const argumentSubscription = (() => {
           if (!viewerId) return undefined;
           const key = `argument:${a._id.toString()}`;
@@ -376,6 +386,9 @@ export async function GET(
       ordering: isRelevant ? "relevant" : "newest",
       returnedArguments: argumentsForResponse.length,
       requestedArguments: numArguments,
+      viewer: viewerId
+        ? { isAdmin, isModerator, canModerate }
+        : { isAdmin: false, isModerator: false, canModerate: false },
     },
   };
 

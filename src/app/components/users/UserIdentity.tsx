@@ -17,6 +17,8 @@ type UserIdentityProps = {
   fallbackLabel?: string;
   showTooltip?: boolean;
   tooltipPlacement?: "top" | "bottom" | "left" | "right";
+  badges?: Array<{ label: string; variant?: string }>;
+  tooltipBadges?: Array<{ label: string; variant?: string }>;
   stats?: {
     posts: number;
     comments: number;
@@ -47,13 +49,28 @@ function formatMemberSince(value?: string | Date | null) {
   return new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(date);
 }
 
-function escapeHtml(value: string) {
+function escapeHtml(value: string | undefined) {
+  if (!value) return "";
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+const BADGE_VARIANTS = new Set([
+  "primary",
+  "secondary",
+  "success",
+  "danger",
+  "warning",
+  "info",
+  "dark",
+]);
+
+function getBadgeVariant(value?: string | undefined) {
+  return BADGE_VARIANTS.has(value ?? "") ? value : "secondary";
 }
 
 export default function UserIdentity({
@@ -69,6 +86,8 @@ export default function UserIdentity({
   fallbackLabel = "Member",
   showTooltip = true,
   tooltipPlacement = "top",
+  badges,
+  tooltipBadges,
   stats,
 }: UserIdentityProps) {
   const tooltipRef = useRef<HTMLSpanElement | null>(null);
@@ -91,6 +110,17 @@ export default function UserIdentity({
       ? `<img src="${safeAvatar}" alt="${safeName}" class="user-tooltip-avatar" />`
       : `<div class="user-tooltip-avatar user-tooltip-initials">${safeInitials}</div>`;
     const metaMarkup = joinedLabel ? `<div class="user-tooltip-meta">${joinedLabel}</div>` : "";
+    const badgeMarkup = Array.isArray(tooltipBadges) && tooltipBadges.length
+      ? `
+        <div class="user-tooltip-badges">
+          ${tooltipBadges.map((badge) => {
+            const label = escapeHtml(badge.label ?? "");
+            const variant = escapeHtml(getBadgeVariant(badge.variant));
+            return `<span class="badge text-bg-${variant}">${label}</span>`;
+          }).join("")}
+        </div>
+      `.trim()
+      : "";
     const statsMarkup = stats
       ? `
         <div class="user-tooltip-stats">
@@ -106,12 +136,13 @@ export default function UserIdentity({
         ${avatarMarkup}
         <div>
           <div class="user-tooltip-name">${safeName}</div>
+          ${badgeMarkup}
           ${metaMarkup}
           ${statsMarkup}
         </div>
       </div>
     `.trim();
-  }, [displayName, initials, memberSince, shouldShowTooltip, resolvedAvatarUrl, stats]);
+  }, [displayName, initials, memberSince, shouldShowTooltip, resolvedAvatarUrl, stats, tooltipBadges]);
 
   useEffect(() => {
     let active = true;
@@ -161,13 +192,27 @@ export default function UserIdentity({
       {...tooltipProps}
     >
       <UserAvatar name={displayName} avatarUrl={resolvedAvatarUrl} size={size} />
-      {userId ? (
-        <Link href={`/profile/${userId}`} className={nameClassName}>
-          {displayName}
-        </Link>
-      ) : (
-        <span className={nameClassName}>{displayName}</span>
-      )}
+      <span className="d-inline-flex align-items-center gap-1">
+        {userId ? (
+          <Link href={`/profile/${userId}`} className={nameClassName}>
+            {displayName}
+          </Link>
+        ) : (
+          <span className={nameClassName}>{displayName}</span>
+        )}
+        {Array.isArray(badges) && badges.length > 0 && (
+          <span className="d-inline-flex align-items-center gap-1">
+            {badges.map((badge) => (
+              <span
+                key={`${badge.label}-${badge.variant ?? "secondary"}`}
+                className={`badge text-bg-${getBadgeVariant(badge.variant)}`}
+              >
+                {badge.label}
+              </span>
+            ))}
+          </span>
+        )}
+      </span>
     </span>
   );
 }

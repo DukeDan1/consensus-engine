@@ -11,6 +11,7 @@ type NotificationPrefs = {
   emailTopics?: boolean;
   emailArguments?: boolean;
   emailUsers?: boolean;
+  emailModeration?: boolean;
 };
 
 type Props = {
@@ -26,6 +27,7 @@ function buildDefaults(initial?: NotificationPrefs | null): Required<Notificatio
     emailTopics: initial?.emailTopics ?? true,
     emailArguments: initial?.emailArguments ?? true,
     emailUsers: initial?.emailUsers ?? true,
+    emailModeration: initial?.emailModeration ?? true,
   };
 }
 
@@ -98,6 +100,15 @@ export default function ProfileNotificationSettings({ userId, initialPreferences
             onChange={(event) => setPrefs((prev) => ({ ...prev, emailUsers: event.target.checked }))}
           />
           <span className="form-check-label">Posts or comments from users you follow</span>
+        </label>
+        <label className="form-check">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={prefs.emailModeration}
+            onChange={(event) => setPrefs((prev) => ({ ...prev, emailModeration: event.target.checked }))}
+          />
+          <span className="form-check-label">Moderator status updates</span>
         </label>
         <div className="d-flex justify-content-end">
           <button type="button" className="btn btn-primary btn-sm" onClick={handleSave} disabled={saving}>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
-import { Topic } from "@/app/models/topic";
+import Topic from "@/app/models/topic";
 import { getTopicSummary } from "@/app/services/topicSummaryService";
 
 export const dynamic = "force-dynamic";

@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 interface IUserPasswordResetCode extends Document {
     user: Types.ObjectId; // Reference to User
@@ -19,4 +19,4 @@ const UserPasswordResetCodeSchema = new Schema<IUserPasswordResetCode>(
     { timestamps: true }
 );
 
-export default mongoose.model<IUserPasswordResetCode>('UserPasswordResetCode', UserPasswordResetCodeSchema);
+export default mongoose.models.UserPasswordResetCode || mongoose.model<IUserPasswordResetCode>('UserPasswordResetCode', UserPasswordResetCodeSchema);
