@@ -65,6 +65,10 @@ export default function CreateNewTopic({ onCreated, onOpenChange }: Props) {
       setDescription("");
       toggleOpen(false);
       toast.success("Topic created successfully!");
+      if (data?.moderatorPromotion?.promoted) {
+        const topicTitle = data?.moderatorPromotion?.topicTitle || data.title;
+        toast.success(topicTitle ? `You're now a moderator for "${topicTitle}".` : "You're now a moderator for this topic.");
+      }
       onCreated?.(created);
     } catch (err: any) {
       setError(err?.message || "Failed to create topic");

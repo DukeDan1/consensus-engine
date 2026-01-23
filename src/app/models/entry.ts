@@ -1,5 +1,5 @@
 // models/Entry.ts
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
 interface IEntry extends Document {
   userId: string;
@@ -16,8 +16,4 @@ const EntrySchema: Schema<IEntry> = new Schema(
   { timestamps: true }
 );
 
-// Prevent recompiling model in dev
-const Entry: Model<IEntry> =
-  mongoose.models.Entry || mongoose.model<IEntry>("Entry", EntrySchema);
-
-export default Entry;
+export default mongoose.models.Entry || mongoose.model<IEntry>("Entry", EntrySchema);

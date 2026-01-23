@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/app/lib/mongoose";
-import { Topic } from "@/app/models/topic";
+import Topic from "@/app/models/topic";
 import User from "@/app/models/user";
 import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
 

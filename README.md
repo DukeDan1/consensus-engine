@@ -46,10 +46,32 @@ This application can also be deployed to other platforms that support Next.js, s
 - `npm run generate-embeddings` — rebuild ontology embeddings after category changes
 - `npm run set-admin -- <userId|email>` — promote a user to admin (sets `isAdmin=true`)
 
-## Admin users
-Admins have access to the moderation queue and can delete any topic, argument, or comment. They can also view and manage content that is held for review or flagged as spam by the moderation system.
+## User roles and moderation
+There are three types of user:
 
-### Add an admin user
+- **Administrator** — has **global access to all moderator capabilities** and can:
+  - Delete any comment, post, or topic
+  - Delete any user
+  - Suspend any user (prevents them from logging in but preserves the content they posted)
+  - Remove or change any user avatar
+  - Review and approve/remove an avatar flagged by Google Vision AI as inappropriate
+  - Approve or remove a post, topic, or comment flagged by the automated moderation system and hidden from view
+  - Access the global **Moderation** page from the menu
+  - Access moderator mode on any topic
+  - Manually promote or demote a moderator on any topic
+  - Disable automatic moderator promotion on a topic (preventing new moderators unless manually added)
+  - Enable automatic moderator promotion on a topic (allowing the system to create moderators again)
+
+  Administrators must be promoted using a command line script (`npm run set-admin -- <userId|email>`) and are intended to be a small number of users who manage the site.
+
+- **Moderator** — a trusted user with moderation capabilities on **specific topics** they moderate, and can:
+  - Delete any comments or posts within the topic
+  - Approve or remove a post or comment flagged by the automated moderation system and hidden from view within the topic
+  - Access moderator mode on the topic
+
+- **User** — an ordinary user with no extra privileges, but with a hidden trust score that influences automated moderation decisions. A moderator is treated as an ordinary user in topics where they are not a moderator.
+
+### Promote an administrator
 You can promote a user via the CLI script (requires `MONGODB_URI`):
 
 ```bash
@@ -57,6 +79,23 @@ npm run set-admin -- user@example.com
 # or
 npm run set-admin -- 64f0c2a7a3b5c2a123456789
 ```
+
+### Automatic moderator promotion/demotion
+To be automatically promoted to **Moderator** for a topic, a user must meet all of the following criteria:
+
+- At least 5 posts/comments in the topic, unless they created the topic
+- Member of the site for at least a month
+- At least 50 posts/comments globally
+- High trust score
+
+A moderator should be automatically **demoted** for a topic if:
+
+- They receive a high number of downvotes and have a downvote-upvote ratio greater than 40% downvotes, with at least 50 total upvotes/downvotes on their posts in that topic
+
+Additional rules:
+
+- If a user meets the global requirements and they create the topic or make one of the first 5 posts/comments, they can be promoted without meeting the minimum post requirement for that topic.
+- Administrators may manually promote or demote a moderator on any topic at their discretion, without these requirements being satisfied.
 
 ## Data and embeddings
 The ontology classification service categorizes topics and arguments. Embeddings are pre-computed and checked into the repo to avoid runtime generation.

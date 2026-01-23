@@ -4,10 +4,10 @@ import fs from "node:fs/promises";
 import mongoose from "mongoose";
 import { dbConnect } from "../lib/mongoose";
 import User from "../models/user";
-import { Topic } from "../models/topic";
-import { Argument, ArgumentSide } from "../models/argument";
-import { Comment } from "../models/comment";
-import { Fact } from "../models/facts";
+import Topic from "../models/topic";
+import Argument, { ArgumentSide } from "../models/argument";
+import Comment from "../models/comment";
+import Fact from "../models/facts";
 
 dotenv.config();
 

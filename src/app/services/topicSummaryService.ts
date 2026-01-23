@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { Argument } from "@/app/models/argument";
+import Argument from "@/app/models/argument";
 
 const MAX_POINTS_PER_COLUMN = 5;
 

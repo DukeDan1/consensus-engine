@@ -1,6 +1,6 @@
 // scripts/createItem.ts
 import { dbConnect } from "@/app/lib/mongoose";
-import { Item, IItem } from "@/app/models/item";
+import Item, { IItem } from "@/app/models/item";
 
 async function createItem(): Promise<void> {
   await dbConnect();

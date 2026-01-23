@@ -71,6 +71,9 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
             } else if (status === "visible") {
                 toast.success("Comment posted");
             }
+            if (data?.moderatorPromotion?.promoted) {
+                toast.success("You're now a moderator for this topic.");
+            }
         } catch (err) {
             // ignore network errors here; you can add toast/snackbar handling
             console.error("Submit comment failed", err);

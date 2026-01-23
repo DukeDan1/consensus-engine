@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { dbConnect } from "@/app/lib/mongoose";
-import { Vote } from "@/app/models/vote";
-import { Argument } from "@/app/models/argument";
-import { Comment } from "@/app/models/comment";
+import Vote from "@/app/models/vote";
+import Argument from "@/app/models/argument";
+import Comment from "@/app/models/comment";
+import Topic from "@/app/models/topic";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
+import { maybeDemoteModeratorForTopic } from "@/app/services/topicModeratorService";
+import { buildBaseUrl } from "@/app/lib/commonFunctions";
+import { notifyModeratorStatusChange } from "@/app/services/moderatorNotificationService";
 
 type Body = {
     targetType: "Argument" | "Topic" | "Comment";
@@ -68,12 +72,65 @@ export async function POST(req: Request) {
                 downvoteCount: downCount,
                 score: upCount - downCount,
             }).exec();
+            const argument = await Argument.findById(targetObjectId)
+                .select({ createdBy: 1, topic: 1 })
+                .lean();
+            if (argument?.createdBy && argument?.topic) {
+                const demotionTask = (async () => {
+                    const result = await maybeDemoteModeratorForTopic({
+                        userId: argument.createdBy.toString(),
+                        topicId: argument.topic.toString(),
+                    });
+                    if (result?.demoted) {
+                        const topic = await Topic.findById(argument.topic).select({ title: 1 }).lean();
+                        const baseUrl = buildBaseUrl(req.headers);
+                        void notifyModeratorStatusChange({
+                            recipientId: argument.createdBy.toString(),
+                            topicId: argument.topic.toString(),
+                            topicTitle: topic?.title ?? "this topic",
+                            action: "removed",
+                            source: "community",
+                            baseUrl,
+                        });
+                    }
+                })();
+                demotionTask.catch((err) => console.error("Moderator demotion check failed", err));
+            }
         } else if (targetType === "Comment") {
             await Comment.findByIdAndUpdate(targetObjectId, {
                 upvoteCount: upCount,
                 downvoteCount: downCount,
                 score: upCount - downCount,
             }).exec();
+            const comment = await Comment.findById(targetObjectId)
+                .select({ createdBy: 1, argument: 1 })
+                .lean();
+            if (comment?.createdBy && comment?.argument) {
+                const argument = await Argument.findById(comment.argument)
+                    .select({ topic: 1 })
+                    .lean();
+                if (argument?.topic) {
+                    const demotionTask = (async () => {
+                        const result = await maybeDemoteModeratorForTopic({
+                            userId: comment.createdBy.toString(),
+                            topicId: argument.topic.toString(),
+                        });
+                        if (result?.demoted) {
+                            const topic = await Topic.findById(argument.topic).select({ title: 1 }).lean();
+                            const baseUrl = buildBaseUrl(req.headers);
+                            void notifyModeratorStatusChange({
+                                recipientId: comment.createdBy.toString(),
+                                topicId: argument.topic.toString(),
+                                topicTitle: topic?.title ?? "this topic",
+                                action: "removed",
+                                source: "community",
+                                baseUrl,
+                            });
+                        }
+                    })();
+                    demotionTask.catch((err) => console.error("Moderator demotion check failed", err));
+                }
+            }
         }
 
         return NextResponse.json({ upvoteCount: upCount, downvoteCount: downCount });

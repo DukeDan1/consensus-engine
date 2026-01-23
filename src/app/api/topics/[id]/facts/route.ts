@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
-import { Fact } from "@/app/models/facts";
-import { Topic } from "@/app/models/topic";
+import Fact from "@/app/models/facts";
+import Topic from "@/app/models/topic";
 
 export const dynamic = "force-dynamic";
 

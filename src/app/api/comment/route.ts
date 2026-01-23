@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { dbConnect } from "@/app/lib/mongoose";
-import { Comment } from "@/app/models/comment";
-import { Argument } from "@/app/models/argument";
+import Comment from "@/app/models/comment";
+import Argument from "@/app/models/argument";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
 import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
@@ -13,13 +13,15 @@ import { sanitiseEvidence, type EvidenceItemInput } from "@/app/lib/evidence";
 import { deleteEvidenceFiles } from "@/app/services/evidenceCleanupService";
 import { sendEmail } from "@/app/services/emailService";
 import { buildBaseUrl } from "@/app/lib/commonFunctions";
-import { Notification } from "@/app/models/notification";
-import { NotificationSubscription } from "@/app/models/notificationSubscription";
-import { Topic } from "@/app/models/topic";
+import Notification from "@/app/models/notification";
+import NotificationSubscription from "@/app/models/notificationSubscription";
+import Topic from "@/app/models/topic";
 import PostApprovedEmail from "@/app/emails/templates/PostApprovedEmail";
 import { renderEmail } from "@/app/emails/renderEmail";
-import { UserFollow } from "@/app/models/userFollow";
+import UserFollow from "@/app/models/userFollow";
 import { sendNotificationEmails } from "@/app/services/notificationEmailService";
+import { hasTopicModeratorRole, maybeAutoPromoteModerator } from "@/app/services/topicModeratorService";
+import { notifyModeratorStatusChange } from "@/app/services/moderatorNotificationService";
 
 type Body = {
     argumentId: string;
@@ -128,6 +130,32 @@ export async function POST(req: Request) {
                 delta: moderation.recommendedTrustDelta,
                 reason: "moderation:comment",
                 meta: { categories: moderation.categories, severity: moderation.severity },
+            });
+        }
+
+        let moderatorPromotion = { promoted: false };
+        const topicId = parentArgument?.topic?.toString?.() ?? "";
+        try {
+            if (topicId) {
+                moderatorPromotion = await maybeAutoPromoteModerator({
+                    userId: user._id.toString(),
+                    topicId,
+                });
+            }
+        } catch (err) {
+            console.error("Auto-promote moderator failed", err);
+        }
+
+        if (moderatorPromotion?.promoted && topicId) {
+            const topic = await Topic.findById(topicId).select({ title: 1 }).lean();
+            const baseUrl = buildBaseUrl(req.headers);
+            void notifyModeratorStatusChange({
+                recipientId: user._id.toString(),
+                topicId,
+                topicTitle: topic?.title ?? "this topic",
+                action: "promoted",
+                source: "auto",
+                baseUrl,
             });
         }
 
@@ -296,6 +324,9 @@ export async function POST(req: Request) {
             ontologyCategories: created.ontologyCategories ?? [],
             evidence: created.evidence ?? [],
             visibility: created.visibility,
+            moderatorPromotion: moderatorPromotion?.promoted
+                ? { promoted: true, topicId: parentArgument?.topic?.toString?.() ?? "" }
+                : { promoted: false },
         });
     } catch (err: any) {
         console.error("Create comment error", err);
@@ -325,14 +356,24 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ error: "Invalid comment id" }, { status: 400 });
     }
 
-    const comment = await Comment.findById(targetId).select({ createdBy: 1, evidence: 1, isRemoved: 1 }).lean();
+    const comment = await Comment.findById(targetId)
+        .select({ createdBy: 1, evidence: 1, isRemoved: 1, argument: 1 })
+        .lean();
     if (!comment) {
         return NextResponse.json({ error: "Comment not found" }, { status: 404 });
     }
 
     const ownerId = typeof comment.createdBy?.toString === "function" ? comment.createdBy.toString() : String(comment.createdBy);
     const userId = typeof user._id?.toString === "function" ? user._id.toString() : String(user._id);
-    const canDelete = user.isAdmin || ownerId === userId;
+    let isModerator = false;
+    if (!user.isAdmin && comment?.argument) {
+        const argument = await Argument.findById(comment.argument).select({ topic: 1 }).lean();
+        if (argument?.topic) {
+            const topic = await Topic.findById(argument.topic).select({ moderators: 1 }).lean();
+            isModerator = hasTopicModeratorRole(topic, userId);
+        }
+    }
+    const canDelete = user.isAdmin || ownerId === userId || isModerator;
     if (!canDelete) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -360,8 +401,8 @@ export async function PATCH(req: Request) {
     }
 
     const user = await User.findOne({ email: session.user.email }).select({ _id: 1, isAdmin: 1 }).lean();
-    if (!user?.isAdmin) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!user?._id) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const payload = await req.json().catch(() => ({}));
@@ -380,6 +421,19 @@ export async function PATCH(req: Request) {
     }
     if (existing.isRemoved) {
         return NextResponse.json({ error: "Comment is deleted" }, { status: 409 });
+    }
+
+    const userId = user._id.toString();
+    let isModerator = false;
+    if (!user.isAdmin && existing?.argument) {
+        const argument = await Argument.findById(existing.argument).select({ topic: 1 }).lean();
+        if (argument?.topic) {
+            const topic = await Topic.findById(argument.topic).select({ moderators: 1 }).lean();
+            isModerator = hasTopicModeratorRole(topic, userId);
+        }
+    }
+    if (!user.isAdmin && !isModerator) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const updated = await Comment.findByIdAndUpdate(

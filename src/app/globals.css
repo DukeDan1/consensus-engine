@@ -95,6 +95,18 @@ body {
   color: #d1d5db;
 }
 
+.user-tooltip-badges {
+  margin-top: 0.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.user-tooltip-badges .badge {
+  font-size: 0.65rem;
+  letter-spacing: 0.02em;
+}
+
 .user-tooltip-stats {
   margin-top: 0.5rem;
   display: grid;

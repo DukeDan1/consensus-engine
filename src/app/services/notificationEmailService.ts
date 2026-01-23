@@ -3,7 +3,7 @@ import { sendEmail } from "@/app/services/emailService";
 import { renderEmail } from "@/app/emails/renderEmail";
 import ActivityNotificationEmail from "@/app/emails/templates/ActivityNotificationEmail";
 
-type PreferenceKey = "emailTopics" | "emailArguments" | "emailUsers";
+type PreferenceKey = "emailTopics" | "emailArguments" | "emailUsers" | "emailModeration";
 
 type NotificationEmailOptions = {
   recipientIds: string[];

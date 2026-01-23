@@ -103,4 +103,5 @@ CommentSchema.index({ argument: 1, createdAt: 1 });
 CommentSchema.index({ "ontologyCategories.id": 1, argument: 1 });
 CommentSchema.index({ argument: 1, "visibility.status": 1, createdAt: -1 });
 
-export const Comment = (mongoose.models.Comment as mongoose.Model<IComment>) || mongoose.model<IComment>("Comment", CommentSchema);
+
+export default mongoose.models.Comment || mongoose.model<IComment>("Comment", CommentSchema);

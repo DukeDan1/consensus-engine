@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
 import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
-import { UserFollow } from "@/app/models/userFollow";
+import UserFollow from "@/app/models/userFollow";
 
 export async function GET(req: Request) {
   await dbConnect();

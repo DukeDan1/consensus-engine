@@ -14,6 +14,7 @@ type Props = {
   avatarThumbUrl?: string | null;
   email?: string | null;
   canViewEmail?: boolean;
+  isAdmin?: boolean;
   isSuspended?: boolean;
   stats?: {
     posts: number;
@@ -31,13 +32,14 @@ export default function ProfileHeaderClient({
   avatarThumbUrl,
   email,
   canViewEmail = false,
+  isAdmin = false,
   isSuspended = false,
   stats,
 }: Props) {
   const { data: session } = useSession();
   const isOwner = !!session?.user?.id && session.user.id === userId;
-  const isAdmin = !!session?.user?.isAdmin;
-  const canManageAvatar = isOwner || isAdmin;
+  const viewerIsAdmin = !!session?.user?.isAdmin;
+  const canManageAvatar = isOwner || viewerIsAdmin;
   const [showEmail, setShowEmail] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(avatarUrl ?? avatarThumbUrl ?? null);
   const [followerCount, setFollowerCount] = useState(stats?.followers ?? 0);
@@ -86,6 +88,7 @@ export default function ProfileHeaderClient({
       <div className="text-center text-md-start">
         <div className="d-flex flex-wrap align-items-center gap-2">
           <h1 className="h3 mb-1">{displayName}</h1>
+          {isAdmin && <span className="badge text-bg-primary">ADMIN</span>}
           {isSuspended && <span className="badge text-bg-danger">SUSPENDED</span>}
         </div>
         {memberSince && <p className="text-muted small mb-2">Member since {memberSince}</p>}

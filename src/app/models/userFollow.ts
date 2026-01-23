@@ -18,6 +18,6 @@ const UserFollowSchema = new Schema<IUserFollow>(
 UserFollowSchema.index({ followerId: 1, targetUserId: 1 }, { unique: true });
 UserFollowSchema.index({ targetUserId: 1, createdAt: -1 });
 
-export const UserFollow =
-  (mongoose.models.UserFollow as mongoose.Model<IUserFollow>) ||
-  mongoose.model<IUserFollow>("UserFollow", UserFollowSchema);
+
+
+export default mongoose.models.UserFollow || mongoose.model<IUserFollow>("UserFollow", UserFollowSchema);

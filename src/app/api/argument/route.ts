@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { dbConnect } from "@/app/lib/mongoose";
-import { Argument, ArgumentSide } from "@/app/models/argument";
-import { Topic } from "@/app/models/topic";
+import Argument, { ArgumentSide } from "@/app/models/argument";
+import Topic from "@/app/models/topic";
 import { getAIAnalysisForArgument } from "@/app/services/openaiService";
-import { Fact } from "@/app/models/facts";
+import Fact from "@/app/models/facts";
 import User from "@/app/models/user";
 import mongoose from "mongoose";
 import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
@@ -15,12 +15,14 @@ import { sanitiseEvidence, type EvidenceItemInput } from "@/app/lib/evidence";
 import { deleteEvidenceFiles } from "@/app/services/evidenceCleanupService";
 import { sendEmail } from "@/app/services/emailService";
 import { buildBaseUrl } from "@/app/lib/commonFunctions";
-import { NotificationSubscription } from "@/app/models/notificationSubscription";
-import { Notification } from "@/app/models/notification";
-import { UserFollow } from "@/app/models/userFollow";
+import NotificationSubscription from "@/app/models/notificationSubscription";
+import Notification from "@/app/models/notification";
+import UserFollow from "@/app/models/userFollow";
 import PostApprovedEmail from "@/app/emails/templates/PostApprovedEmail";
 import { renderEmail } from "@/app/emails/renderEmail";
 import { sendNotificationEmails } from "@/app/services/notificationEmailService";
+import { hasTopicModeratorRole, maybeAutoPromoteModerator } from "@/app/services/topicModeratorService";
+import { notifyModeratorStatusChange } from "@/app/services/moderatorNotificationService";
 
 type Body = {
     topicId: string;
@@ -131,6 +133,28 @@ export async function POST(req: Request) {
                 delta: moderation.recommendedTrustDelta,
                 reason: "moderation:argument",
                 meta: { categories: moderation.categories, severity: moderation.severity },
+            });
+        }
+
+        let moderatorPromotion = { promoted: false };
+        try {
+            moderatorPromotion = await maybeAutoPromoteModerator({
+                userId: user._id.toString(),
+                topicId: topicObjId.toString(),
+            });
+        } catch (err) {
+            console.error("Auto-promote moderator failed", err);
+        }
+
+        if (moderatorPromotion?.promoted) {
+            const baseUrl = buildBaseUrl(req.headers);
+            void notifyModeratorStatusChange({
+                recipientId: user._id.toString(),
+                topicId: topicObjId.toString(),
+                topicTitle: topic?.title ?? "this topic",
+                action: "promoted",
+                source: "auto",
+                baseUrl,
             });
         }
         
@@ -281,6 +305,9 @@ export async function POST(req: Request) {
             evidence: created.evidence ?? [],
             visibility: created.visibility,
             comments: [],
+            moderatorPromotion: moderatorPromotion?.promoted
+                ? { promoted: true, topicId: topicObjId.toString(), topicTitle: topic?.title ?? undefined }
+                : { promoted: false },
         });
     } catch (err: any) {
         console.error("Create argument error", err);
@@ -310,14 +337,22 @@ export async function DELETE(req: Request) {
         return NextResponse.json({ error: "Invalid argument id" }, { status: 400 });
     }
 
-    const argument = await Argument.findById(targetId).select({ createdBy: 1, evidence: 1, isRemoved: 1 }).lean();
+    const argument = await Argument.findById(targetId)
+        .select({ createdBy: 1, evidence: 1, isRemoved: 1, topic: 1 })
+        .lean();
     if (!argument) {
         return NextResponse.json({ error: "Argument not found" }, { status: 404 });
     }
 
     const ownerId = typeof argument.createdBy?.toString === "function" ? argument.createdBy.toString() : String(argument.createdBy);
     const userId = typeof user._id?.toString === "function" ? user._id.toString() : String(user._id);
-    const canDelete = user.isAdmin || ownerId === userId;
+    let isModerator = false;
+    if (!user.isAdmin && argument?.topic) {
+        const topic = await Topic.findById(argument.topic).select({ moderators: 1 }).lean();
+        isModerator = hasTopicModeratorRole(topic, userId);
+    }
+
+    const canDelete = user.isAdmin || ownerId === userId || isModerator;
     if (!canDelete) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -345,8 +380,8 @@ export async function PATCH(req: Request) {
     }
 
     const user = await User.findOne({ email: session.user.email }).select({ _id: 1, isAdmin: 1 }).lean();
-    if (!user?.isAdmin) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    if (!user?._id) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const payload = await req.json().catch(() => ({}));
@@ -367,6 +402,16 @@ export async function PATCH(req: Request) {
     }
     if (existing.isRemoved) {
         return NextResponse.json({ error: "Argument is deleted" }, { status: 409 });
+    }
+
+    const userId = user._id.toString();
+    let isModerator = false;
+    if (!user.isAdmin && existing?.topic) {
+        const topic = await Topic.findById(existing.topic).select({ moderators: 1 }).lean();
+        isModerator = hasTopicModeratorRole(topic, userId);
+    }
+    if (!user.isAdmin && !isModerator) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const updated = await Argument.findByIdAndUpdate(

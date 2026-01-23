@@ -9,6 +9,7 @@ interface UserPreferences {
     emailTopics?: boolean;
     emailArguments?: boolean;
     emailUsers?: boolean;
+    emailModeration?: boolean;
   };
   language?: "en" | "fr" | "es" | "de" | "hi" | "ml"; // can expand later
   custom?: Record<string, string | number | boolean>;
@@ -127,6 +128,7 @@ const UserSchema = new Schema<IUser>(
         emailTopics: { type: Boolean, default: true },
         emailArguments: { type: Boolean, default: true },
         emailUsers: { type: Boolean, default: true },
+        emailModeration: { type: Boolean, default: true },
       },
       language: { type: String, enum: ["en", "fr", "es", "de", "hi", "ml"], default: "en" },
       custom: { type: Map, of: Schema.Types.Mixed },

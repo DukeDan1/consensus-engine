@@ -34,4 +34,5 @@ const TopicSummarySchema = new Schema<ITopicSummary>({
     },
 });
 
-export const TopicSummary = mongoose.models.TopicSummary || mongoose.model<ITopicSummary>("TopicSummary", TopicSummarySchema);
+
+export default mongoose.models.TopicSummary || mongoose.model<ITopicSummary>("TopicSummary", TopicSummarySchema);

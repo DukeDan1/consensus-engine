@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { headers } from "next/headers";
-import { getServerSession } from "next-auth";
 export const dynamic = "force-dynamic"; // render server-side on each request
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
 import ArgumentCard from "@/app/components/ArgumentCard";
@@ -12,8 +11,6 @@ import TopicAdminActions from "@/app/components/topics/TopicAdminActions";
 import UserIdentity from "@/app/components/users/UserIdentity";
 import NotificationSubscribeButton from "@/app/components/notifications/NotificationSubscribeButton";
 import { buildBaseUrl } from "@/app/lib/commonFunctions";
-import { dbConnect } from "@/app/lib/mongoose";
-import User from "@/app/models/user";
 
 async function fetchTopicBundle(
   id: string,
@@ -75,24 +72,17 @@ export default async function TopicPage({ params, searchParams }: any) {
   const commentQuery = typeof resolvedSearchParams?.commentQuery === "string"
     ? resolvedSearchParams.commentQuery.trim()
     : "";
-
-  const session = await getServerSession();
-  let isAdmin = false;
-  if (session?.user?.email) {
-    await dbConnect();
-    const adminUser = await User.findOne({ email: session.user.email }).select({ isAdmin: 1 }).lean();
-    isAdmin = !!adminUser?.isAdmin;
-  }
   const moderatorRequested = resolvedSearchParams?.moderator === "1";
-  const moderatorMode = isAdmin && moderatorRequested;
-
   const data = await fetchTopicBundle(id, ordering, numArgs, {
     argumentQuery,
     commentQuery,
-  }, moderatorMode, incomingHeaders);
+  }, moderatorRequested, incomingHeaders);
   if (!data) return notFound();
 
   const t = data.topic;
+  const canModerate = !!data?.meta?.viewer?.canModerate;
+  const moderatorMode = moderatorRequested && canModerate;
+  const moderatorQuery = moderatorMode ? { moderator: "1" } : {};
 
   return (
     <div className="container py-4">
@@ -126,6 +116,8 @@ export default async function TopicPage({ params, searchParams }: any) {
               className="small text-muted"
               nameClassName="author-link text-muted"
               fallbackLabel="Unknown"
+              badges={t.createdBy?.isModerator ? [{ label: "MOD", variant: "secondary" }] : undefined}
+              tooltipBadges={t.createdBy?.isAdmin ? [{ label: "ADMIN", variant: "danger" }] : undefined}
               stats={t.createdBy?.stats}
             />
           </div>
@@ -153,7 +145,7 @@ export default async function TopicPage({ params, searchParams }: any) {
                   num_arguments: String(numArgs),
                   ...(argumentQuery ? { argumentQuery } : {}),
                   ...(commentQuery ? { commentQuery } : {}),
-                  ...(moderatorMode ? { moderator: "1" } : {}),
+                  ...moderatorQuery,
                 },
               }}
               className={`btn btn-outline-secondary ${data.meta.ordering === "relevant" ? "active" : ""}`}
@@ -168,7 +160,7 @@ export default async function TopicPage({ params, searchParams }: any) {
                   num_arguments: String(numArgs),
                   ...(argumentQuery ? { argumentQuery } : {}),
                   ...(commentQuery ? { commentQuery } : {}),
-                  ...(moderatorMode ? { moderator: "1" } : {}),
+                  ...moderatorQuery,
                 },
               }}
               className={`btn btn-outline-secondary ${data.meta.ordering === "newest" ? "active" : ""}`}
@@ -176,7 +168,7 @@ export default async function TopicPage({ params, searchParams }: any) {
               New
             </Link>
           </div>
-          {isAdmin && (
+          {canModerate && (
             <Link
               href={{
                 pathname: `/topics/${id}`,
@@ -236,7 +228,7 @@ export default async function TopicPage({ params, searchParams }: any) {
             <h5 className="mb-3">Posts</h5>
           </div>
           {data.arguments.map((a) => (
-            <ArgumentCard argument={a} key={a.id} moderatorMode={moderatorMode} />
+            <ArgumentCard argument={a} key={a.id} moderatorMode={moderatorMode} topicId={t.id} />
           ))}
         </div>
       )}
