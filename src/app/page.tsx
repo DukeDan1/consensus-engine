@@ -7,7 +7,7 @@ export default async function Home() {
   return (
     <div className="container">
       {/* Hero Section */}
-      <div className="row justify-content-center py-5">
+      <div className="row justify-content-center py-5 home-hero">
         <div className="col-lg-10 text-center">
           <h1 className="display-4 fw-bold mb-4">
             Welcome to Consensus Engine
@@ -16,7 +16,7 @@ export default async function Home() {
             Join the conversation and discover what people are debating about. 
             Share your perspective, vote on posts, and help build consensus on important topics.
           </p>
-          <div className="d-flex gap-3 justify-content-center flex-wrap">
+          <div className="d-flex gap-3 justify-content-center flex-wrap home-hero-actions">
             <Link href="/register" className="btn btn-primary btn-lg px-5">
               <i className="fa-solid fa-user-plus me-2" aria-hidden="true"></i>
               Get Started
@@ -30,7 +30,7 @@ export default async function Home() {
       </div>
 
       {/* Features Section */}
-      <div className="row py-5">
+      <div className="row py-5 home-section">
         <div className="col-md-4 mb-4">
           <div className="text-center">
             <div className="mb-3">
@@ -67,7 +67,7 @@ export default async function Home() {
       </div>
 
       {/* Featured Topics Section */}
-      <div className="py-5">
+      <div className="py-5 home-section">
         <div className="row mb-4">
           <div className="col">
             <h2 className="h3 mb-1">Featured Debates</h2>
@@ -78,9 +78,9 @@ export default async function Home() {
       </div>
 
       {/* Call to Action */}
-      <div className="row justify-content-center py-5">
+      <div className="row justify-content-center py-5 home-section">
         <div className="col-lg-8 text-center">
-          <div className="card border-primary">
+          <div className="card border-primary home-cta-card">
             <div className="card-body py-5">
               <h3 className="h4 mb-3">Ready to Join?</h3>
               <p className="mb-4">

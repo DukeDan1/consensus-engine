@@ -27,6 +27,43 @@ body {
   color: var(--foreground);
 }
 
+@media (max-width: 575.98px) {
+  .container {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .home-hero {
+    padding-top: 2.5rem !important;
+    padding-bottom: 2.5rem !important;
+  }
+
+  .home-hero h1 {
+    font-size: 2.25rem;
+  }
+
+  .home-hero .lead {
+    font-size: 1rem;
+  }
+
+  .home-hero-actions {
+    width: 100%;
+  }
+
+  .home-hero-actions .btn {
+    width: 100%;
+  }
+
+  .home-section {
+    padding-top: 2.5rem !important;
+    padding-bottom: 2.5rem !important;
+  }
+
+  .home-cta-card .card-body {
+    padding: 2rem 1.5rem !important;
+  }
+}
+
 .text-bg-purple {
   --bs-bg-opacity: 1;
   background-color: #920fd4d1 !important;
