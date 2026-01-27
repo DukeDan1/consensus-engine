@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
@@ -80,6 +80,76 @@ function getVisibilityLabel(status?: string) {
     return "Hidden";
 }
 
+function FactCheckBadge({ factCheck }: { factCheck?: any }) {
+    const badgeRef = useRef<HTMLSpanElement | null>(null);
+    const verdict = factCheck?.verdict;
+    if (!verdict || verdict === "unverified") return null;
+    const meta =
+        verdict === "verified"
+            ? { label: "Verified", className: "text-bg-success" }
+            : verdict === "inaccurate"
+                ? { label: "Inaccurate", className: "text-bg-danger" }
+                : { label: "Accuracy unknown", className: "text-bg-warning" };
+    const summary = factCheck?.summary ? String(factCheck.summary).trim() : "";
+    const qualityScore = typeof factCheck?.qualityScore === "number" ? Math.round(factCheck.qualityScore) : null;
+    const confidence =
+        typeof factCheck?.confidence === "number"
+            ? `${Math.round(factCheck.confidence * 100)}%`
+            : null;
+    const detailBits = [
+        summary ? `Summary: ${summary}` : null,
+        qualityScore !== null ? `Quality: ${qualityScore}/100` : null,
+        confidence ? `Confidence: ${confidence}` : null,
+    ].filter(Boolean);
+    const title = detailBits.length ? detailBits.join(" • ") : undefined;
+
+    useEffect(() => {
+        let tooltipInstance: any;
+        const setupTooltip = async () => {
+            if (!badgeRef.current || !title) return;
+            const Tooltip = (await import("bootstrap/js/dist/tooltip")).default;
+            tooltipInstance = new Tooltip(badgeRef.current);
+        };
+        setupTooltip();
+        return () => {
+            if (tooltipInstance?.dispose) {
+                tooltipInstance.dispose();
+            }
+        };
+    }, [title]);
+
+    return (
+        <span
+            ref={badgeRef}
+            className={`badge ${meta.className}`}
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title={title}
+        >
+            {meta.label}
+        </span>
+    );
+}
+
+function RelativeTime({ value }: { value?: string | Date | null }) {
+    const [label, setLabel] = useState("");
+
+    useEffect(() => {
+        if (!value) {
+            setLabel("");
+            return;
+        }
+        setLabel(timeAgo(value as string));
+    }, [value]);
+
+    if (!value) return null;
+    return (
+        <span className="text-muted small" suppressHydrationWarning>
+            {label}
+        </span>
+    );
+}
+
 function EvidenceImageItem({ item, label }: { item: any; label: string }) {
     const [showDetails, setShowDetails] = useState(false);
     const url = item?.url;
@@ -157,6 +227,11 @@ function EvidenceImageItem({ item, label }: { item: any; label: string }) {
                     </a>
                 </div>
             )}
+            {item?.factCheck?.verdict && item.factCheck.verdict !== "unverified" ? (
+                <div className="mt-1">
+                    <FactCheckBadge factCheck={item?.factCheck} />
+                </div>
+            ) : null}
         </div>
     );
 }
@@ -176,17 +251,19 @@ function EvidenceList({ evidence }: { evidence?: any[] }) {
                         return <EvidenceImageItem key={`${url}-${idx}`} item={item} label={label} />;
                     }
                     return (
-                        <a
-                            key={`${url}-${idx}`}
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="badge text-bg-secondary text-decoration-none"
-                            title={label}
-                        >
-                            <i className="fa-solid fa-paperclip me-1" aria-hidden="true"></i>
-                            {label?.slice(0, 40)}
-                        </a>
+                        <div key={`${url}-${idx}`} className="d-flex align-items-center gap-1 w-100">
+                            <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="badge text-bg-secondary text-decoration-none"
+                                title={label}
+                            >
+                                <i className="fa-solid fa-paperclip me-1" aria-hidden="true"></i>
+                                {label?.slice(0, 40)}
+                            </a>
+                            <FactCheckBadge factCheck={item?.factCheck} />
+                        </div>
                     );
                 })}
             </div>
@@ -415,11 +492,6 @@ export default function ArgumentCard({
         }
     }
 
-    const createdLabel = useMemo(() => {
-        if (!argument?.createdAt) return "";
-        return timeAgo(argument.createdAt);
-    }, [argument.createdAt]);
-
     const author = resolveUserSummary(argument.createdBy);
     const authorId = author.id;
     const currentUserId = session?.user?.id;
@@ -504,7 +576,7 @@ export default function ArgumentCard({
                                         </button>
                                     )}
                                 </div>
-                                <small className="text-muted d-block">{createdLabel}</small>
+                                <RelativeTime value={argument?.createdAt} />
                             </div>
 
                             <div className="d-flex align-items-center gap-2 align-self-end">
@@ -630,7 +702,7 @@ export default function ArgumentCard({
                                                                 {commenterIsModerator ? "Remove Moderator" : "Promote to Moderator"}
                                                             </button>
                                                         )}
-                                                        <span className="text-muted small">{c.createdAt ? timeAgo(c.createdAt) : ""}</span>
+                                                        <RelativeTime value={c.createdAt} />
                                                     </div>
                                                     <div className="d-flex align-items-center gap-2">
                                                         <button

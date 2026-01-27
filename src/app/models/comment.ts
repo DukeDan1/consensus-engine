@@ -1,4 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import { FactCheckVerdict } from "@/app/lib/evidence";
+
 export interface IComment extends Document {
   argument: Types.ObjectId;
   parent?: Types.ObjectId; // for threading
@@ -29,7 +31,17 @@ export interface IComment extends Document {
     originalPreviewUrl?: string;
     blurred?: boolean;
     blurReasons?: string[];
+    factCheck?: {
+      verdict?: FactCheckVerdict;
+      qualityScore?: number;
+      confidence?: number;
+      summary?: string;
+      checkedAt?: Date;
+      model?: string;
+    };
   }>;
+
+  evidenceRankScore?: number;
 
   visibility?: {
     status: 'visible' | 'hidden' | 'needs_review' | 'blocked';
@@ -80,10 +92,19 @@ const CommentSchema = new Schema<IComment>({
         originalPreviewUrl: { type: String },
         blurred: { type: Boolean },
         blurReasons: { type: [String], default: [] },
+        factCheck: {
+          verdict: { type: String, enum: ["verified", "inaccurate", "mixed", "unverified"] },
+          qualityScore: { type: Number },
+          confidence: { type: Number },
+          summary: { type: String },
+          checkedAt: { type: Date },
+          model: { type: String },
+        },
       }
     ],
     default: [],
   },
+  evidenceRankScore: { type: Number, default: 0 },
   visibility: {
     status: { type: String, enum: ['visible', 'hidden', 'needs_review', 'blocked'], default: 'visible', index: true },
     rankPenalty: { type: Number, default: 0 },

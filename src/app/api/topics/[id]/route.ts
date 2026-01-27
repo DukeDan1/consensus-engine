@@ -11,6 +11,7 @@ import { getServerSession } from "next-auth";
 import NotificationSubscription from "@/app/models/notificationSubscription";
 import UserFollow from "@/app/models/userFollow";
 import { hasTopicModeratorRole } from "@/app/services/topicModeratorService";
+import { effectiveScore } from "@/app/services/evidenceFactCheckService";
 
 async function signEvidence(evidence: any[] = []) {
   return Promise.all(
@@ -143,6 +144,7 @@ export async function GET(
   const argSort: Record<string, 1 | -1> = isRelevant
     ? { score: -1, createdAt: -1 }
     : { createdAt: -1 };
+  const argumentFetchLimit = isRelevant ? Math.min(numArguments * 3, 200) : numArguments;
 
   const argumentFilters: Record<string, any> = canSeeModeration
     ? { topic: topic._id }
@@ -160,7 +162,7 @@ export async function GET(
 
   const argumentsList = await Argument.find(argumentFilters)
     .sort(argSort)
-    .limit(numArguments)
+    .limit(argumentFetchLimit)
     .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt isAdmin" })
     .lean();
 
@@ -279,9 +281,20 @@ export async function GET(
     }
   }
 
-  const argumentsForResponse = commentTextQuery
-    ? argumentsList.filter((arg) => (commentsByArgument[arg._id.toString()] ?? []).length > 0)
+  const orderedArguments = isRelevant
+    ? [...argumentsList].sort((a, b) => {
+        const aScore = effectiveScore(a.score, (a as any).evidenceRankScore);
+        const bScore = effectiveScore(b.score, (b as any).evidenceRankScore);
+        if (bScore !== aScore) return bScore - aScore;
+        return (b.createdAt?.getTime?.() ?? 0) - (a.createdAt?.getTime?.() ?? 0);
+      })
     : argumentsList;
+
+  const argumentsForResponse = commentTextQuery
+    ? orderedArguments.filter((arg) => (commentsByArgument[arg._id.toString()] ?? []).length > 0)
+    : orderedArguments;
+
+  const limitedArguments = isRelevant ? argumentsForResponse.slice(0, numArguments) : argumentsForResponse;
 
   const subscriptionMap = new Map<string, { muted?: boolean }>();
   if (viewerId) {
@@ -334,7 +347,7 @@ export async function GET(
         : {}),
     },
     arguments: await Promise.all(
-      argumentsForResponse.map(async (a) => {
+      limitedArguments.map(async (a) => {
         const rawSide = (a as any).side as string;
         const normalisedSide = rawSide === "pro" ? "for" : (rawSide === "con" ? "against" : rawSide);
         const commentList = commentsByArgument[a._id.toString()] || [];
@@ -384,7 +397,7 @@ export async function GET(
     })),
     meta: {
       ordering: isRelevant ? "relevant" : "newest",
-      returnedArguments: argumentsForResponse.length,
+      returnedArguments: limitedArguments.length,
       requestedArguments: numArguments,
       viewer: viewerId
         ? { isAdmin, isModerator, canModerate }

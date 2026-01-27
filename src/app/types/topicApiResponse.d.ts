@@ -1,3 +1,5 @@
+import { FactCheckVerdict } from "@/app/lib/evidence";
+
 type UserSummary = {
   _id?: string;
   name?: string;
@@ -66,6 +68,14 @@ export type TopicApiResponse = {
       originalPreviewUrl?: string;
       blurred?: boolean;
       blurReasons?: string[];
+      factCheck?: {
+        verdict?: FactCheckVerdict;
+        qualityScore?: number;
+        confidence?: number;
+        summary?: string;
+        checkedAt?: string | Date;
+        model?: string;
+      };
     }>;
     visibility?: {
       status?: 'visible' | 'hidden' | 'needs_review' | 'blocked';
@@ -105,6 +115,14 @@ export type TopicApiResponse = {
         originalPreviewUrl?: string;
         blurred?: boolean;
         blurReasons?: string[];
+        factCheck?: {
+          verdict?: FactCheckVerdict;
+          qualityScore?: number;
+          confidence?: number;
+          summary?: string;
+          checkedAt?: string | Date;
+          model?: string;
+        };
       }>;
       visibility?: {
         status?: 'visible' | 'hidden' | 'needs_review' | 'blocked';
