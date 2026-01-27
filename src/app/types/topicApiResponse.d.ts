@@ -1,3 +1,5 @@
+import { FactCheckVerdict } from "@/app/lib/evidence";
+
 type UserSummary = {
   _id?: string;
   name?: string;
@@ -67,7 +69,7 @@ export type TopicApiResponse = {
       blurred?: boolean;
       blurReasons?: string[];
       factCheck?: {
-        verdict?: "verified" | "false" | "mixed" | "unverified";
+        verdict?: FactCheckVerdict;
         qualityScore?: number;
         confidence?: number;
         summary?: string;
@@ -114,7 +116,7 @@ export type TopicApiResponse = {
         blurred?: boolean;
         blurReasons?: string[];
         factCheck?: {
-          verdict?: "verified" | "false" | "mixed" | "unverified";
+          verdict?: FactCheckVerdict;
           qualityScore?: number;
           confidence?: number;
           summary?: string;

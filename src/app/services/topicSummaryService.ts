@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Argument from "@/app/models/argument";
+import { effectiveScore } from "@/app/services/evidenceFactCheckService";
 
 const MAX_POINTS_PER_COLUMN = 5;
 const RANKING_BUFFER = 3;
@@ -34,11 +35,7 @@ function truncateForSummary(text: string, maxLength = 260): string {
     return `${trimmed.slice(0, maxLength)}…`;
 }
 
-function effectiveScore(score?: number, evidenceRankScore?: number) {
-    const base = typeof score === "number" ? score : 0;
-    const boost = typeof evidenceRankScore === "number" ? evidenceRankScore : 0;
-    return base + boost;
-}
+
 
 async function buildSummaryPoints(topicId: MongooseId): Promise<{ for: SummaryColumn[]; against: SummaryColumn[]; neutral: SummaryColumn[] }> {
     const args = await Argument.find({ topic: topicId, isRemoved: false })

@@ -1,4 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import { FactCheckVerdict } from "@/app/lib/evidence";
+
 export interface IComment extends Document {
   argument: Types.ObjectId;
   parent?: Types.ObjectId; // for threading
@@ -30,7 +32,7 @@ export interface IComment extends Document {
     blurred?: boolean;
     blurReasons?: string[];
     factCheck?: {
-      verdict?: "verified" | "false" | "mixed" | "unverified";
+      verdict?: FactCheckVerdict;
       qualityScore?: number;
       confidence?: number;
       summary?: string;
@@ -91,7 +93,7 @@ const CommentSchema = new Schema<IComment>({
         blurred: { type: Boolean },
         blurReasons: { type: [String], default: [] },
         factCheck: {
-          verdict: { type: String, enum: ["verified", "false", "mixed", "unverified"] },
+          verdict: { type: String, enum: ["verified", "inaccurate", "mixed", "unverified"] },
           qualityScore: { type: Number },
           confidence: { type: Number },
           summary: { type: String },

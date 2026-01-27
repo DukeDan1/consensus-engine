@@ -2,8 +2,7 @@ import OpenAI from "openai";
 import { Buffer } from "buffer";
 import type { EvidenceItem } from "@/app/lib/evidence";
 import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
-
-type FactCheckVerdict = "verified" | "false" | "mixed" | "unverified";
+import { FactCheckVerdict } from "@/app/lib/evidence";
 
 export type EvidenceFactCheckResult = {
   verdict: FactCheckVerdict;
@@ -88,7 +87,76 @@ function isHttpUrl(value: string) {
   }
 }
 
+function isPrivateOrLocalAddress(hostname: string): boolean {
+  // Check for localhost variations
+  if (
+    hostname === "localhost" ||
+    hostname === "0.0.0.0" ||
+    hostname.startsWith("127.") ||
+    hostname === "::1" ||
+    hostname === "[::]"
+  ) {
+    return true;
+  }
+
+  // Check for private IPv4 ranges
+  const ipv4Match = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4Match) {
+    const [, a, b, c, d] = ipv4Match.map(Number);
+    // 10.0.0.0/8
+    if (a === 10) return true;
+    // 172.16.0.0/12
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    // 192.168.0.0/16
+    if (a === 192 && b === 168) return true;
+    // 169.254.0.0/16 (link-local, includes cloud metadata 169.254.169.254)
+    if (a === 169 && b === 254) return true;
+    // 0.0.0.0/8
+    if (a === 0) return true;
+    // 224.0.0.0/4 (multicast)
+    if (a >= 224 && a <= 239) return true;
+    // 240.0.0.0/4 (reserved)
+    if (a >= 240) return true;
+  }
+
+  // Check for private IPv6 ranges
+  if (hostname.includes(":")) {
+    const lower = hostname.toLowerCase();
+    // Link-local (fe80::/10)
+    if (lower.startsWith("fe80:") || lower.startsWith("[fe80:")) return true;
+    // Unique local (fc00::/7)
+    if (lower.startsWith("fc") || lower.startsWith("fd") || lower.startsWith("[fc") || lower.startsWith("[fd")) return true;
+  }
+
+  return false;
+}
+
+function isSafeUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString);
+    
+    // Only allow http/https
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return false;
+    }
+
+    // Block private/local addresses
+    if (isPrivateOrLocalAddress(url.hostname)) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function fetchBinary(url: string, maxBytes: number, truncate = false) {
+  // SSRF protection: validate URL before fetching
+  if (!isSafeUrl(url)) {
+    throw new Error("URL not allowed (SSRF protection)");
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
@@ -116,7 +184,7 @@ async function fetchBinary(url: string, maxBytes: number, truncate = false) {
 }
 
 function normaliseVerdict(value: unknown): FactCheckVerdict {
-  if (value === "verified" || value === "false" || value === "mixed" || value === "unverified") {
+  if (value === "verified" || value === "inaccurate" || value === "mixed" || value === "unverified") {
     return value;
   }
   return "unverified";
@@ -179,7 +247,7 @@ async function requestFactCheck(params: {
         content:
           "You are a source-quality and factuality evaluator for evidence in a debate platform. " +
           "Determine whether the source is factual/high quality or contains false/misleading information. " +
-          "Return verified only when the source is reliable and factual; false only when the source is clearly unreliable or contains false claims. " +
+          "Return verified only when the source is reliable and factual; inaccurate only when the source is clearly unreliable or contains false claims. " +
           "Use mixed for partially reliable sources and unverified when uncertain. " +
           "You may use the web search tool to validate the source's legitimacy or provenance. You could do this by looking at the provided source directly, or by looking for other sources to corroborate the claims made by the provided source. " +
           "Always return your final assessment by calling the fact_check_source tool.",
@@ -201,7 +269,7 @@ async function requestFactCheck(params: {
           additionalProperties: false,
           required: ["verdict", "qualityScore", "confidence", "summary"],
           properties: {
-            verdict: { type: "string", enum: ["verified", "false", "mixed", "unverified"] },
+            verdict: { type: "string", enum: ["verified", "inaccurate", "mixed", "unverified"] },
             qualityScore: { type: "number", minimum: 0, maximum: 100 },
             confidence: { type: "number", minimum: 0, maximum: 1 },
             summary: { type: "string", maxLength: 240 },
@@ -239,7 +307,7 @@ function scoreEvidenceItem(item: EvidenceItem): number {
   const base =
     verdict === "verified" ? 10
     : verdict === "mixed" ? 4
-    : verdict === "false" ? -18
+    : verdict === "inaccurate" ? -18
     : 0;
   const qualityScore = typeof item.factCheck?.qualityScore === "number" ? item.factCheck.qualityScore : undefined;
   const qualityAdj = typeof qualityScore === "number" ? clamp(Math.round((qualityScore - 50) / 10), -5, 5) : 0;
@@ -251,6 +319,65 @@ export function calculateEvidenceRankScore(evidence: EvidenceItem[]): number {
   return clamp(total, -25, 20);
 }
 
+async function checkSingleEvidenceItem(item: EvidenceItem): Promise<EvidenceItem> {
+  // Skip items that don't need checking
+  if (!item || !item.url || item.factCheck?.checkedAt || !shouldCheckEvidence(item)) {
+    return item;
+  }
+
+  try {
+    if (!isHttpUrl(item.url)) {
+      return { ...item, factCheck: buildFallbackResult("Unsupported URL scheme.") };
+    }
+
+    // SSRF protection: validate URL before processing
+    if (!isSafeUrl(item.url)) {
+      return { ...item, factCheck: buildFallbackResult("URL not allowed for security reasons.") };
+    }
+
+    const fetchUrl = item.kind === "file"
+      ? await getSignedReadUrlFromUrl(item.url).catch(() => item.url)
+      : item.url;
+
+    if (!fetchUrl) {
+      return { ...item, factCheck: buildFallbackResult("Missing evidence URL.") };
+    }
+
+    const isPdf = looksLikePdf(item.contentType, fetchUrl);
+
+    if (isPdf) {
+      const result = await requestFactCheck({
+        url: fetchUrl
+      });
+      return { ...item, factCheck: result };
+    }
+
+    const { buffer, contentType } = await fetchBinary(fetchUrl, MAX_TEXT_BYTES, true);
+    if (!isSupportedTextContentType(contentType)) {
+      return { ...item, factCheck: buildFallbackResult("Unsupported content type.") };
+    }
+    const rawText = buffer.toString("utf-8");
+    const textContent = contentType.includes("html")
+      ? normaliseWhitespace(stripHtml(rawText))
+      : normaliseWhitespace(rawText);
+
+    if (!textContent) {
+      return { ...item, factCheck: buildFallbackResult("No readable text found.") };
+    }
+
+    const result = await requestFactCheck({
+      url: fetchUrl,
+      contentType: item.contentType || contentType,
+      fileName: item.fileName,
+      text: textContent,
+    });
+    return { ...item, factCheck: result };
+  } catch (err) {
+    console.error("Evidence fact check failed", err);
+    return { ...item, factCheck: buildFallbackResult("Fact check failed.") };
+  }
+}
+
 export async function factCheckEvidenceItems(
   evidence: EvidenceItem[]
 ): Promise<EvidenceFactCheckOutcome> {
@@ -258,69 +385,31 @@ export async function factCheckEvidenceItems(
     return { evidence: evidence || [], evidenceRankScore: 0 };
   }
 
-  const updated: EvidenceItem[] = [];
+  // Process all evidence items in parallel using Promise.allSettled
+  // This ensures one failure doesn't stop others from being checked
+  const results = await Promise.allSettled(
+    evidence.map((item) => checkSingleEvidenceItem(item))
+  );
 
-  for (const item of evidence) {
-    if (!item || !item.url || item.factCheck?.checkedAt || !shouldCheckEvidence(item)) {
-      updated.push(item);
-      continue;
+  // Extract successful results and handle any failures
+  const updated = results.map((result, index) => {
+    if (result.status === "fulfilled") {
+      return result.value;
+    } else {
+      // If a promise was rejected, return the original item with a fallback
+      console.error("Evidence fact check promise rejected", result.reason);
+      return { ...evidence[index], factCheck: buildFallbackResult("Fact check failed.") };
     }
-
-    try {
-      if (!isHttpUrl(item.url)) {
-        updated.push({ ...item, factCheck: buildFallbackResult("Unsupported URL scheme.") });
-        continue;
-      }
-
-      const fetchUrl = item.kind === "file"
-        ? await getSignedReadUrlFromUrl(item.url).catch(() => item.url)
-        : item.url;
-
-      if (!fetchUrl) {
-        updated.push({ ...item, factCheck: buildFallbackResult("Missing evidence URL.") });
-        continue;
-      }
-
-      const isPdf = looksLikePdf(item.contentType, fetchUrl);
-
-      if (isPdf) {
-        const result = await requestFactCheck({
-          url: fetchUrl
-        });
-        updated.push({ ...item, factCheck: result });
-        continue;
-      }
-
-      const { buffer, contentType } = await fetchBinary(fetchUrl, MAX_TEXT_BYTES, true);
-      if (!isSupportedTextContentType(contentType)) {
-        updated.push({ ...item, factCheck: buildFallbackResult("Unsupported content type.") });
-        continue;
-      }
-      const rawText = buffer.toString("utf-8");
-      const textContent = contentType.includes("html")
-        ? normaliseWhitespace(stripHtml(rawText))
-        : normaliseWhitespace(rawText);
-
-      if (!textContent) {
-        updated.push({ ...item, factCheck: buildFallbackResult("No readable text found.") });
-        continue;
-      }
-
-      const result = await requestFactCheck({
-        url: fetchUrl,
-        contentType: item.contentType || contentType,
-        fileName: item.fileName,
-        text: textContent,
-      });
-      updated.push({ ...item, factCheck: result });
-    } catch (err) {
-      console.error("Evidence fact check failed", err);
-      updated.push({ ...item, factCheck: buildFallbackResult("Fact check failed.") });
-    }
-  }
+  });
 
   return {
     evidence: updated,
     evidenceRankScore: calculateEvidenceRankScore(updated),
   };
+}
+
+export function effectiveScore(score?: number, evidenceRankScore?: number) {
+    const base = typeof score === "number" ? score : 0;
+    const boost = typeof evidenceRankScore === "number" ? evidenceRankScore : 0;
+    return base + boost;
 }

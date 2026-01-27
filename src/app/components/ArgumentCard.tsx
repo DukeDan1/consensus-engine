@@ -87,8 +87,8 @@ function FactCheckBadge({ factCheck }: { factCheck?: any }) {
     const meta =
         verdict === "verified"
             ? { label: "Verified", className: "text-bg-success" }
-            : verdict === "false"
-                ? { label: "False", className: "text-bg-danger" }
+            : verdict === "inaccurate"
+                ? { label: "Inaccurate", className: "text-bg-danger" }
                 : { label: "Accuracy unknown", className: "text-bg-warning" };
     const summary = factCheck?.summary ? String(factCheck.summary).trim() : "";
     const qualityScore = typeof factCheck?.qualityScore === "number" ? Math.round(factCheck.qualityScore) : null;
@@ -251,7 +251,7 @@ function EvidenceList({ evidence }: { evidence?: any[] }) {
                         return <EvidenceImageItem key={`${url}-${idx}`} item={item} label={label} />;
                     }
                     return (
-                        <div key={`${url}-${idx}`} className="d-flex align-items-center gap-1">
+                        <div key={`${url}-${idx}`} className="d-flex align-items-center gap-1 w-100">
                             <a
                                 href={url}
                                 target="_blank"

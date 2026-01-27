@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 export type ArgumentSide = "for" | "against" | "neutral";
-
+import { FactCheckVerdict } from "@/app/lib/evidence";
 
 export interface IArgument extends Document {
   topic: Types.ObjectId;
@@ -39,7 +39,7 @@ export interface IArgument extends Document {
     blurred?: boolean;
     blurReasons?: string[];
     factCheck?: {
-      verdict?: "verified" | "false" | "mixed" | "unverified";
+      verdict?: FactCheckVerdict;
       qualityScore?: number;
       confidence?: number;
       summary?: string;
@@ -107,7 +107,7 @@ const ArgumentSchema = new Schema<IArgument>({
         blurred: { type: Boolean },
         blurReasons: { type: [String], default: [] },
         factCheck: {
-          verdict: { type: String, enum: ["verified", "false", "mixed", "unverified"] },
+          verdict: { type: String, enum: ["verified", "inaccurate", "mixed", "unverified"] },
           qualityScore: { type: Number },
           confidence: { type: Number },
           summary: { type: String },

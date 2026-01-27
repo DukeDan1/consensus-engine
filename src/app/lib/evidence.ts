@@ -1,3 +1,5 @@
+export type FactCheckVerdict = "verified" | "inaccurate" | "mixed" | "unverified";
+
 export type EvidenceItem = {
   url: string;
   kind: "link" | "file";
@@ -10,7 +12,7 @@ export type EvidenceItem = {
   blurred?: boolean;
   blurReasons?: string[];
   factCheck?: {
-    verdict?: "verified" | "false" | "mixed" | "unverified";
+    verdict?: FactCheckVerdict;
     qualityScore?: number;
     confidence?: number;
     summary?: string;
@@ -31,7 +33,7 @@ export type EvidenceItemInput = {
   blurred?: boolean | null;
   blurReasons?: string[] | null;
   factCheck?: {
-    verdict?: "verified" | "false" | "mixed" | "unverified";
+    verdict?: FactCheckVerdict;
     qualityScore?: number | null;
     confidence?: number | null;
     summary?: string | null;

@@ -11,6 +11,7 @@ import { getServerSession } from "next-auth";
 import NotificationSubscription from "@/app/models/notificationSubscription";
 import UserFollow from "@/app/models/userFollow";
 import { hasTopicModeratorRole } from "@/app/services/topicModeratorService";
+import { effectiveScore } from "@/app/services/evidenceFactCheckService";
 
 async function signEvidence(evidence: any[] = []) {
   return Promise.all(
@@ -73,12 +74,6 @@ function parseCategoryFilters(searchParams: URLSearchParams, singularKey: string
 
 function escapeRegex(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function effectiveScore(score?: number, evidenceRankScore?: number) {
-  const base = typeof score === "number" ? score : 0;
-  const boost = typeof evidenceRankScore === "number" ? evidenceRankScore : 0;
-  return base + boost;
 }
 
 // GET /api/topics/:id=?num_arguments=10&ordering=relevant|newest
