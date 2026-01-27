@@ -66,6 +66,14 @@ export type TopicApiResponse = {
       originalPreviewUrl?: string;
       blurred?: boolean;
       blurReasons?: string[];
+      factCheck?: {
+        verdict?: "verified" | "false" | "mixed" | "unverified";
+        qualityScore?: number;
+        confidence?: number;
+        summary?: string;
+        checkedAt?: string | Date;
+        model?: string;
+      };
     }>;
     visibility?: {
       status?: 'visible' | 'hidden' | 'needs_review' | 'blocked';
@@ -105,6 +113,14 @@ export type TopicApiResponse = {
         originalPreviewUrl?: string;
         blurred?: boolean;
         blurReasons?: string[];
+        factCheck?: {
+          verdict?: "verified" | "false" | "mixed" | "unverified";
+          qualityScore?: number;
+          confidence?: number;
+          summary?: string;
+          checkedAt?: string | Date;
+          model?: string;
+        };
       }>;
       visibility?: {
         status?: 'visible' | 'hidden' | 'needs_review' | 'blocked';

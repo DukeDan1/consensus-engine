@@ -23,6 +23,7 @@ import { renderEmail } from "@/app/emails/renderEmail";
 import { sendNotificationEmails } from "@/app/services/notificationEmailService";
 import { hasTopicModeratorRole, maybeAutoPromoteModerator } from "@/app/services/topicModeratorService";
 import { notifyModeratorStatusChange } from "@/app/services/moderatorNotificationService";
+import { factCheckEvidenceItems } from "@/app/services/evidenceFactCheckService";
 
 type Body = {
     topicId: string;
@@ -290,6 +291,21 @@ export async function POST(req: Request) {
                 }
             } catch (err) {
                 console.error("Background AI processing failed for argument", created._id, err);
+            }
+
+            if (safeEvidence.length) {
+                try {
+                    const evidenceForCheck = (created.evidence ?? safeEvidence).map((item: any) =>
+                        typeof item?.toObject === "function" ? item.toObject() : item
+                    );
+                    const { evidence: checkedEvidence, evidenceRankScore } = await factCheckEvidenceItems(evidenceForCheck);
+                    await Argument.updateOne(
+                        { _id: created._id },
+                        { $set: { evidence: checkedEvidence, evidenceRankScore } }
+                    ).exec();
+                } catch (err) {
+                    console.error("Evidence fact check failed for argument", created._id, err);
+                }
             }
         })();
         

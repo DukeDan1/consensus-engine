@@ -38,7 +38,17 @@ export interface IArgument extends Document {
     originalPreviewUrl?: string;
     blurred?: boolean;
     blurReasons?: string[];
+    factCheck?: {
+      verdict?: "verified" | "false" | "mixed" | "unverified";
+      qualityScore?: number;
+      confidence?: number;
+      summary?: string;
+      checkedAt?: Date;
+      model?: string;
+    };
   }>;
+
+  evidenceRankScore?: number;
 
   visibility?: {
     status: 'visible' | 'hidden' | 'needs_review' | 'blocked';
@@ -96,10 +106,19 @@ const ArgumentSchema = new Schema<IArgument>({
         originalPreviewUrl: { type: String },
         blurred: { type: Boolean },
         blurReasons: { type: [String], default: [] },
+        factCheck: {
+          verdict: { type: String, enum: ["verified", "false", "mixed", "unverified"] },
+          qualityScore: { type: Number },
+          confidence: { type: Number },
+          summary: { type: String },
+          checkedAt: { type: Date },
+          model: { type: String },
+        },
       },
     ],
     default: [],
   },
+  evidenceRankScore: { type: Number, default: 0 },
   visibility: {
     status: { type: String, enum: ['visible', 'hidden', 'needs_review', 'blocked'], default: 'visible', index: true },
     rankPenalty: { type: Number, default: 0 },

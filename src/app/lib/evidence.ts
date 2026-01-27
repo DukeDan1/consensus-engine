@@ -9,6 +9,14 @@ export type EvidenceItem = {
   originalPreviewUrl?: string;
   blurred?: boolean;
   blurReasons?: string[];
+  factCheck?: {
+    verdict?: "verified" | "false" | "mixed" | "unverified";
+    qualityScore?: number;
+    confidence?: number;
+    summary?: string;
+    checkedAt?: string | Date;
+    model?: string;
+  };
 };
 
 export type EvidenceItemInput = {
@@ -22,6 +30,14 @@ export type EvidenceItemInput = {
   originalPreviewUrl?: string | null;
   blurred?: boolean | null;
   blurReasons?: string[] | null;
+  factCheck?: {
+    verdict?: "verified" | "false" | "mixed" | "unverified";
+    qualityScore?: number | null;
+    confidence?: number | null;
+    summary?: string | null;
+    checkedAt?: string | Date | null;
+    model?: string | null;
+  };
 };
 
 export function sanitiseEvidence(
@@ -55,6 +71,14 @@ export function sanitiseEvidence(
         originalPreviewUrl,
         blurred,
         blurReasons,
+        factCheck: item?.factCheck ? {
+          verdict: item.factCheck.verdict,
+          qualityScore: typeof item.factCheck.qualityScore === "number" ? item.factCheck.qualityScore : undefined,
+          confidence: typeof item.factCheck.confidence === "number" ? item.factCheck.confidence : undefined,
+          summary: item.factCheck.summary ? String(item.factCheck.summary).slice(0, 400) : undefined,
+          checkedAt: item.factCheck.checkedAt ? new Date(item.factCheck.checkedAt) : undefined,
+          model: item.factCheck.model ? String(item.factCheck.model).slice(0, 100) : undefined,
+        } : undefined,
       };
     })
     .filter(Boolean) as EvidenceItem[];

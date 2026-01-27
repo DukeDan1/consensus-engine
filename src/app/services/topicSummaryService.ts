@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Argument from "@/app/models/argument";
 
 const MAX_POINTS_PER_COLUMN = 5;
+const RANKING_BUFFER = 3;
 
 type MongooseId = mongoose.Types.ObjectId;
 
@@ -33,16 +34,29 @@ function truncateForSummary(text: string, maxLength = 260): string {
     return `${trimmed.slice(0, maxLength)}…`;
 }
 
+function effectiveScore(score?: number, evidenceRankScore?: number) {
+    const base = typeof score === "number" ? score : 0;
+    const boost = typeof evidenceRankScore === "number" ? evidenceRankScore : 0;
+    return base + boost;
+}
+
 async function buildSummaryPoints(topicId: MongooseId): Promise<{ for: SummaryColumn[]; against: SummaryColumn[]; neutral: SummaryColumn[] }> {
     const args = await Argument.find({ topic: topicId, isRemoved: false })
         .sort({ score: -1, createdAt: -1 })
-        .limit(MAX_POINTS_PER_COLUMN * 3)
-        .select({ side: 1, score: 1, aiAnalysis: 1, updatedAt: 1, createdAt: 1 })
+        .limit(MAX_POINTS_PER_COLUMN * RANKING_BUFFER * 2)
+        .select({ side: 1, score: 1, evidenceRankScore: 1, aiAnalysis: 1, updatedAt: 1, createdAt: 1 })
         .lean();
+
+    const orderedArgs = [...args].sort((a, b) => {
+        const aScore = effectiveScore(a.score, (a as any).evidenceRankScore);
+        const bScore = effectiveScore(b.score, (b as any).evidenceRankScore);
+        if (bScore !== aScore) return bScore - aScore;
+        return (b.createdAt?.getTime?.() ?? 0) - (a.createdAt?.getTime?.() ?? 0);
+    });
 
     const groups: Record<string, SummaryColumn[]> = { for: [], against: [], neutral: [] };
 
-    for (const arg of args) {
+    for (const arg of orderedArgs) {
         const stance = (arg.side ?? "neutral") as "for" | "against" | "neutral";
         const targetGroup = groups[stance] ?? groups.neutral;
         const textSource = arg.aiAnalysis?.aiSummary?.trim() || "AI summary unavailable.";
