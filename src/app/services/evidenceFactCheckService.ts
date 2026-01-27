@@ -102,7 +102,7 @@ function isPrivateOrLocalAddress(hostname: string): boolean {
   // Check for private IPv4 ranges
   const ipv4Match = hostname.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
   if (ipv4Match) {
-    const [, a, b, c, d] = ipv4Match.map(Number);
+    const [, a, b] = ipv4Match.map(Number);
     // 10.0.0.0/8
     if (a === 10) return true;
     // 172.16.0.0/12
