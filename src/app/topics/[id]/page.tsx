@@ -3,7 +3,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 export const dynamic = "force-dynamic"; // render server-side on each request
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
-import ArgumentCard from "@/app/components/ArgumentCard";
+import TopicArgumentList from "@/app/components/topics/TopicArgumentList";
 import FactCard from "@/app/components/topics/FactCard";
 import OntologyBadgeList from "@/app/components/ontology/OntologyBadgeList";
 import TopicDiscussionControls from "@/app/components/topics/TopicDiscussionControls";
@@ -220,18 +220,17 @@ export default async function TopicPage({ params, searchParams }: any) {
       )}
 
       {/* Posts */}
-      {data.arguments.length === 0 ? (
-        <div className="alert alert-secondary">No posts yet.</div>
-      ) : (
-        <div className="row g-3">
-          <div className="col-12">
-            <h5 className="mb-3">Posts</h5>
-          </div>
-          {data.arguments.map((a) => (
-            <ArgumentCard argument={a} key={a.id} moderatorMode={moderatorMode} topicId={t.id} />
-          ))}
+      <div className="row g-3">
+        <div className="col-12">
+          <h5 className="mb-3">Posts</h5>
         </div>
-      )}
+      </div>
+      <TopicArgumentList
+        arguments={data.arguments}
+        moderatorMode={moderatorMode}
+        topicId={t.id}
+        viewerId={data.meta.viewer?.id}
+      />
     </div>
   );
 }

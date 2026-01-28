@@ -302,6 +302,7 @@ export type ClassifyOptions = {
   minSimilarity?: number; // drop weak matches before LLM
   confirmWithLLM?: boolean; // re-rank/confirm with an LLM
   responsesModel?: string; // override model for LLM step
+  safetyIdentifier?: string; // user id for safety tracking
 };
 
 export async function classifyTextToOntology(
@@ -351,6 +352,7 @@ export async function classifyTextToOntology(
 
   const resp = await openai.responses.create({
     model: responsesModel,
+    safety_identifier: options.safetyIdentifier ? String(options.safetyIdentifier) : "system",
     input: [
       { role: "system", content: "You are a precise classifier for an ontology of debate/discussion topics. Return strict JSON only with no preamble or commentary." },
       { role: "user", content: JSON.stringify(payload) },

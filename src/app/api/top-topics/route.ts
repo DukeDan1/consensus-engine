@@ -14,7 +14,7 @@ export async function GET() {
         {
           $match: {
             isActive: true,
-            "visibility.status": { $nin: ["blocked", "hidden", "needs_review"] },
+            "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] },
           },
         },
         {
@@ -26,11 +26,66 @@ export async function GET() {
             upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
             downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
             ontologyCategories: { $ifNull: ["$ontologyCategories", []] },
+            argumentCounts: 1,
           },
         },
         {
           $addFields: {
             totalVotes: { $add: ["$upvoteCount", "$downvoteCount"] },
+          },
+        },
+        {
+          $lookup: {
+            from: "arguments",
+            let: { topicId: "$_id" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ["$topic", "$$topicId"] },
+                  isRemoved: false,
+                  "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] },
+                },
+              },
+              { $count: "count" },
+            ],
+            as: "argumentCountsAgg",
+          },
+        },
+        {
+          $lookup: {
+            from: "comments",
+            let: { topicId: "$_id" },
+            pipeline: [
+              {
+                $lookup: {
+                  from: "arguments",
+                  localField: "argument",
+                  foreignField: "_id",
+                  as: "argument",
+                },
+              },
+              { $unwind: "$argument" },
+              {
+                $match: {
+                  $expr: { $eq: ["$argument.topic", "$$topicId"] },
+                  isRemoved: false,
+                  "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] },
+                },
+              },
+              { $count: "count" },
+            ],
+            as: "commentCountsAgg",
+          },
+        },
+        {
+          $addFields: {
+            argumentCount: {
+              $ifNull: [
+                { $first: "$argumentCountsAgg.count" },
+                { $ifNull: ["$argumentCounts.total", 0] },
+              ],
+            },
+            commentCount: { $ifNull: [{ $first: "$commentCountsAgg.count" }, 0] },
           },
         },
         {
@@ -60,6 +115,8 @@ export async function GET() {
             upvoteCount: 1,
             downvoteCount: 1,
             totalVotes: 1,
+            argumentCount: 1,
+            commentCount: 1,
             ontologyCategories: 1,
             creatorName: {
               $ifNull: ["$creator.name", "Unknown"],

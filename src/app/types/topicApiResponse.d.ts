@@ -77,8 +77,20 @@ export type TopicApiResponse = {
         model?: string;
       };
     }>;
+    contentFactCheck?: {
+      verdict?: FactCheckVerdict;
+      confidence?: number;
+      summary?: string;
+      sources?: Array<{
+        title?: string;
+        url?: string;
+        snippet?: string;
+      }>;
+      checkedAt?: string | Date;
+      model?: string;
+    };
     visibility?: {
-      status?: 'visible' | 'hidden' | 'needs_review' | 'blocked';
+      status?: 'visible' | 'hidden' | 'needs_review' | 'blocked' | 'noise';
       reason?: string;
       categories?: string[];
       spamLikelihood?: number;
@@ -124,8 +136,20 @@ export type TopicApiResponse = {
           model?: string;
         };
       }>;
+      contentFactCheck?: {
+        verdict?: FactCheckVerdict;
+        confidence?: number;
+        summary?: string;
+        sources?: Array<{
+          title?: string;
+          url?: string;
+          snippet?: string;
+        }>;
+        checkedAt?: string | Date;
+        model?: string;
+      };
       visibility?: {
-        status?: 'visible' | 'hidden' | 'needs_review' | 'blocked';
+        status?: 'visible' | 'hidden' | 'needs_review' | 'blocked' | 'noise';
         reason?: string;
         categories?: string[];
         spamLikelihood?: number;
@@ -154,6 +178,7 @@ export type TopicApiResponse = {
     returnedArguments: number;
     requestedArguments: number;
     viewer?: {
+      id?: string;
       isAdmin?: boolean;
       isModerator?: boolean;
       canModerate?: boolean;

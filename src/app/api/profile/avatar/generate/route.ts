@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { generateProfileImage } from "@/app/services/openaiImageGenerationService";
+import { dbConnect } from "@/app/lib/mongoose";
+import User from "@/app/models/user";
 
 const genderOptions = ["male", "female"] as const;
 const hairColorOptions = [
@@ -30,6 +32,9 @@ export async function POST(request: NextRequest) {
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  await dbConnect();
+  const user = await User.findOne({ email: session.user.email }).select({ _id: 1 }).lean();
+  const userId = user?._id?.toString?.() ?? session.user.id ?? session.user.email;
 
   const payload = await request.json().catch(() => ({}));
   const gender = payload?.gender;
@@ -56,7 +61,7 @@ export async function POST(request: NextRequest) {
       age,
       hairColor,
       ethnicitySkin,
-    });
+    }, userId);
     if (!base64) {
       return NextResponse.json({ error: "No image generated" }, { status: 500 });
     }

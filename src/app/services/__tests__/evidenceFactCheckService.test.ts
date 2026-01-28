@@ -163,6 +163,8 @@ describe("evidenceFactCheckService", () => {
   });
 
   describe("factCheckEvidenceItems", () => {
+    const userId = "user-1";
+
     beforeEach(() => {
       // Mock successful OpenAI response
       openaiMock.responses.create.mockResolvedValue({
@@ -188,7 +190,7 @@ describe("evidenceFactCheckService", () => {
     });
 
     it("returns empty result for empty array", async () => {
-      const result = await factCheckEvidenceItems([]);
+      const result = await factCheckEvidenceItems([], userId);
       expect(result.evidence).toEqual([]);
       expect(result.evidenceRankScore).toBe(0);
     });
@@ -206,7 +208,7 @@ describe("evidenceFactCheckService", () => {
         },
       ];
 
-      const result = await factCheckEvidenceItems(evidence);
+      const result = await factCheckEvidenceItems(evidence, userId);
       expect(result.evidence).toHaveLength(1);
       expect(result.evidence[0]).toEqual(evidence[0]);
       expect(openaiMock.responses.create).not.toHaveBeenCalled();
@@ -221,7 +223,7 @@ describe("evidenceFactCheckService", () => {
         { url: "http://169.254.169.254/metadata", kind: "link" },
       ];
 
-      const result = await factCheckEvidenceItems(privateUrls);
+      const result = await factCheckEvidenceItems(privateUrls, userId);
       
       expect(result.evidence).toHaveLength(5);
       result.evidence.forEach((item) => {
@@ -237,7 +239,7 @@ describe("evidenceFactCheckService", () => {
         { url: "ftp://example.com/file", kind: "link" },
       ];
 
-      const result = await factCheckEvidenceItems(evidence);
+      const result = await factCheckEvidenceItems(evidence, userId);
       
       expect(result.evidence).toHaveLength(2);
       result.evidence.forEach((item) => {
@@ -263,7 +265,7 @@ describe("evidenceFactCheckService", () => {
       ];
 
       const startTime = Date.now();
-      const result = await factCheckEvidenceItems(evidence);
+      const result = await factCheckEvidenceItems(evidence, userId);
       const duration = Date.now() - startTime;
 
       expect(result.evidence).toHaveLength(3);
@@ -282,7 +284,7 @@ describe("evidenceFactCheckService", () => {
         },
       ];
 
-      const result = await factCheckEvidenceItems(evidence);
+      const result = await factCheckEvidenceItems(evidence, userId);
       
       expect(result.evidence).toHaveLength(1);
       expect(result.evidence[0].factCheck).toBeDefined();
@@ -296,7 +298,7 @@ describe("evidenceFactCheckService", () => {
         { url: "https://example.com/broken", kind: "link" },
       ];
 
-      const result = await factCheckEvidenceItems(evidence);
+      const result = await factCheckEvidenceItems(evidence, userId);
       
       expect(result.evidence).toHaveLength(1);
       expect(result.evidence[0].factCheck?.verdict).toBe("unverified");
@@ -319,7 +321,7 @@ describe("evidenceFactCheckService", () => {
         { url: "https://example.com/test", kind: "link" },
       ];
 
-      const result = await factCheckEvidenceItems(evidence);
+      const result = await factCheckEvidenceItems(evidence, userId);
       
       expect(result.evidence).toHaveLength(1);
       expect(result.evidence[0].factCheck?.verdict).toBe("unverified");
@@ -351,7 +353,7 @@ describe("evidenceFactCheckService", () => {
         { url: "https://example.com/article", kind: "link" },
       ];
 
-      await factCheckEvidenceItems(evidence);
+      await factCheckEvidenceItems(evidence, userId);
 
       // Verify OpenAI was called with HTML stripped
       expect(openaiMock.responses.create).toHaveBeenCalled();
@@ -360,6 +362,7 @@ describe("evidenceFactCheckService", () => {
         const userMessage = callArgs.input.find((msg: any) => msg.role === "user");
         const textContent = userMessage.content[0].text;
 
+        expect(callArgs.safety_identifier).toBe(userId);
         expect(textContent).toContain("Title");
         expect(textContent).toContain("actual content");
         expect(textContent).not.toContain("<script>");
@@ -375,7 +378,7 @@ describe("evidenceFactCheckService", () => {
         { url: "https://example.com/huge", kind: "link" },
       ];
 
-      const result = await factCheckEvidenceItems(evidence);
+      const result = await factCheckEvidenceItems(evidence, userId);
       
       expect(result.evidence).toHaveLength(1);
       expect(result.evidence[0].factCheck?.verdict).toBe("unverified");
@@ -425,7 +428,7 @@ describe("evidenceFactCheckService", () => {
         { url: "https://example.com/bad", kind: "link" },
       ];
 
-      const result = await factCheckEvidenceItems(evidence);
+      const result = await factCheckEvidenceItems(evidence, userId);
       
       // Should have mixed scores: verified (+10-15) and inaccurate (-18 to -23)
       expect(result.evidenceRankScore).toBeLessThanOrEqual(0);

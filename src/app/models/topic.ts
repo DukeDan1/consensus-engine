@@ -27,7 +27,7 @@ export interface ITopic extends Document {
   autoModeratorEnabled?: boolean;
 
   visibility?: {
-    status: 'visible' | 'hidden' | 'needs_review' | 'blocked';
+    status: 'visible' | 'hidden' | 'needs_review' | 'blocked' | 'noise';
     moderatedAt?: Date;
     reason?: string;
     categories?: string[];
@@ -67,7 +67,7 @@ const TopicSchema = new Schema<ITopic>({
   upvotes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
   downvotes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
   visibility: {
-    status: { type: String, enum: ['visible', 'hidden', 'needs_review', 'blocked'], default: 'visible', index: true },
+    status: { type: String, enum: ['visible', 'hidden', 'needs_review', 'blocked', 'noise'], default: 'visible', index: true },
     moderatedAt: { type: Date },
     reason: { type: String },
     categories: { type: [String], default: [] },

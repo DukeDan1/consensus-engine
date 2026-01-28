@@ -13,7 +13,7 @@ export type AIAnalysisResult = {
     justification: string;
 };
 
-export async function getAIAnalysisForArgument(argumentText: string, topicName: String): Promise<AIAnalysisResult> {
+export async function getAIAnalysisForArgument(argumentText: string, topicName: String, userId?: string): Promise<AIAnalysisResult> {
     const response = await openai.responses.create({
         input: [
             {
@@ -26,6 +26,7 @@ export async function getAIAnalysisForArgument(argumentText: string, topicName: 
             }
         ],
         model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+        safety_identifier: userId ? String(userId) : "system",
         reasoning: {
             effort: "low"
         },

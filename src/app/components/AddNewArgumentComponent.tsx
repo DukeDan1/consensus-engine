@@ -75,9 +75,12 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
 
             const status = data?.visibility?.status;
             const reason = data?.visibility?.reason || data?.reason;
-            if (status === "hidden" || status === "needs_review") {
-                toast.info(reason ? `Submitted for review: ${reason}` : "Submitted for review. It may be hidden until cleared.", { autoClose: 15000 });
-            } else if (status === "visible") {
+            if (status === "blocked" || status === "needs_review" || status === "hidden") {
+                toast.info(
+                    reason ? `Submitted for review: ${reason}` : "Submitted for review. It may be hidden until cleared.",
+                    { autoClose: 15000 }
+                );
+            } else {
                 toast.success("Posted successfully");
             }
             if (data?.moderatorPromotion?.promoted) {

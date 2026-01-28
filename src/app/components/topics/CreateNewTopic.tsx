@@ -8,6 +8,8 @@ type CreatedTopic = {
   upvoteCount: number;
   downvoteCount: number;
   totalVotes: number;
+  argumentCount?: number;
+  commentCount?: number;
   creatorName: string;
   ontologyCategories?: Array<{ id: string; label: string; description?: string }>;
 };
@@ -58,6 +60,8 @@ export default function CreateNewTopic({ onCreated, onOpenChange }: Props) {
         upvoteCount: data.upvoteCount ?? 0,
         downvoteCount: data.downvoteCount ?? 0,
         totalVotes: data.totalVotes ?? 0,
+        argumentCount: data.argumentCount ?? data.argumentCounts?.total ?? 0,
+        commentCount: data.commentCount ?? 0,
         creatorName: data.creatorName || "You",
         ontologyCategories: data.ontologyCategories || [],
       };

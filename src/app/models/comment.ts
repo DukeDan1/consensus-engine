@@ -43,8 +43,21 @@ export interface IComment extends Document {
 
   evidenceRankScore?: number;
 
+  contentFactCheck?: {
+    verdict?: FactCheckVerdict;
+    confidence?: number;
+    summary?: string;
+    sources?: Array<{
+      title?: string;
+      url?: string;
+      snippet?: string;
+    }>;
+    checkedAt?: Date;
+    model?: string;
+  };
+
   visibility?: {
-    status: 'visible' | 'hidden' | 'needs_review' | 'blocked';
+    status: 'visible' | 'hidden' | 'needs_review' | 'blocked' | 'noise';
     rankPenalty?: number;
     moderatedAt?: Date;
     reason?: string;
@@ -105,8 +118,25 @@ const CommentSchema = new Schema<IComment>({
     default: [],
   },
   evidenceRankScore: { type: Number, default: 0 },
+  contentFactCheck: {
+    verdict: { type: String, enum: ["verified", "inaccurate", "mixed", "unverified"] },
+    confidence: { type: Number },
+    summary: { type: String },
+    sources: {
+      type: [
+        {
+          title: { type: String },
+          url: { type: String },
+          snippet: { type: String },
+        },
+      ],
+      default: [],
+    },
+    checkedAt: { type: Date },
+    model: { type: String },
+  },
   visibility: {
-    status: { type: String, enum: ['visible', 'hidden', 'needs_review', 'blocked'], default: 'visible', index: true },
+    status: { type: String, enum: ['visible', 'hidden', 'needs_review', 'blocked', 'noise'], default: 'visible', index: true },
     rankPenalty: { type: Number, default: 0 },
     moderatedAt: { type: Date },
     reason: { type: String },

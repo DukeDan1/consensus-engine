@@ -205,6 +205,7 @@ async function requestFactCheck(params: {
   fileName?: string;
   text?: string;
   fileData?: string;
+  userId?: string;
 }): Promise<EvidenceFactCheckResult> {
   const client = getOpenAIClient();
   if (!client || !FACT_CHECK_ENABLED) {
@@ -240,6 +241,7 @@ async function requestFactCheck(params: {
 
   const response = await client.responses.create({
     model,
+    safety_identifier: params.userId ? String(params.userId) : "system",
     reasoning: { effort: "low" },
     input: [
       {
@@ -259,7 +261,7 @@ async function requestFactCheck(params: {
     ],
     tool_choice: "required",
     tools: [
-      { type: "web_search_preview" },
+      { type: "web_search" },
       {
         type: "function",
         name: "fact_check_source",
@@ -319,7 +321,7 @@ export function calculateEvidenceRankScore(evidence: EvidenceItem[]): number {
   return clamp(total, -25, 20);
 }
 
-async function checkSingleEvidenceItem(item: EvidenceItem): Promise<EvidenceItem> {
+async function checkSingleEvidenceItem(item: EvidenceItem, userId?: string): Promise<EvidenceItem> {
   // Skip items that don't need checking
   if (!item || !item.url || item.factCheck?.checkedAt || !shouldCheckEvidence(item)) {
     return item;
@@ -347,7 +349,8 @@ async function checkSingleEvidenceItem(item: EvidenceItem): Promise<EvidenceItem
 
     if (isPdf) {
       const result = await requestFactCheck({
-        url: fetchUrl
+        url: fetchUrl,
+        userId,
       });
       return { ...item, factCheck: result };
     }
@@ -370,6 +373,7 @@ async function checkSingleEvidenceItem(item: EvidenceItem): Promise<EvidenceItem
       contentType: item.contentType || contentType,
       fileName: item.fileName,
       text: textContent,
+      userId,
     });
     return { ...item, factCheck: result };
   } catch (err) {
@@ -379,7 +383,8 @@ async function checkSingleEvidenceItem(item: EvidenceItem): Promise<EvidenceItem
 }
 
 export async function factCheckEvidenceItems(
-  evidence: EvidenceItem[]
+  evidence: EvidenceItem[],
+  userId?: string
 ): Promise<EvidenceFactCheckOutcome> {
   if (!Array.isArray(evidence) || evidence.length === 0) {
     return { evidence: evidence || [], evidenceRankScore: 0 };
@@ -388,7 +393,7 @@ export async function factCheckEvidenceItems(
   // Process all evidence items in parallel using Promise.allSettled
   // This ensures one failure doesn't stop others from being checked
   const results = await Promise.allSettled(
-    evidence.map((item) => checkSingleEvidenceItem(item))
+    evidence.map((item) => checkSingleEvidenceItem(item, userId))
   );
 
   // Extract successful results and handle any failures
@@ -408,8 +413,30 @@ export async function factCheckEvidenceItems(
   };
 }
 
-export function effectiveScore(score?: number, evidenceRankScore?: number) {
+export function effectiveScore(
+  score?: number,
+  evidenceRankScore?: number,
+  options?: {
+    quality?: number;
+    upvotes?: number;
+    downvotes?: number;
+    rankPenalty?: number;
+  }
+) {
     const base = typeof score === "number" ? score : 0;
     const boost = typeof evidenceRankScore === "number" ? evidenceRankScore : 0;
-    return base + boost;
+    const quality =
+      options && typeof options.quality === "number" ? clamp(options.quality, 0, 100) : undefined;
+    const qualityBoost = quality !== undefined ? Math.round((quality - 50) / 10) : 0;
+    const upvotes = options && typeof options.upvotes === "number" ? Math.max(0, options.upvotes) : 0;
+    const downvotes = options && typeof options.downvotes === "number" ? Math.max(0, options.downvotes) : 0;
+    const totalVotes = upvotes + downvotes;
+    const balance = totalVotes > 0 ? 1 - Math.abs(upvotes - downvotes) / totalVotes : 0;
+    const magnitude = totalVotes > 0 ? Math.log10(totalVotes + 1) : 0;
+    const controversyBoost =
+      options && (options.upvotes !== undefined || options.downvotes !== undefined)
+        ? Math.round(balance * magnitude * 6)
+        : 0;
+    const penalty = typeof options?.rankPenalty === "number" ? options.rankPenalty : 0;
+    return base + boost + qualityBoost + controversyBoost + penalty;
 }

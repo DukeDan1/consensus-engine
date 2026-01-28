@@ -487,9 +487,11 @@ describe('Topic primitives', () => {
   });
 
   it('renders topic card stats', () => {
-    render(<TopicCard topic={{ _id: 't1', title: 'Topic title', upvoteCount: 2, downvoteCount: 1, totalVotes: 3, creatorName: 'Bob' }} />);
+    render(<TopicCard topic={{ _id: 't1', title: 'Topic title', upvoteCount: 2, downvoteCount: 1, totalVotes: 3, argumentCount: 4, commentCount: 5, creatorName: 'Bob' }} />);
     expect(screen.getByText(/topic title/i)).toBeInTheDocument();
     expect(screen.getByText(/total votes/i)).toBeInTheDocument();
+    expect(screen.getByText(/replies/i)).toBeInTheDocument();
+    expect(screen.getByText(/posts/i)).toBeInTheDocument();
   });
 });
 
