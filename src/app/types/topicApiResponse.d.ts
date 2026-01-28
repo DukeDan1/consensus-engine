@@ -101,6 +101,7 @@ export type TopicApiResponse = {
       model?: string;
     };
     isRemoved?: boolean;
+    pending?: boolean;
     comments: Array<{
       id: string;
       body: string;
@@ -160,6 +161,7 @@ export type TopicApiResponse = {
         model?: string;
       };
       isRemoved?: boolean;
+      pending?: boolean;
     }>;
     aiAnalysis?: {
       isFact: boolean;

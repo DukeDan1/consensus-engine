@@ -60,7 +60,7 @@ export async function routeResponsesClient(params: {
     return { client: openai, model: openAiModel, provider: "openai" };
   }
 
-  const flagged = await isFlaggedByModeration(params.text, params.userId);
+  const flagged = await isFlaggedByModeration(params.text);
   if (!flagged) {
     return { client: openai, model: openAiModel, provider: "openai" };
   }

@@ -25,6 +25,7 @@ export default function AddNewCommentComponent({
     const [submitting, setSubmitting] = useState(false);
     const { data: session } = useSession();
     const sessionUser = session?.user as any;
+    const sessionAvatar = sessionUser?.avatarThumbUrl || sessionUser?.avatarUrl || sessionUser?.image;
     const {
         evidence,
         evidenceLink,
@@ -66,8 +67,8 @@ export default function AddNewCommentComponent({
                 _id: sessionUser?.id,
                 name: sessionUser?.name || sessionUser?.email || "You",
                 nickname: sessionUser?.nickname,
-                avatarUrl: sessionUser?.avatarUrl,
-                avatarThumbUrl: sessionUser?.avatarThumbUrl,
+                avatarUrl: sessionUser?.avatarUrl || sessionUser?.image,
+                avatarThumbUrl: sessionAvatar,
             },
             createdAt: new Date().toISOString(),
             upvoteCount: 0,
@@ -76,9 +77,14 @@ export default function AddNewCommentComponent({
             ontologyCategories: [],
             evidence: preparedEvidence.evidence,
             visibility: { status: "visible" },
+            pending: true,
         };
 
         onOptimisticAdd?.(optimisticComment);
+
+        setText("");
+        clearEvidence();
+        setShowForm(false);
 
         setSubmitting(true);
         try {
@@ -127,9 +133,6 @@ export default function AddNewCommentComponent({
             setSubmitting(false);
         }
 
-        setText("");
-        clearEvidence();
-        setShowForm(false);
         // Refresh the current route so comments re-fetch and include the new one
         router.refresh();
     }

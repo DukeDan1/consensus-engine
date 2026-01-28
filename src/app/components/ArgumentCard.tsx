@@ -570,6 +570,7 @@ export default function ArgumentCard({
     const canRestoreArgument = canModerate && !argumentRemoved && argumentStatus && argumentStatus !== "visible" && !isArgumentNoise;
     const canToggleArgumentNoise = canModerate && !argumentRemoved && (argumentStatus === "visible" || isArgumentNoise);
     const showArgumentStatus = moderatorMode && (argumentRemoved || !!argumentStatusLabel);
+    const isArgumentPending = Boolean((argument as any).pending);
     const visibleComments = commentStates.filter((comment) => {
         const commenterId = resolveUserSummary(comment.createdBy).id;
         const ownsComment = currentUserId && commenterId && currentUserId === commenterId;
@@ -633,36 +634,42 @@ export default function ArgumentCard({
                     <div className="card-body">
                         <div className="d-flex align-items-start justify-content-between mb-3">
                             <div className="d-flex flex-column gap-1">
-                                <div className="d-flex flex-wrap align-items-center gap-2">
-                                    <UserIdentity
-                                        userId={author.id}
-                                        name={author.name}
-                                        nickname={author.nickname}
-                                        avatarUrl={author.avatarUrl ?? undefined}
-                                        avatarThumbUrl={author.avatarThumbUrl ?? undefined}
-                                        createdAt={author.createdAt}
-                                        size={36}
-                                        nameClassName="author-link fw-semibold"
-                                        fallbackLabel="Anonymous"
-                                        badges={getIsModerator(author.id, author.isModerator) ? [{ label: "MOD", variant: "secondary" }] : undefined}
-                                        tooltipBadges={author.isAdmin ? [{ label: "ADMIN", variant: "danger" }] : undefined}
-                                        stats={author.stats}
-                                    />
-                                    {canManageModerators && author.id && (
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline-secondary btn-sm"
-                                            onClick={() => handleModeratorToggle(
-                                                author.id,
-                                                !getIsModerator(author.id, author.isModerator),
-                                                author.name || author.nickname || "User"
-                                            )}
-                                            disabled={moderatorUpdatingId === author.id}
-                                        >
-                                            {getIsModerator(author.id, author.isModerator) ? "Remove Moderator" : "Promote to Moderator"}
-                                        </button>
-                                    )}
-                                </div>
+                            <div className="d-flex flex-wrap align-items-center gap-2">
+                                {isArgumentPending ? (
+                                    <span className="badge text-bg-info">Sending...</span>
+                                ) : (
+                                    <>
+                                        <UserIdentity
+                                            userId={author.id}
+                                            name={author.name}
+                                            nickname={author.nickname}
+                                            avatarUrl={author.avatarUrl ?? undefined}
+                                            avatarThumbUrl={author.avatarThumbUrl ?? undefined}
+                                            createdAt={author.createdAt}
+                                            size={36}
+                                            nameClassName="author-link fw-semibold"
+                                            fallbackLabel="Anonymous"
+                                            badges={getIsModerator(author.id, author.isModerator) ? [{ label: "MOD", variant: "secondary" }] : undefined}
+                                            tooltipBadges={author.isAdmin ? [{ label: "ADMIN", variant: "danger" }] : undefined}
+                                            stats={author.stats}
+                                        />
+                                        {canManageModerators && author.id && (
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-secondary btn-sm"
+                                                onClick={() => handleModeratorToggle(
+                                                    author.id,
+                                                    !getIsModerator(author.id, author.isModerator),
+                                                    author.name || author.nickname || "User"
+                                                )}
+                                                disabled={moderatorUpdatingId === author.id}
+                                            >
+                                                {getIsModerator(author.id, author.isModerator) ? "Remove Moderator" : "Promote to Moderator"}
+                                            </button>
+                                        )}
+                                    </>
+                                )}
+                            </div>
                                 <RelativeTime value={argument?.createdAt} />
                             </div>
 
@@ -774,36 +781,42 @@ export default function ArgumentCard({
                                             >
                                                 <div className="d-flex justify-content-between align-items-start mb-2">
                                                     <div className="d-flex flex-wrap align-items-center gap-3">
-                                                        <UserIdentity
-                                                            userId={commenter.id}
-                                                            name={commenter.name}
-                                                            nickname={commenter.nickname}
-                                                            avatarUrl={commenter.avatarUrl ?? undefined}
-                                                            avatarThumbUrl={commenter.avatarThumbUrl ?? undefined}
-                                                            createdAt={commenter.createdAt}
-                                                            size={28}
-                                                            className="small text-muted fw-semibold"
-                                                            nameClassName="author-link fw-semibold text-muted"
-                                                            fallbackLabel="Anonymous"
-                                                            badges={commenterIsModerator ? [{ label: "MOD", variant: "secondary" }] : undefined}
-                                                            tooltipBadges={commenter.isAdmin ? [{ label: "ADMIN", variant: "danger" }] : undefined}
-                                                            stats={commenter.stats}
-                                                        />
-                                                        {canManageModerators && commenter.id && (
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-outline-secondary btn-sm"
-                                                                onClick={() => handleModeratorToggle(
-                                                                    commenter.id,
-                                                                    !commenterIsModerator,
-                                                                    commenter.name || commenter.nickname || "User"
+                                                        {pending ? (
+                                                            <span className="badge text-bg-info">Sending...</span>
+                                                        ) : (
+                                                            <>
+                                                                <UserIdentity
+                                                                    userId={commenter.id}
+                                                                    name={commenter.name}
+                                                                    nickname={commenter.nickname}
+                                                                    avatarUrl={commenter.avatarUrl ?? undefined}
+                                                                    avatarThumbUrl={commenter.avatarThumbUrl ?? undefined}
+                                                                    createdAt={commenter.createdAt}
+                                                                    size={28}
+                                                                    className="small text-muted fw-semibold"
+                                                                    nameClassName="author-link fw-semibold text-muted"
+                                                                    fallbackLabel="Anonymous"
+                                                                    badges={commenterIsModerator ? [{ label: "MOD", variant: "secondary" }] : undefined}
+                                                                    tooltipBadges={commenter.isAdmin ? [{ label: "ADMIN", variant: "danger" }] : undefined}
+                                                                    stats={commenter.stats}
+                                                                />
+                                                                {canManageModerators && commenter.id && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-outline-secondary btn-sm"
+                                                                        onClick={() => handleModeratorToggle(
+                                                                            commenter.id,
+                                                                            !commenterIsModerator,
+                                                                            commenter.name || commenter.nickname || "User"
+                                                                        )}
+                                                                        disabled={moderatorUpdatingId === commenter.id}
+                                                                    >
+                                                                        {commenterIsModerator ? "Remove Moderator" : "Promote to Moderator"}
+                                                                    </button>
                                                                 )}
-                                                                disabled={moderatorUpdatingId === commenter.id}
-                                                            >
-                                                                {commenterIsModerator ? "Remove Moderator" : "Promote to Moderator"}
-                                                            </button>
+                                                                <RelativeTime value={c.createdAt} />
+                                                            </>
                                                         )}
-                                                        <RelativeTime value={c.createdAt} />
                                                     </div>
                                                     <div className="d-flex align-items-center gap-2">
                                                         <button
