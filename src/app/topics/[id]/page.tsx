@@ -3,10 +3,8 @@ import Link from "next/link";
 import { headers } from "next/headers";
 export const dynamic = "force-dynamic"; // render server-side on each request
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
-import ArgumentCard from "@/app/components/ArgumentCard";
-import FactCard from "@/app/components/topics/FactCard";
+import TopicDiscussionSection from "@/app/components/topics/TopicDiscussionSection";
 import OntologyBadgeList from "@/app/components/ontology/OntologyBadgeList";
-import TopicDiscussionControls from "@/app/components/topics/TopicDiscussionControls";
 import TopicAdminActions from "@/app/components/topics/TopicAdminActions";
 import UserIdentity from "@/app/components/users/UserIdentity";
 import NotificationSubscribeButton from "@/app/components/notifications/NotificationSubscribeButton";
@@ -193,45 +191,16 @@ export default async function TopicPage({ params, searchParams }: any) {
       {t.description && <p className="text-muted mb-2">{t.description}</p>}
       <OntologyBadgeList categories={t.ontologyCategories} className="mb-3 d-flex flex-wrap gap-1" />
       <hr className="my-4" />
-      <div className="mb-4">
-        <TopicDiscussionControls
-          topicId={t.id}
-          argumentQuery={argumentQuery}
-          commentQuery={commentQuery}
-        />
-      </div>
+      <TopicDiscussionSection
+        topicId={t.id}
+        argumentQuery={argumentQuery}
+        commentQuery={commentQuery}
+        arguments={data.arguments}
+        facts={data.facts}
+        moderatorMode={moderatorMode}
+        viewerId={data.meta.viewer?.id}
+      />
 
-      {/* Derived Facts */}
-      {Array.isArray(data.facts) && data.facts.length > 0 && (
-        <div className="mt-5">
-          <div className="d-flex align-items-center justify-content-between mb-3">
-            <h5 className="mb-0">Recent factual highlights</h5>
-            <Link href={`/topics/${id}/facts`} className="btn btn-link btn-sm">
-              View all facts
-              <i className="fa-solid fa-arrow-right ms-1" aria-hidden></i>
-            </Link>
-          </div>
-          <ul className="list-group mb-4">
-            {data.facts.slice(0, 3).map((f) => (
-              <FactCard fact={f} key={f.id} topicId={t.id} />
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Posts */}
-      {data.arguments.length === 0 ? (
-        <div className="alert alert-secondary">No posts yet.</div>
-      ) : (
-        <div className="row g-3">
-          <div className="col-12">
-            <h5 className="mb-3">Posts</h5>
-          </div>
-          {data.arguments.map((a) => (
-            <ArgumentCard argument={a} key={a.id} moderatorMode={moderatorMode} topicId={t.id} />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

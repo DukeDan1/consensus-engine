@@ -37,6 +37,27 @@ async function signAvatarUrl(url?: string | null) {
   return getSignedReadUrlFromUrl(url).catch(() => url);
 }
 
+function normaliseContentFactCheck(value: any) {
+  if (!value) return undefined;
+  const sources = Array.isArray(value.sources)
+    ? value.sources
+        .map((source: any) => ({
+          title: source?.title ? String(source.title).slice(0, 200) : undefined,
+          url: source?.url ? String(source.url) : undefined,
+          snippet: source?.snippet ? String(source.snippet).slice(0, 240) : undefined,
+        }))
+        .filter((source: any) => source?.url)
+    : [];
+  return {
+    verdict: value.verdict ?? undefined,
+    confidence: typeof value.confidence === "number" ? value.confidence : undefined,
+    summary: value.summary ? String(value.summary).slice(0, 240) : undefined,
+    sources,
+    checkedAt: value.checkedAt ? new Date(value.checkedAt) : undefined,
+    model: value.model ? String(value.model).slice(0, 100) : undefined,
+  };
+}
+
 type UserStats = {
   posts: number;
   comments: number;
@@ -131,7 +152,7 @@ export async function GET(
   );
 
   const visibilityStatus = topic.visibility?.status;
-  const isHidden = !!visibilityStatus && ["hidden", "blocked", "needs_review"].includes(visibilityStatus);
+  const isHidden = !!visibilityStatus && ["hidden", "blocked", "needs_review", "noise"].includes(visibilityStatus);
   if (topic.isActive === false || isHidden) {
     if (!canModerate) {
       return NextResponse.json({ error: "Topic not found" }, { status: 404 });
@@ -146,19 +167,24 @@ export async function GET(
     : { createdAt: -1 };
   const argumentFetchLimit = isRelevant ? Math.min(numArguments * 3, 200) : numArguments;
 
-  const argumentFilters: Record<string, any> = canSeeModeration
-    ? { topic: topic._id }
-    : {
-      topic: topic._id,
-      isRemoved: false,
-      "visibility.status": { $nin: ["blocked", "hidden", "needs_review"] },
-    };
+  const hiddenStatuses = ["blocked", "hidden", "needs_review", "noise"];
+  const baseArgumentFilters: Record<string, any> = { topic: topic._id };
+  if (!canSeeModeration) {
+    baseArgumentFilters.isRemoved = false;
+  }
   if (argumentCategoryFilter.length) {
-    argumentFilters["ontologyCategories.id"] = { $in: argumentCategoryFilter };
+    baseArgumentFilters["ontologyCategories.id"] = { $in: argumentCategoryFilter };
   }
   if (argumentTextQuery) {
-    argumentFilters.body = { $regex: escapeRegex(argumentTextQuery), $options: "i" };
+    baseArgumentFilters.body = { $regex: escapeRegex(argumentTextQuery), $options: "i" };
   }
+
+  const argumentFilters: Record<string, any> = canSeeModeration
+    ? baseArgumentFilters
+    : {
+      ...baseArgumentFilters,
+      "visibility.status": { $nin: hiddenStatuses },
+    };
 
   const argumentsList = await Argument.find(argumentFilters)
     .sort(argSort)
@@ -166,26 +192,89 @@ export async function GET(
     .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt isAdmin" })
     .lean();
 
+  let noiseArguments: any[] = [];
+  let ownHiddenArguments: any[] = [];
+  if (!canSeeModeration) {
+    if (viewerId) {
+      ownHiddenArguments = await Argument.find({
+        ...baseArgumentFilters,
+        createdBy: new mongoose.Types.ObjectId(viewerId),
+        "visibility.status": { $in: hiddenStatuses },
+      })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt isAdmin" })
+        .lean();
+    }
+    noiseArguments = await Argument.find({
+      ...baseArgumentFilters,
+      "visibility.status": "noise",
+    })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt isAdmin" })
+      .lean();
+  }
+
   // Fetch comments for each argument, ordering by relevancy (approx: newest first for now) or could extend with score if added later
-  const argumentIds = argumentsList.map((a) => a._id);
+  const argumentIdSet = new Set(
+    [...argumentsList, ...noiseArguments, ...ownHiddenArguments].map((arg) => arg?._id?.toString?.()).filter(Boolean)
+  );
+  const argumentIds = Array.from(argumentIdSet).map((id) => new mongoose.Types.ObjectId(id));
   const commentsByArgument: Record<string, any[]> = {};
   let commentDocs: any[] = [];
   if (argumentIds.length) {
-    const commentFilters: Record<string, any> = canSeeModeration
-      ? { argument: { $in: argumentIds } }
-      : {
-        argument: { $in: argumentIds },
-        isRemoved: false,
-        "visibility.status": { $nin: ["blocked", "hidden", "needs_review"] },
-      };
-    if (commentTextQuery) {
-      commentFilters.body = { $regex: escapeRegex(commentTextQuery), $options: "i" };
+    const baseCommentFilters: Record<string, any> = { argument: { $in: argumentIds } };
+    if (!canSeeModeration) {
+      baseCommentFilters.isRemoved = false;
     }
+    if (commentTextQuery) {
+      baseCommentFilters.body = { $regex: escapeRegex(commentTextQuery), $options: "i" };
+    }
+    const commentFilters: Record<string, any> = canSeeModeration
+      ? baseCommentFilters
+      : {
+        ...baseCommentFilters,
+        "visibility.status": { $nin: hiddenStatuses },
+      };
     commentDocs = await Comment.find(commentFilters)
       .sort({ createdAt: -1 })
       .limit(500)
       .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt isAdmin" })
       .lean();
+
+    if (!canSeeModeration) {
+      let noiseComments: any[] = [];
+      let ownHiddenComments: any[] = [];
+      if (viewerId) {
+        ownHiddenComments = await Comment.find({
+          ...baseCommentFilters,
+          createdBy: new mongoose.Types.ObjectId(viewerId),
+          "visibility.status": { $in: hiddenStatuses },
+        })
+          .sort({ createdAt: -1 })
+          .limit(200)
+          .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt isAdmin" })
+          .lean();
+      }
+      noiseComments = await Comment.find({
+        ...baseCommentFilters,
+        "visibility.status": "noise",
+      })
+        .sort({ createdAt: -1 })
+        .limit(200)
+        .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt isAdmin" })
+        .lean();
+
+      const merged = [...commentDocs, ...ownHiddenComments, ...noiseComments];
+      const seen = new Set<string>();
+      commentDocs = merged.filter((comment) => {
+        const id = comment?._id?.toString?.() ?? "";
+        if (!id || seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      });
+    }
   }
 
   const statsMap = new Map<string, UserStats>();
@@ -254,6 +343,7 @@ export async function GET(
     }
   }
 
+  const commentScoreMap = new Map<string, number>();
   if (commentDocs.length) {
     for (const c of commentDocs) {
       const key = c.argument.toString();
@@ -261,6 +351,18 @@ export async function GET(
         commentCategoryFilter.length === 0 ||
         (Array.isArray(c.ontologyCategories) && c.ontologyCategories.some((cat: any) => commentCategoryFilter.includes(cat?.id)))
       ) {
+        const commentId = c._id?.toString?.() ?? "";
+        if (commentId) {
+          commentScoreMap.set(
+            commentId,
+            effectiveScore(c.score, c.evidenceRankScore, {
+              quality: c.visibility?.quality,
+              upvotes: c.upvoteCount,
+              downvotes: c.downvoteCount,
+              rankPenalty: c.visibility?.rankPenalty,
+            })
+          );
+        }
         const signedEvidence = await signEvidence(c.evidence ?? []);
         const commenterId = c.createdBy?._id?.toString?.() ?? "";
         const createdBy = await mapUserSummary(c.createdBy, statsMap.get(commenterId), moderatorIds as Set<string>);
@@ -274,17 +376,38 @@ export async function GET(
           score: c.score ?? ((c.upvoteCount ?? 0) - (c.downvoteCount ?? 0)),
           ontologyCategories: c.ontologyCategories ?? [],
           evidence: signedEvidence,
+          contentFactCheck: normaliseContentFactCheck(c.contentFactCheck),
           visibility: c.visibility,
           isRemoved: c.isRemoved ?? false,
         });
       }
     }
+    Object.keys(commentsByArgument).forEach((argumentId) => {
+      commentsByArgument[argumentId].sort((a, b) => {
+        const aScore = commentScoreMap.get(a.id) ?? 0;
+        const bScore = commentScoreMap.get(b.id) ?? 0;
+        if (bScore !== aScore) return bScore - aScore;
+        const aTime = a.createdAt ? new Date(a.createdAt as any).getTime() : 0;
+        const bTime = b.createdAt ? new Date(b.createdAt as any).getTime() : 0;
+        return bTime - aTime;
+      });
+    });
   }
 
   const orderedArguments = isRelevant
     ? [...argumentsList].sort((a, b) => {
-        const aScore = effectiveScore(a.score, (a as any).evidenceRankScore);
-        const bScore = effectiveScore(b.score, (b as any).evidenceRankScore);
+        const aScore = effectiveScore(a.score, (a as any).evidenceRankScore, {
+          quality: a.visibility?.quality,
+          upvotes: a.upvoteCount,
+          downvotes: a.downvoteCount,
+          rankPenalty: a.visibility?.rankPenalty,
+        });
+        const bScore = effectiveScore(b.score, (b as any).evidenceRankScore, {
+          quality: b.visibility?.quality,
+          upvotes: b.upvoteCount,
+          downvotes: b.downvoteCount,
+          rankPenalty: b.visibility?.rankPenalty,
+        });
         if (bScore !== aScore) return bScore - aScore;
         return (b.createdAt?.getTime?.() ?? 0) - (a.createdAt?.getTime?.() ?? 0);
       })
@@ -295,6 +418,18 @@ export async function GET(
     : orderedArguments;
 
   const limitedArguments = isRelevant ? argumentsForResponse.slice(0, numArguments) : argumentsForResponse;
+
+  const combinedArguments = (() => {
+    if (canSeeModeration) return limitedArguments;
+    const combined = [...limitedArguments, ...ownHiddenArguments, ...noiseArguments];
+    const seen = new Set<string>();
+    return combined.filter((arg) => {
+      const id = arg?._id?.toString?.() ?? "";
+      if (!id || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  })();
 
   const subscriptionMap = new Map<string, { muted?: boolean }>();
   if (viewerId) {
@@ -347,7 +482,7 @@ export async function GET(
         : {}),
     },
     arguments: await Promise.all(
-      limitedArguments.map(async (a) => {
+      combinedArguments.map(async (a) => {
         const rawSide = (a as any).side as string;
         const normalisedSide = rawSide === "pro" ? "for" : (rawSide === "con" ? "against" : rawSide);
         const commentList = commentsByArgument[a._id.toString()] || [];
@@ -380,6 +515,7 @@ export async function GET(
           createdAt: a.createdAt,
           ontologyCategories: a.ontologyCategories ?? [],
           evidence: signedEvidence,
+          contentFactCheck: normaliseContentFactCheck((a as any).contentFactCheck),
           visibility: a.visibility,
           isRemoved: a.isRemoved ?? false,
           comments: commentList,
@@ -397,10 +533,10 @@ export async function GET(
     })),
     meta: {
       ordering: isRelevant ? "relevant" : "newest",
-      returnedArguments: limitedArguments.length,
+      returnedArguments: combinedArguments.length,
       requestedArguments: numArguments,
       viewer: viewerId
-        ? { isAdmin, isModerator, canModerate }
+        ? { id: viewerId, isAdmin, isModerator, canModerate }
         : { isAdmin: false, isModerator: false, canModerate: false },
     },
   };

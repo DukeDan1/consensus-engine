@@ -16,6 +16,8 @@ type TopicItem = {
   upvoteCount: number;
   downvoteCount: number;
   totalVotes: number;
+  argumentCount?: number;
+  commentCount?: number;
   creatorName: string;
   ontologyCategories?: OntologyCategoryOption[];
 };

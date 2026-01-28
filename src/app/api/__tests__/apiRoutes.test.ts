@@ -1171,7 +1171,7 @@ describe('GET /api/topics/[id]', () => {
     const json = await res.json();
 
     expect(res.status).toBe(200);
-    expect(json.meta.viewer).toEqual({ isAdmin: false, isModerator: true, canModerate: true });
+    expect(json.meta.viewer).toEqual({ id: 'viewer1', isAdmin: false, isModerator: true, canModerate: true });
   });
 
   it('includes subscription state for authenticated viewers', async () => {
@@ -1260,6 +1260,7 @@ describe('POST /api/profile/avatar/generate', () => {
 
   it('validates payload', async () => {
     mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
+    mockUserFindOne.mockReturnValue(chainableQuery({ _id: 'user1' }));
     const res = await avatarGeneratePost(new Request('http://localhost/api/profile/avatar/generate', {
       method: 'POST',
       body: JSON.stringify({ gender: 'unknown', age: 10, hairColor: 'purple', ethnicitySkin: 'Unknown' })
@@ -1390,6 +1391,7 @@ describe('PATCH /api/topics/[id]/moderators', () => {
 
   it('returns generated image', async () => {
     mockGetServerSession.mockResolvedValue({ user: { email: 'user@test.com' } });
+    mockUserFindOne.mockReturnValue(chainableQuery({ _id: 'user1' }));
     mockGenerateProfileImage.mockResolvedValue('base64-data');
 
     const res = await avatarGeneratePost(new Request('http://localhost/api/profile/avatar/generate', {
@@ -1405,7 +1407,7 @@ describe('PATCH /api/topics/[id]/moderators', () => {
       age: 32,
       hairColor: 'brown',
       ethnicitySkin: 'White (light skin tone)'
-    });
+    }, 'user1');
   });
 });
 

@@ -14,18 +14,82 @@ export async function GET() {
         {
           $match: {
             isActive: true,
-            "visibility.status": { $nin: ["blocked", "hidden", "needs_review"] },
+            "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] },
           },
         },
         {
-          $project: {
-            title: 1,
-            description: 1,
-            createdBy: 1,
-            createdAt: 1,
-            upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
-            downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
-            ontologyCategories: { $ifNull: ["$ontologyCategories", []] },
+          $lookup: {
+            from: "arguments",
+            let: { topicId: "$_id" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ["$topic", "$$topicId"] },
+                  isRemoved: false,
+                  "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] },
+                },
+              },
+              {
+                $group: {
+                  _id: null,
+                  count: { $sum: 1 },
+                  upvotes: { $sum: { $ifNull: ["$upvoteCount", 0] } },
+                  downvotes: { $sum: { $ifNull: ["$downvoteCount", 0] } },
+                },
+              },
+            ],
+            as: "argumentStats",
+          },
+        },
+        {
+          $lookup: {
+            from: "comments",
+            let: { topicId: "$_id" },
+            pipeline: [
+              {
+                $lookup: {
+                  from: "arguments",
+                  localField: "argument",
+                  foreignField: "_id",
+                  as: "argument",
+                },
+              },
+              { $unwind: "$argument" },
+              {
+                $match: {
+                  $expr: { $eq: ["$argument.topic", "$$topicId"] },
+                  isRemoved: false,
+                  "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] },
+                },
+              },
+              {
+                $group: {
+                  _id: null,
+                  count: { $sum: 1 },
+                  upvotes: { $sum: { $ifNull: ["$upvoteCount", 0] } },
+                  downvotes: { $sum: { $ifNull: ["$downvoteCount", 0] } },
+                },
+              },
+            ],
+            as: "commentStats",
+          },
+        },
+        {
+          $addFields: {
+            argumentCount: { $ifNull: [{ $first: "$argumentStats.count" }, 0] },
+            commentCount: { $ifNull: [{ $first: "$commentStats.count" }, 0] },
+            upvoteCount: {
+              $add: [
+                { $ifNull: [{ $first: "$argumentStats.upvotes" }, 0] },
+                { $ifNull: [{ $first: "$commentStats.upvotes" }, 0] },
+              ],
+            },
+            downvoteCount: {
+              $add: [
+                { $ifNull: [{ $first: "$argumentStats.downvotes" }, 0] },
+                { $ifNull: [{ $first: "$commentStats.downvotes" }, 0] },
+              ],
+            },
           },
         },
         {
@@ -60,7 +124,9 @@ export async function GET() {
             upvoteCount: 1,
             downvoteCount: 1,
             totalVotes: 1,
-            ontologyCategories: 1,
+            argumentCount: 1,
+            commentCount: 1,
+            ontologyCategories: { $ifNull: ["$ontologyCategories", []] },
             creatorName: {
               $ifNull: ["$creator.name", "Unknown"],
             },

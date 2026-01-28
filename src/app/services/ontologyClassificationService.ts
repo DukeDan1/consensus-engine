@@ -13,6 +13,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import OpenAI from "openai";
 import { cleanOntologyLabel } from "@/app/lib/ontologyUtils";
+import { routeResponsesClient } from "@/app/services/aiRoutingService";
 
 // Models (override via env if desired)
 const DEFAULT_EMBED_MODEL = process.env.OPENAI_EMBED_MODEL || "text-embedding-3-large";
@@ -302,6 +303,7 @@ export type ClassifyOptions = {
   minSimilarity?: number; // drop weak matches before LLM
   confirmWithLLM?: boolean; // re-rank/confirm with an LLM
   responsesModel?: string; // override model for LLM step
+  safetyIdentifier?: string; // user id for safety tracking
 };
 
 export async function classifyTextToOntology(
@@ -349,15 +351,24 @@ export async function classifyTextToOntology(
       "Select 0..N topics that best describe input_text. Prefer specific over general. If none apply, return []. Return JSON: { selections: [{ id, confidence (0..1) }] }.",
   } as const;
 
-  const resp = await openai.responses.create({
-    model: responsesModel,
+  const routed = await routeResponsesClient({
+    text,
+    openAiModel: responsesModel,
+    grokModel: process.env.GROK_RESPONSES_MODEL,
+    userId: options.safetyIdentifier,
+  });
+  if (!routed) {
+    throw new Error("OpenAI client not configured");
+  }
+
+  const resp = await routed.client.responses.create({
+    model: routed.model,
+    safety_identifier: options.safetyIdentifier ? String(options.safetyIdentifier) : "system",
     input: [
       { role: "system", content: "You are a precise classifier for an ontology of debate/discussion topics. Return strict JSON only with no preamble or commentary." },
       { role: "user", content: JSON.stringify(payload) },
     ],
-    reasoning: {
-      effort: "none"
-    },
+    ...(routed.provider === "grok" ? {} : { reasoning: { effort: "none" } }),
     tool_choice: {
       type: "function",
       name: "classify_ontology",

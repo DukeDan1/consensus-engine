@@ -19,7 +19,7 @@ export async function GET(_request: NextRequest, ctx: any) {
         const topicObjectId = new mongoose.Types.ObjectId(id);
         const topic = await Topic.findById(topicObjectId).select({ isActive: 1, visibility: 1 }).lean();
         const visibilityStatus = topic?.visibility?.status;
-        if (!topic || topic.isActive === false || (visibilityStatus && ["hidden", "blocked", "needs_review"].includes(visibilityStatus))) {
+        if (!topic || topic.isActive === false || (visibilityStatus && ["hidden", "blocked", "needs_review", "noise"].includes(visibilityStatus))) {
             return NextResponse.json({ error: "Topic not found" }, { status: 404 });
         }
         const facts = await Fact.find({ topic: topicObjectId })

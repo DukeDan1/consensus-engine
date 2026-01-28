@@ -1,6 +1,6 @@
-import OpenAI from 'openai';
 import type mongoose from 'mongoose';
 import { normaliseTrustScore, scoreToTier, shouldApplyStrictPostingRules, type TrustTier } from '@/app/services/trustService';
+import { routeResponsesClient } from '@/app/services/aiRoutingService';
 
 export type ModerationDecision = 'allow' | 'review' | 'block';
 export type ModerationSeverity = 'low' | 'medium' | 'high' | 'critical';
@@ -18,18 +18,10 @@ export type ModerationResult = {
   shortReason: string;
   recommendedTrustDelta: number; // -25..+5
   model?: string;
+  provider?: 'openai' | 'grok' | 'heuristic' | 'disabled';
 };
 
 const moderationEnabled = (process.env.MODERATION_ENABLED ?? 'true').toLowerCase() !== 'false';
-
-let openai: OpenAI | null = null;
-
-function getOpenAIClient(): OpenAI | null {
-  if (!process.env.OPENAI_API_KEY) return null;
-  if (openai) return openai;
-  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  return openai;
-}
 
 function clamp0to100(value: unknown, fallback: number): number {
   const n = typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -72,6 +64,7 @@ function heuristicModeration(
     shortReason: decision === 'review' ? 'Content looks spam-like and needs review.' : 'OK',
     recommendedTrustDelta: decision === 'review' ? -3 : 0,
     model: 'heuristic',
+    provider: 'heuristic',
   };
 }
 
@@ -84,7 +77,7 @@ export async function moderateUserGeneratedText(params: {
   topicTitle?: string;
   evidence?: Array<{ url?: string | null } | null>;
 }): Promise<ModerationResult> {
-  const { text, contentType, userTrustScore, userTrustTier, topicTitle, evidence } = params;
+  const { text, contentType, userId, userTrustScore, userTrustTier, topicTitle, evidence } = params;
   const evidenceUrls = (evidence || [])
     .map((item) => (item?.url ? String(item.url) : undefined))
     .filter((u): u is string => Boolean(u))
@@ -103,6 +96,7 @@ export async function moderateUserGeneratedText(params: {
       shortReason: 'Moderation disabled.',
       recommendedTrustDelta: 0,
       model: 'disabled',
+      provider: 'disabled',
     };
   }
 
@@ -124,13 +118,12 @@ export async function moderateUserGeneratedText(params: {
       shortReason: 'Empty content.',
       recommendedTrustDelta: -1,
       model: 'local',
+      provider: 'heuristic',
     };
   }
 
-  const client = getOpenAIClient();
-
   // If OpenAI key isn't configured, fall back to lightweight heuristics.
-  if (!client) {
+  if (!process.env.OPENAI_API_KEY) {
     return heuristicModeration(trimmed, contentType, evidenceUrls.length);
   }
 
@@ -138,12 +131,22 @@ export async function moderateUserGeneratedText(params: {
   const tier = (userTrustTier as TrustTier | undefined) ?? scoreToTier(score);
   const strict = shouldApplyStrictPostingRules(tier);
 
-  const model = process.env.OPENAI_MODERATION_MODEL || process.env.OPENAI_RESPONSES_MODEL || 'gpt-5.2';
+  const routed = await routeResponsesClient({
+    text: trimmed,
+    openAiModel: process.env.OPENAI_MODERATION_MODEL || process.env.OPENAI_RESPONSES_MODEL || 'gpt-5.2',
+    grokModel: process.env.GROK_RESPONSES_MODEL,
+    userId: userId ? String(userId) : undefined,
+  });
+  if (!routed) {
+    return heuristicModeration(trimmed, contentType, evidenceUrls.length);
+  }
+  const model = routed.model;
 
   try {
-    const response = await client.responses.create({
+    const response = await routed.client.responses.create({
       model,
-      reasoning: { effort: 'none' },
+      safety_identifier: userId ? String(userId) : "system",
+      ...(routed.provider === "grok" ? {} : { reasoning: { effort: "none" } }),
       input: [
         {
           role: 'developer',
@@ -151,6 +154,7 @@ export async function moderateUserGeneratedText(params: {
             'You are a safety + community integrity moderation classifier for a debate/discussion platform. ' +
             'Your job is to prevent spam, abuse, illegal/harmful content, and also detect troll/brigade-style manipulation. ' +
             'Return a decision: allow, review, or block. Prefer review over block when uncertain. ' +
+            'Quality should reflect how substantive and interesting the content is (higher for insightful, evidence-backed, or thought-provoking content; lower for low-effort). ' +
             `The content type is: ${contentType}.` +
             (contentType === 'comment'
               ? ' Comments can be short and conversational; do not require new evidence or high verbosity. Only flag spam, obvious abuse/harassment, or clearly off-topic replies.'
@@ -223,6 +227,7 @@ export async function moderateUserGeneratedText(params: {
       shortReason: typeof parsed.shortReason === 'string' ? parsed.shortReason : 'Needs review.',
       recommendedTrustDelta: typeof parsed.recommendedTrustDelta === 'number' ? parsed.recommendedTrustDelta : 0,
       model,
+      provider: routed.provider,
     };
 
     if (evidenceUrls.length) {
@@ -253,58 +258,82 @@ export function moderationToVisibility(params: {
   contentType?: ModerationContentType;
   evidenceCount?: number;
 }): {
-  status: 'visible' | 'hidden' | 'needs_review' | 'blocked';
+  status: 'visible' | 'noise' | 'needs_review' | 'blocked';
   rankPenalty: number;
 } {
   const { moderation, userTrustTier, contentType, evidenceCount = 0 } = params;
   const relaxedComments = contentType === 'comment';
   const evidenceBoost = evidenceCount > 0 ? 10 : 0;
+  const categories = Array.isArray(moderation.categories)
+    ? moderation.categories.map((cat) => cat.toLowerCase())
+    : [];
+  const severeCategories = new Set([
+    'hate',
+    'violence',
+    'self_harm',
+    'illicit',
+    'extremism',
+    'terrorism',
+    'doxxing',
+    'sexual',
+    'child_abuse',
+    'illegal',
+  ]);
+  const hasSevereCategory = categories.some((cat) => severeCategories.has(cat));
+  const hasSpamCategory = categories.includes('spam');
 
-  if (moderation.decision === 'block') {
+  const obviousHarm =
+    moderation.illegalOrHarmfulLikelihood >= 70 ||
+    (hasSevereCategory && moderation.illegalOrHarmfulLikelihood >= 50) ||
+    moderation.spamLikelihood >= 85 + evidenceBoost ||
+    (hasSpamCategory && moderation.spamLikelihood >= 75 + evidenceBoost);
+
+  if (moderation.decision === 'block' && obviousHarm) {
     return { status: 'blocked', rankPenalty: -1000 };
   }
 
-  // Strict behavior for low-trust: default to hidden on suspicious signals.
   const strict = shouldApplyStrictPostingRules(userTrustTier);
-  const strictSuspicious = strict && (
-    moderation.spamLikelihood >= 40 + evidenceBoost ||
-    moderation.trollingLikelihood >= 45 + evidenceBoost ||
-    moderation.illegalOrHarmfulLikelihood >= 30 ||
-    moderation.quality <= (relaxedComments ? 20 : 35) ||
-    moderation.offTopicLikelihood >= 55 + evidenceBoost
-  );
+  const needsReview =
+    moderation.decision === 'review' &&
+    (moderation.illegalOrHarmfulLikelihood >= 50 ||
+      hasSevereCategory ||
+      moderation.spamLikelihood >= 70 + evidenceBoost);
 
-  const suspicious = strictSuspicious || (relaxedComments
-    ? (moderation.spamLikelihood >= 80 + evidenceBoost ||
-      moderation.trollingLikelihood >= 80 + evidenceBoost ||
-      moderation.illegalOrHarmfulLikelihood >= 45 ||
-      moderation.offTopicLikelihood >= 90 + evidenceBoost)
-    : (moderation.spamLikelihood >= 50 + evidenceBoost ||
-      moderation.trollingLikelihood >= 55 + evidenceBoost ||
-      moderation.illegalOrHarmfulLikelihood >= 40 ||
-      moderation.quality <= 25 ||
-      moderation.offTopicLikelihood >= 65 + evidenceBoost));
-
-  if (moderation.decision === 'review') {
-    return { status: 'hidden', rankPenalty: -25 };
+  if (needsReview) {
+    return { status: 'needs_review', rankPenalty: -200 };
   }
 
-  // Allowed but a bit sketchy: visible, but demote.
-  const borderline = relaxedComments
-    ? (moderation.spamLikelihood >= 70 + evidenceBoost ||
-      moderation.trollingLikelihood >= 70 + evidenceBoost ||
-      moderation.offTopicLikelihood >= 85 + evidenceBoost)
-    : (moderation.spamLikelihood >= 35 + evidenceBoost ||
+  const noiseSignals =
+    moderation.decision === 'review' ||
+    moderation.offTopicLikelihood >= (relaxedComments ? 65 : 55) + evidenceBoost ||
+    moderation.spamLikelihood >= (relaxedComments ? 55 : 45) + evidenceBoost ||
+    moderation.trollingLikelihood >= (relaxedComments ? 60 : 50) + evidenceBoost ||
+    moderation.quality <= (relaxedComments ? 25 : 35);
+
+  const strictNoise =
+    strict &&
+    (moderation.spamLikelihood >= 35 + evidenceBoost ||
       moderation.trollingLikelihood >= 40 + evidenceBoost ||
-      moderation.quality < 40);
+      moderation.offTopicLikelihood >= 45 + evidenceBoost ||
+      moderation.quality <= (relaxedComments ? 20 : 30));
 
-  if (suspicious) {
-    return { status: 'hidden', rankPenalty: -25 };
+  if (moderation.decision === 'block') {
+    if (contentType === 'topic') {
+      return { status: 'needs_review', rankPenalty: -200 };
+    }
+    return { status: 'noise', rankPenalty: -50 };
   }
 
-  if (strict && borderline) {
-    return { status: 'hidden', rankPenalty: -25 };
+  if (noiseSignals || strictNoise) {
+    if (contentType === 'topic') {
+      return { status: 'visible', rankPenalty: -10 };
+    }
+    return { status: 'noise', rankPenalty: -50 };
   }
+
+  const borderline = relaxedComments
+    ? moderation.spamLikelihood >= 45 + evidenceBoost || moderation.trollingLikelihood >= 45 + evidenceBoost
+    : moderation.spamLikelihood >= 30 + evidenceBoost || moderation.trollingLikelihood >= 35 + evidenceBoost;
 
   if (borderline) {
     return { status: 'visible', rankPenalty: -5 };

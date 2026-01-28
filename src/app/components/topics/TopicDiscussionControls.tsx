@@ -8,10 +8,16 @@ export default function TopicDiscussionControls({
   topicId,
   argumentQuery,
   commentQuery,
+  onOptimisticArgumentAdd,
+  onOptimisticArgumentResolve,
+  onOptimisticArgumentReject,
 }: {
   topicId: string;
   argumentQuery: string;
   commentQuery: string;
+  onOptimisticArgumentAdd?: Parameters<typeof AddNewArgumentComponent>[0]["onOptimisticAdd"];
+  onOptimisticArgumentResolve?: Parameters<typeof AddNewArgumentComponent>[0]["onOptimisticResolve"];
+  onOptimisticArgumentReject?: Parameters<typeof AddNewArgumentComponent>[0]["onOptimisticReject"];
 }) {
   const [showFilters, setShowFilters] = useState(() => Boolean(argumentQuery) || Boolean(commentQuery));
   const [argumentFormOpen, setArgumentFormOpen] = useState(false);
@@ -22,7 +28,13 @@ export default function TopicDiscussionControls({
     <div>
       <div className={`d-flex flex-wrap gap-2 align-items-start ${controlsShouldStack ? "flex-column" : ""}`}>
         <div className={`flex-grow-1 ${controlsShouldStack ? "w-100" : "flex-md-grow-0"}`}>
-          <AddNewArgumentComponent topicId={topicId} onOpenChange={setArgumentFormOpen} />
+          <AddNewArgumentComponent
+            topicId={topicId}
+            onOpenChange={setArgumentFormOpen}
+            onOptimisticAdd={onOptimisticArgumentAdd}
+            onOptimisticResolve={onOptimisticArgumentResolve}
+            onOptimisticReject={onOptimisticArgumentReject}
+          />
         </div>
         <button
           type="button"

@@ -2,20 +2,34 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
 import EvidencePicker from "@/app/components/EvidencePicker";
 import { useEvidenceAttachments } from "@/app/lib/useEvidenceAttachments";
+import { TopicApiResponse } from "@/app/types/topicApiResponse";
 
 type Props = {
     topicId: string;
     onOpenChange?: (_open: boolean) => void;
+    onOptimisticAdd?: (_argument: TopicApiResponse["arguments"][number]) => void;
+    onOptimisticResolve?: (_tempId: string, _argument: TopicApiResponse["arguments"][number]) => void;
+    onOptimisticReject?: (_tempId: string) => void;
 };
 
-export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props) {
+export default function AddNewArgumentComponent({
+    topicId,
+    onOpenChange,
+    onOptimisticAdd,
+    onOptimisticResolve,
+    onOptimisticReject,
+}: Props) {
     const [showForm, setShowForm] = useState(false);
     const [text, setText] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const { data: session } = useSession();
+    const sessionUser = session?.user as any;
+    const sessionAvatar = sessionUser?.avatarThumbUrl || sessionUser?.avatarUrl || sessionUser?.image;
     const {
         evidence,
         evidenceLink,
@@ -55,6 +69,36 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
             toast.info(`Limit reached: up to ${maxItems} items.`);
         }
 
+        const tempId = `temp-argument-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const optimisticArgument: TopicApiResponse["arguments"][number] = {
+            id: tempId,
+            body,
+            side: "neutral",
+            createdBy: {
+                _id: sessionUser?.id,
+                name: sessionUser?.name || sessionUser?.email || "You",
+                nickname: sessionUser?.nickname,
+                avatarUrl: sessionUser?.avatarUrl || sessionUser?.image,
+                avatarThumbUrl: sessionAvatar,
+            },
+            createdAt: new Date().toISOString(),
+            upvoteCount: 0,
+            downvoteCount: 0,
+            score: 0,
+            commentCount: 0,
+            ontologyCategories: [],
+            evidence: preparedEvidence.evidence,
+            visibility: { status: "visible" },
+            comments: [],
+            pending: true,
+        };
+
+        onOptimisticAdd?.(optimisticArgument);
+
+        setText("");
+        clearEvidence();
+        toggleForm(false);
+
         setSubmitting(true);
         try {
             const res = await fetch("/api/argument", {
@@ -70,14 +114,26 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
                 } else {
                     toast.error(reason);
                 }
+                onOptimisticReject?.(tempId);
                 return;
             }
 
             const status = data?.visibility?.status;
             const reason = data?.visibility?.reason || data?.reason;
-            if (status === "hidden" || status === "needs_review") {
-                toast.info(reason ? `Submitted for review: ${reason}` : "Submitted for review. It may be hidden until cleared.", { autoClose: 15000 });
-            } else if (status === "visible") {
+            if (status === "blocked") {
+                onOptimisticReject?.(tempId);
+            } else if (data?.id) {
+                onOptimisticResolve?.(tempId, {
+                    ...data,
+                    comments: Array.isArray(data?.comments) ? data.comments : [],
+                });
+            }
+            if (status === "blocked" || status === "needs_review" || status === "hidden") {
+                toast.info(
+                    reason ? `Submitted for review: ${reason}` : "Submitted for review. It may be hidden until cleared.",
+                    { autoClose: 15000 }
+                );
+            } else {
                 toast.success("Posted successfully");
             }
             if (data?.moderatorPromotion?.promoted) {
@@ -87,14 +143,12 @@ export default function AddNewArgumentComponent({ topicId, onOpenChange }: Props
         } catch (err) {
             console.error("Submit argument failed", err);
             toast.error("Unable to post right now. Please try again.");
+            onOptimisticReject?.(tempId);
             return;
         } finally {
             setSubmitting(false);
         }
 
-        setText("");
-        clearEvidence();
-        toggleForm(false);
         router.replace(`/topics/${topicId}?ordering=newest`);
         router.refresh();
         if (typeof window !== "undefined") {

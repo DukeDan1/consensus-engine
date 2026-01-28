@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   const [topicsRaw, usersRaw] = await Promise.all([
     Topic.find({
       isActive: true,
-      "visibility.status": { $nin: ["blocked", "hidden", "needs_review"] },
+      "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] },
       title: regex,
     })
       .sort({ createdAt: -1 })

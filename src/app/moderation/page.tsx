@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 const reviewFilter = {
   $or: [
-    { "visibility.status": { $in: ["hidden", "needs_review"] } },
+    { "visibility.status": { $in: ["hidden", "needs_review", "blocked"] } },
     { "visibility.categories": "spam" },
     { "visibility.spamLikelihood": { $gte: 50 } },
   ],

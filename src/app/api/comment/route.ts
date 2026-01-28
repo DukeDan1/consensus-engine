@@ -23,6 +23,7 @@ import { sendNotificationEmails } from "@/app/services/notificationEmailService"
 import { hasTopicModeratorRole, maybeAutoPromoteModerator } from "@/app/services/topicModeratorService";
 import { notifyModeratorStatusChange } from "@/app/services/moderatorNotificationService";
 import { factCheckEvidenceItems } from "@/app/services/evidenceFactCheckService";
+import { factCheckPostContent } from "@/app/services/contentFactCheckService";
 
 type Body = {
     argumentId: string;
@@ -73,6 +74,7 @@ export async function POST(req: Request) {
         const moderation = await moderateUserGeneratedText({
             text: contentWithContext,
             contentType: "comment",
+            userId: user._id,
             userTrustScore: user.trustScore,
             userTrustTier: user.trustTier,
             evidence: safeEvidence,
@@ -85,6 +87,12 @@ export async function POST(req: Request) {
             evidenceCount: safeEvidence.length,
         });
 
+        const aiModerationProvider =
+            moderation.provider === "grok" ? "Grok" :
+            moderation.provider === "openai" ? "OpenAI" :
+            undefined;
+        const aiModerationModel = aiModerationProvider ? moderation.model : undefined;
+
         if (visibility.status === "blocked") {
             if (moderation.recommendedTrustDelta) {
                 await applyTrustDelta({
@@ -94,7 +102,6 @@ export async function POST(req: Request) {
                     meta: { categories: moderation.categories, severity: moderation.severity },
                 });
             }
-            return NextResponse.json({ error: "Content blocked by moderation", reason: moderation.shortReason }, { status: 403 });
         }
 
         const created = await Comment.create({
@@ -104,6 +111,8 @@ export async function POST(req: Request) {
             createdBy: user._id,
             ontologyCategories: [],
             evidence: safeEvidence,
+            aiModerationProvider,
+            aiModerationModel,
             visibility: {
                 status: visibility.status,
                 rankPenalty: visibility.rankPenalty,
@@ -125,7 +134,7 @@ export async function POST(req: Request) {
             { upsert: true }
         );
 
-        if (moderation.recommendedTrustDelta) {
+        if (moderation.recommendedTrustDelta && visibility.status !== "blocked") {
             await applyTrustDelta({
                 userId: user._id,
                 delta: moderation.recommendedTrustDelta,
@@ -136,15 +145,18 @@ export async function POST(req: Request) {
 
         let moderatorPromotion = { promoted: false };
         const topicId = parentArgument?.topic?.toString?.() ?? "";
-        try {
-            if (topicId) {
-                moderatorPromotion = await maybeAutoPromoteModerator({
-                    userId: user._id.toString(),
-                    topicId,
-                });
+        // Only consider auto-promotion for non-blocked content
+        if (visibility.status !== "blocked") {
+            try {
+                if (topicId) {
+                    moderatorPromotion = await maybeAutoPromoteModerator({
+                        userId: user._id.toString(),
+                        topicId,
+                    });
+                }
+            } catch (err) {
+                console.error("Auto-promote moderator failed", err);
             }
-        } catch (err) {
-            console.error("Auto-promote moderator failed", err);
         }
 
         if (moderatorPromotion?.promoted && topicId) {
@@ -162,7 +174,7 @@ export async function POST(req: Request) {
 
         const backgroundTask = (async () => {
             try {
-                const classifications = await classifyTextToOntology(trimmed, { topK: 12 }).catch((err) => {
+                const classifications = await classifyTextToOntology(trimmed, { topK: 12, safetyIdentifier: user._id.toString() }).catch((err) => {
                     console.error("Comment classification failed", err);
                     return [];
                 });
@@ -179,7 +191,7 @@ export async function POST(req: Request) {
                     const evidenceForCheck = (created.evidence ?? safeEvidence).map((item: any) =>
                         typeof item?.toObject === "function" ? item.toObject() : item
                     );
-                    const { evidence: checkedEvidence, evidenceRankScore } = await factCheckEvidenceItems(evidenceForCheck);
+                    const { evidence: checkedEvidence, evidenceRankScore } = await factCheckEvidenceItems(evidenceForCheck, user._id.toString());
                     await Comment.updateOne(
                         { _id: created._id },
                         { $set: { evidence: checkedEvidence, evidenceRankScore } }
@@ -187,6 +199,41 @@ export async function POST(req: Request) {
                 } catch (err) {
                     console.error("Evidence fact check failed for comment", created._id, err);
                 }
+            }
+
+            try {
+                const parentContext = parentArgument?.body
+                    ? `Replying to: ${String(parentArgument.body).slice(0, 600)}`
+                    : undefined;
+                const contentFactCheck = await factCheckPostContent({
+                    text: trimmed,
+                    contentType: "comment",
+                    context: parentContext,
+                    userId: user._id.toString(),
+                });
+                if (contentFactCheck) {
+                    const shouldNoise =
+                        contentFactCheck.verdict === "inaccurate" &&
+                        !["blocked", "needs_review"].includes(created.visibility?.status || "");
+                    await Comment.updateOne(
+                        { _id: created._id },
+                        {
+                            $set: {
+                                contentFactCheck,
+                                ...(shouldNoise
+                                    ? {
+                                        "visibility.status": "noise",
+                                        "visibility.moderatedAt": new Date(),
+                                        "visibility.reason": "Marked incorrect by automated fact check",
+                                        "visibility.rankPenalty": -50,
+                                    }
+                                    : {}),
+                            },
+                        }
+                    ).exec();
+                }
+            } catch (err) {
+                console.error("Content fact check failed for comment", created._id, err);
             }
         })();
 
@@ -427,7 +474,7 @@ export async function PATCH(req: Request) {
     if (!targetId || !mongoose.isValidObjectId(targetId)) {
         return NextResponse.json({ error: "Invalid comment id" }, { status: 400 });
     }
-    if (status !== "visible") {
+    if (status !== "visible" && status !== "noise") {
         return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
@@ -452,20 +499,28 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const updated = await Comment.findByIdAndUpdate(
-        targetId,
-        {
-            $set: {
+    const statusUpdate =
+        status === "noise"
+            ? {
+                "visibility.status": "noise",
+                "visibility.moderatedAt": new Date(),
+                "visibility.reason": "Marked as noise by moderator",
+                "visibility.rankPenalty": -50,
+            }
+            : {
                 "visibility.status": "visible",
                 "visibility.moderatedAt": new Date(),
                 "visibility.reason": "Restored by moderator",
                 "visibility.rankPenalty": 0,
-            },
-        },
+            };
+
+    const updated = await Comment.findByIdAndUpdate(
+        targetId,
+        { $set: statusUpdate },
         { new: true }
     ).lean();
 
-    const shouldNotify = existing?.visibility?.status && existing.visibility.status !== "visible";
+    const shouldNotify = status === "visible" && existing?.visibility?.status && existing.visibility.status !== "visible";
     if (shouldNotify && existing.createdBy && existing.argument) {
         try {
             const author = await User.findById(existing.createdBy).select({ email: 1, name: 1 }).lean();

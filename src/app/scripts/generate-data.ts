@@ -161,13 +161,14 @@ function slugify(value: string): string {
 }
 
 async function classify(text: string): Promise<SeedOntologyCategory[]> {
-  const results = await classifyTextToOntology(text, { topK: 8, minSimilarity: 0.2, confirmWithLLM: false });
+  const results = await classifyTextToOntology(text, { topK: 8, minSimilarity: 0.2, confirmWithLLM: false, safetyIdentifier: "system" });
   return classificationToAssignments(results, 5);
 }
 
 async function generateTopicNames(numberOfTopics: number): Promise<Array<string>> {
   const response = await openai.responses.create({
     model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+    safety_identifier: "system",
     reasoning: { effort: "none" },
     tools: [{
       type: "function",
@@ -231,6 +232,7 @@ async function generateTopic(users: SeedUser[], existingKeys: Set<string>, topic
 
   const response = await openai.responses.create({
     model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+    safety_identifier: "system",
     reasoning: { effort: "low" },
     tools: [dataTool],
     input: [

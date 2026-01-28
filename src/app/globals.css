@@ -27,6 +27,10 @@ body {
   color: var(--foreground);
 }
 
+.topic-card {
+  border: 1px solid rgba(15, 23, 42, 0.14);
+}
+
 .text-bg-purple {
   --bs-bg-opacity: 1;
   background-color: #920fd4d1 !important;

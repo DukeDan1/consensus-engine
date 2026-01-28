@@ -154,8 +154,8 @@ describe('moderationService.moderationToVisibility', () => {
       contentType: 'argument',
     });
 
-    expect(result.status).toBe('hidden');
-    expect(result.rankPenalty).toBe(-25);
+    expect(result.status).toBe('noise');
+    expect(result.rankPenalty).toBe(-50);
   });
 
   it('treats lower thresholds as suspicious for strict users', async () => {
@@ -178,7 +178,7 @@ describe('moderationService.moderationToVisibility', () => {
       contentType: 'argument',
     });
 
-    expect(result.status).toBe('hidden');
-    expect(result.rankPenalty).toBe(-25);
+    expect(result.status).toBe('noise');
+    expect(result.rankPenalty).toBe(-50);
   });
 });

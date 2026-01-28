@@ -3,6 +3,7 @@ import { Buffer } from "buffer";
 import type { EvidenceItem } from "@/app/lib/evidence";
 import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
 import { FactCheckVerdict } from "@/app/lib/evidence";
+import { routeResponsesClient } from "@/app/services/aiRoutingService";
 
 export type EvidenceFactCheckResult = {
   verdict: FactCheckVerdict;
@@ -22,15 +23,6 @@ const FACT_CHECK_ENABLED = (process.env.EVIDENCE_FACT_CHECK_ENABLED ?? "true").t
 const MAX_TEXT_CHARS = 12000;
 const MAX_TEXT_BYTES = 1_000_000; // 1MB
 const FETCH_TIMEOUT_MS = 15000;
-
-let openai: OpenAI | null = null;
-
-function getOpenAIClient(): OpenAI | null {
-  if (!process.env.OPENAI_API_KEY) return null;
-  if (openai) return openai;
-  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  return openai;
-}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -205,13 +197,25 @@ async function requestFactCheck(params: {
   fileName?: string;
   text?: string;
   fileData?: string;
+  userId?: string;
 }): Promise<EvidenceFactCheckResult> {
-  const client = getOpenAIClient();
-  if (!client || !FACT_CHECK_ENABLED) {
+  if (!FACT_CHECK_ENABLED) {
     return buildFallbackResult("Fact checking unavailable.", "disabled");
   }
 
-  const model = process.env.OPENAI_FACT_CHECK_MODEL || process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2";
+  // Use the text content (or URL as fallback) for routing decision
+  const textForRouting = params.text || params.url;
+  const routed = await routeResponsesClient({
+    text: textForRouting,
+    openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+    grokModel: process.env.GROK_RESPONSES_MODEL,
+    userId: params.userId,
+  });
+  if (!routed) {
+    return buildFallbackResult("Fact checking unavailable.", "disabled");
+  }
+
+  const model = routed.model;
   const metadata = [
     `Source URL: ${params.url}`,
     params.contentType ? `Content type: ${params.contentType}` : null,
@@ -238,9 +242,10 @@ async function requestFactCheck(params: {
     });
   }
 
-  const response = await client.responses.create({
+  const response = await routed.client.responses.create({
     model,
-    reasoning: { effort: "low" },
+    safety_identifier: params.userId ? String(params.userId) : "system",
+    ...(routed.provider === "grok" ? {} : { reasoning: { effort: "low" } }),
     input: [
       {
         role: "developer",
@@ -259,7 +264,7 @@ async function requestFactCheck(params: {
     ],
     tool_choice: "required",
     tools: [
-      { type: "web_search_preview" },
+      { type: "web_search" },
       {
         type: "function",
         name: "fact_check_source",
@@ -319,7 +324,7 @@ export function calculateEvidenceRankScore(evidence: EvidenceItem[]): number {
   return clamp(total, -25, 20);
 }
 
-async function checkSingleEvidenceItem(item: EvidenceItem): Promise<EvidenceItem> {
+async function checkSingleEvidenceItem(item: EvidenceItem, userId?: string): Promise<EvidenceItem> {
   // Skip items that don't need checking
   if (!item || !item.url || item.factCheck?.checkedAt || !shouldCheckEvidence(item)) {
     return item;
@@ -347,7 +352,8 @@ async function checkSingleEvidenceItem(item: EvidenceItem): Promise<EvidenceItem
 
     if (isPdf) {
       const result = await requestFactCheck({
-        url: fetchUrl
+        url: fetchUrl,
+        userId,
       });
       return { ...item, factCheck: result };
     }
@@ -370,6 +376,7 @@ async function checkSingleEvidenceItem(item: EvidenceItem): Promise<EvidenceItem
       contentType: item.contentType || contentType,
       fileName: item.fileName,
       text: textContent,
+      userId,
     });
     return { ...item, factCheck: result };
   } catch (err) {
@@ -379,7 +386,8 @@ async function checkSingleEvidenceItem(item: EvidenceItem): Promise<EvidenceItem
 }
 
 export async function factCheckEvidenceItems(
-  evidence: EvidenceItem[]
+  evidence: EvidenceItem[],
+  userId?: string
 ): Promise<EvidenceFactCheckOutcome> {
   if (!Array.isArray(evidence) || evidence.length === 0) {
     return { evidence: evidence || [], evidenceRankScore: 0 };
@@ -388,7 +396,7 @@ export async function factCheckEvidenceItems(
   // Process all evidence items in parallel using Promise.allSettled
   // This ensures one failure doesn't stop others from being checked
   const results = await Promise.allSettled(
-    evidence.map((item) => checkSingleEvidenceItem(item))
+    evidence.map((item) => checkSingleEvidenceItem(item, userId))
   );
 
   // Extract successful results and handle any failures
@@ -408,8 +416,30 @@ export async function factCheckEvidenceItems(
   };
 }
 
-export function effectiveScore(score?: number, evidenceRankScore?: number) {
+export function effectiveScore(
+  score?: number,
+  evidenceRankScore?: number,
+  options?: {
+    quality?: number;
+    upvotes?: number;
+    downvotes?: number;
+    rankPenalty?: number;
+  }
+) {
     const base = typeof score === "number" ? score : 0;
     const boost = typeof evidenceRankScore === "number" ? evidenceRankScore : 0;
-    return base + boost;
+    const quality =
+      options && typeof options.quality === "number" ? clamp(options.quality, 0, 100) : undefined;
+    const qualityBoost = quality !== undefined ? Math.round((quality - 50) / 10) : 0;
+    const upvotes = options && typeof options.upvotes === "number" ? Math.max(0, options.upvotes) : 0;
+    const downvotes = options && typeof options.downvotes === "number" ? Math.max(0, options.downvotes) : 0;
+    const totalVotes = upvotes + downvotes;
+    const balance = totalVotes > 0 ? 1 - Math.abs(upvotes - downvotes) / totalVotes : 0;
+    const magnitude = totalVotes > 0 ? Math.log10(totalVotes + 1) : 0;
+    const controversyBoost =
+      options && (options.upvotes !== undefined || options.downvotes !== undefined)
+        ? Math.round(balance * magnitude * 6)
+        : 0;
+    const penalty = typeof options?.rankPenalty === "number" ? options.rankPenalty : 0;
+    return base + boost + qualityBoost + controversyBoost + penalty;
 }

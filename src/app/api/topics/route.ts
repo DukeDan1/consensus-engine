@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
   const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get("pageSize") || "15", 10) || 15));
   const categoryFilter = parseCategoryFilters(searchParams);
 
-  const match: Record<string, any> = { isActive: true, "visibility.status": { $nin: ["blocked", "hidden", "needs_review"] } };
+  const match: Record<string, any> = { isActive: true, "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] } };
 
   // Build a case-insensitive OR filter across title and creator
   const or: any[] = [];
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
                 $match: {
                   $expr: { $eq: ["$topic", "$$topicId"] },
                   isRemoved: false,
-                  "visibility.status": { $nin: ["blocked", "hidden", "needs_review"] },
+                  "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] },
                 },
               },
               { $project: { ontologyCategories: 1 } },
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
                 $match: {
                   $expr: { $eq: ["$argument.topic", "$$topicId"] },
                   isRemoved: false,
-                  "visibility.status": { $nin: ["blocked", "hidden", "needs_review"] },
+                  "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] },
                 },
               },
               { $project: { ontologyCategories: 1 } },
@@ -199,17 +199,85 @@ export async function GET(request: NextRequest) {
       { $skip: skip },
       { $limit: pageSize },
       {
-        $project: {
-          title: 1,
-          description: 1,
-          createdBy: 1,
-          createdAt: 1,
-          upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
-          downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
-          ontologyCategories: { $ifNull: ["$ontologyCategories", []] },
+        $lookup: {
+          from: "arguments",
+          let: { topicId: "$_id" },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$topic", "$$topicId"] },
+                isRemoved: false,
+                "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                count: { $sum: 1 },
+                upvotes: { $sum: { $ifNull: ["$upvoteCount", 0] } },
+                downvotes: { $sum: { $ifNull: ["$downvoteCount", 0] } },
+              },
+            },
+          ],
+          as: "argumentStats",
         },
       },
-      { $addFields: { totalVotes: { $add: ["$upvoteCount", "$downvoteCount"] } } },
+      {
+        $lookup: {
+          from: "comments",
+          let: { topicId: "$_id" },
+          pipeline: [
+            {
+              $lookup: {
+                from: "arguments",
+                localField: "argument",
+                foreignField: "_id",
+                as: "argument",
+              },
+            },
+            { $unwind: "$argument" },
+            {
+              $match: {
+                $expr: { $eq: ["$argument.topic", "$$topicId"] },
+                isRemoved: false,
+                "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] },
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                count: { $sum: 1 },
+                upvotes: { $sum: { $ifNull: ["$upvoteCount", 0] } },
+                downvotes: { $sum: { $ifNull: ["$downvoteCount", 0] } },
+              },
+            },
+          ],
+          as: "commentStats",
+        },
+      },
+      {
+        $addFields: {
+          argumentCount: { $ifNull: [{ $first: "$argumentStats.count" }, 0] },
+          commentCount: { $ifNull: [{ $first: "$commentStats.count" }, 0] },
+          upvoteCount: {
+            $add: [
+              { $ifNull: [{ $first: "$argumentStats.upvotes" }, 0] },
+              { $ifNull: [{ $first: "$commentStats.upvotes" }, 0] },
+            ],
+          },
+          downvoteCount: {
+            $add: [
+              { $ifNull: [{ $first: "$argumentStats.downvotes" }, 0] },
+              { $ifNull: [{ $first: "$commentStats.downvotes" }, 0] },
+            ],
+          },
+        },
+      },
+      {
+        $addFields: {
+          totalVotes: { $add: ["$upvoteCount", "$downvoteCount"] },
+        },
+      },
       {
         $lookup: {
           from: "users",
@@ -226,8 +294,10 @@ export async function GET(request: NextRequest) {
           upvoteCount: 1,
           downvoteCount: 1,
           totalVotes: 1,
+          argumentCount: 1,
+          commentCount: 1,
           creatorName: { $ifNull: ["$creator.name", "Unknown"] },
-          ontologyCategories: 1,
+          ontologyCategories: { $ifNull: ["$ontologyCategories", []] },
         },
       },
     ])
@@ -282,6 +352,7 @@ export async function POST(request: NextRequest) {
   const moderation = await moderateUserGeneratedText({
     text: `${title}\n\n${description}`.trim(),
     contentType: "topic",
+    userId: creator._id,
     userTrustScore: creator.trustScore,
     userTrustTier: creator.trustTier,
     topicTitle: title,
@@ -293,6 +364,12 @@ export async function POST(request: NextRequest) {
     contentType: "topic",
     evidenceCount: 0,
   });
+
+  const aiModerationProvider =
+    moderation.provider === "grok" ? "Grok" :
+    moderation.provider === "openai" ? "OpenAI" :
+    undefined;
+  const aiModerationModel = aiModerationProvider ? moderation.model : undefined;
 
   if (visibility.status === "blocked") {
     if (moderation.recommendedTrustDelta) {
@@ -313,6 +390,8 @@ export async function POST(request: NextRequest) {
     createdBy: creator._id,
     isActive: true,
     slug,
+    aiModerationProvider,
+    aiModerationModel,
     visibility: {
       status: visibility.status,
       moderatedAt: new Date(),
@@ -340,6 +419,7 @@ export async function POST(request: NextRequest) {
     try {
       const classifications = await classifyTextToOntology(`${title}\n\n${description}`.trim(), {
         topK: 12,
+        safetyIdentifier: creator._id.toString(),
       }).catch((err) => {
         console.error("Topic classification failed", err);
         return [];

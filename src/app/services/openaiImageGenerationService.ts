@@ -116,7 +116,7 @@ export function buildPhotorealisticProfilePrompt({
   return prompt;
 }
 
-export async function generateProfileImage(promptArgs: ProfilePromptArgs): Promise<string> {
+export async function generateProfileImage(promptArgs: ProfilePromptArgs, userId?: string): Promise<string> {
     const prompt = buildPhotorealisticProfilePrompt(promptArgs);
     const response = await openai.images.generate({
         model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-1.5",
@@ -124,6 +124,7 @@ export async function generateProfileImage(promptArgs: ProfilePromptArgs): Promi
         n: 1,
         size: "1024x1024",
         quality: "low",
+        user: userId ? String(userId) : "system",
     });
     return response?.data?.[0]?.b64_json || "";
 }

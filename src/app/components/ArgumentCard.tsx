@@ -77,6 +77,7 @@ function getVisibilityLabel(status?: string) {
     if (!status || status === "visible") return null;
     if (status === "needs_review") return "Needs review";
     if (status === "blocked") return "Blocked";
+    if (status === "noise") return "Low visibility";
     return "Hidden";
 }
 
@@ -128,6 +129,48 @@ function FactCheckBadge({ factCheck }: { factCheck?: any }) {
         >
             {meta.label}
         </span>
+    );
+}
+
+function ContentFactCheckNotice({
+    factCheck,
+    compact = false,
+}: {
+    factCheck?: any;
+    compact?: boolean;
+}) {
+    if (!factCheck || factCheck?.verdict !== "inaccurate") return null;
+    const summary = factCheck?.summary ? String(factCheck.summary).trim() : "";
+    const sources = Array.isArray(factCheck?.sources)
+        ? factCheck.sources.filter((source: any) => source?.url)
+        : [];
+    return (
+        <div className={`border border-danger-subtle rounded p-2 bg-danger-subtle ${compact ? "small" : ""}`}>
+            <div className="d-flex flex-wrap align-items-center gap-2 mb-1">
+                <span className="badge text-bg-danger">Incorrect</span>
+                {summary && <span className="text-danger-emphasis">{summary}</span>}
+            </div>
+            {sources.length > 0 && (
+                <div className={`text-danger-emphasis ${compact ? "small" : ""}`}>
+                    <div className="fw-semibold">Sources</div>
+                    <ul className="mb-0 ps-3">
+                        {sources.map((source: any, idx: number) => (
+                            <li key={`${source.url}-${idx}`}>
+                                <a
+                                    href={source.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-decoration-none"
+                                >
+                                    {source.title || source.url}
+                                </a>
+                                {source.snippet ? <span className="text-muted"> - {source.snippet}</span> : null}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -297,6 +340,28 @@ export default function ArgumentCard({
     const [argumentRemoved, setArgumentRemoved] = useState(!!argument.isRemoved);
     const [moderatorOverrides, setModeratorOverrides] = useState<Record<string, boolean>>({});
     const [moderatorUpdatingId, setModeratorUpdatingId] = useState<string | null>(null);
+    const [showNoiseComments, setShowNoiseComments] = useState(false);
+
+    const addOptimisticComment = (comment: TopicApiResponse["arguments"][number]["comments"][number]) => {
+        setCommentStates((prev) => [...prev, { ...comment, pending: true } as any]);
+    };
+
+    const resolveOptimisticComment = (
+        tempId: string,
+        comment: TopicApiResponse["arguments"][number]["comments"][number]
+    ) => {
+        setCommentStates((prev) => {
+            const idx = prev.findIndex((item) => item.id === tempId);
+            if (idx === -1) return [...prev, comment];
+            const next = [...prev];
+            next[idx] = comment as any;
+            return next;
+        });
+    };
+
+    const rejectOptimisticComment = (tempId: string) => {
+        setCommentStates((prev) => prev.filter((item) => item.id !== tempId));
+    };
 
     useEffect(() => {
         setCommentStates(argument.comments?.map((c) => ({ ...c })) ?? []);
@@ -443,50 +508,50 @@ export default function ArgumentCard({
         }
     }
 
-    async function handleRestoreArgument() {
+    async function handleUpdateArgumentVisibility(status: "visible" | "noise") {
         if (!argument?.id) return;
         setRestoringArgument(true);
         try {
             const res = await fetch("/api/argument", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id: argument.id, status: "visible" }),
+                body: JSON.stringify({ id: argument.id, status }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                throw new Error(data?.error || "Failed to restore argument");
+                throw new Error(data?.error || "Failed to update argument");
             }
-            setArgumentVisibility(data?.visibility ?? { status: "visible" });
+            setArgumentVisibility(data?.visibility ?? { status });
             setArgumentRemoved(false);
-            toast.success("Argument restored");
+            toast.success(status === "noise" ? "Marked as noise" : "Argument restored");
             router.refresh();
         } catch (err: any) {
-            toast.error(err?.message || "Unable to restore argument");
+            toast.error(err?.message || "Unable to update argument");
         } finally {
             setRestoringArgument(false);
         }
     }
 
-    async function handleRestoreComment(commentId: string) {
+    async function handleUpdateCommentVisibility(commentId: string, status: "visible" | "noise") {
         setRestoringCommentId(commentId);
         try {
             const res = await fetch("/api/comment", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id: commentId, status: "visible" }),
+                body: JSON.stringify({ id: commentId, status }),
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                throw new Error(data?.error || "Failed to restore comment");
+                throw new Error(data?.error || "Failed to update comment");
             }
             setCommentStates((prev) => prev.map((comment) => (
                 comment.id === commentId
-                    ? { ...comment, visibility: data?.visibility ?? { status: "visible" }, isRemoved: false }
+                    ? { ...comment, visibility: data?.visibility ?? { status }, isRemoved: false }
                     : comment
             )));
-            toast.success("Comment restored");
+            toast.success(status === "noise" ? "Marked as noise" : "Comment restored");
         } catch (err: any) {
-            toast.error(err?.message || "Unable to restore comment");
+            toast.error(err?.message || "Unable to update comment");
         } finally {
             setRestoringCommentId(null);
         }
@@ -501,8 +566,31 @@ export default function ArgumentCard({
     const canDeleteArgument = ownsArgument || canModerate;
     const argumentStatus = argumentVisibility?.status;
     const argumentStatusLabel = getVisibilityLabel(argumentStatus);
-    const canRestoreArgument = canModerate && !argumentRemoved && argumentStatusLabel;
+    const isArgumentNoise = argumentStatus === "noise";
+    const canRestoreArgument = canModerate && !argumentRemoved && argumentStatus && argumentStatus !== "visible" && !isArgumentNoise;
+    const canToggleArgumentNoise = canModerate && !argumentRemoved && (argumentStatus === "visible" || isArgumentNoise);
     const showArgumentStatus = moderatorMode && (argumentRemoved || !!argumentStatusLabel);
+    const isArgumentPending = Boolean((argument as any).pending);
+    const visibleComments = commentStates.filter((comment) => {
+        const commenterId = resolveUserSummary(comment.createdBy).id;
+        const ownsComment = currentUserId && commenterId && currentUserId === commenterId;
+        const status = comment.visibility?.status;
+        if (moderatorMode) return true;
+        if (status === "noise") return ownsComment;
+        if (status && status !== "visible") return ownsComment;
+        return true;
+    });
+    const hiddenNoiseComments = commentStates.filter((comment) => {
+        if (moderatorMode) return false;
+        if (comment.visibility?.status !== "noise") return false;
+        const commenterId = resolveUserSummary(comment.createdBy).id;
+        const ownsComment = currentUserId && commenterId && currentUserId === commenterId;
+        return !ownsComment;
+    });
+    const displayedComments = showNoiseComments
+        ? [...visibleComments, ...hiddenNoiseComments]
+        : visibleComments;
+    const hiddenNoiseCount = hiddenNoiseComments.length;
 
     const getIsModerator = (userId?: string, fallback?: boolean) => {
         if (!userId) return false;
@@ -546,36 +634,42 @@ export default function ArgumentCard({
                     <div className="card-body">
                         <div className="d-flex align-items-start justify-content-between mb-3">
                             <div className="d-flex flex-column gap-1">
-                                <div className="d-flex flex-wrap align-items-center gap-2">
-                                    <UserIdentity
-                                        userId={author.id}
-                                        name={author.name}
-                                        nickname={author.nickname}
-                                        avatarUrl={author.avatarUrl ?? undefined}
-                                        avatarThumbUrl={author.avatarThumbUrl ?? undefined}
-                                        createdAt={author.createdAt}
-                                        size={36}
-                                        nameClassName="author-link fw-semibold"
-                                        fallbackLabel="Anonymous"
-                                        badges={getIsModerator(author.id, author.isModerator) ? [{ label: "MOD", variant: "secondary" }] : undefined}
-                                        tooltipBadges={author.isAdmin ? [{ label: "ADMIN", variant: "danger" }] : undefined}
-                                        stats={author.stats}
-                                    />
-                                    {canManageModerators && author.id && (
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline-secondary btn-sm"
-                                            onClick={() => handleModeratorToggle(
-                                                author.id,
-                                                !getIsModerator(author.id, author.isModerator),
-                                                author.name || author.nickname || "User"
-                                            )}
-                                            disabled={moderatorUpdatingId === author.id}
-                                        >
-                                            {getIsModerator(author.id, author.isModerator) ? "Remove Moderator" : "Promote to Moderator"}
-                                        </button>
-                                    )}
-                                </div>
+                            <div className="d-flex flex-wrap align-items-center gap-2">
+                                {isArgumentPending ? (
+                                    <span className="badge text-bg-info">Sending...</span>
+                                ) : (
+                                    <>
+                                        <UserIdentity
+                                            userId={author.id}
+                                            name={author.name}
+                                            nickname={author.nickname}
+                                            avatarUrl={author.avatarUrl ?? undefined}
+                                            avatarThumbUrl={author.avatarThumbUrl ?? undefined}
+                                            createdAt={author.createdAt}
+                                            size={36}
+                                            nameClassName="author-link fw-semibold"
+                                            fallbackLabel="Anonymous"
+                                            badges={getIsModerator(author.id, author.isModerator) ? [{ label: "MOD", variant: "secondary" }] : undefined}
+                                            tooltipBadges={author.isAdmin ? [{ label: "ADMIN", variant: "danger" }] : undefined}
+                                            stats={author.stats}
+                                        />
+                                        {canManageModerators && author.id && (
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-secondary btn-sm"
+                                                onClick={() => handleModeratorToggle(
+                                                    author.id,
+                                                    !getIsModerator(author.id, author.isModerator),
+                                                    author.name || author.nickname || "User"
+                                                )}
+                                                disabled={moderatorUpdatingId === author.id}
+                                            >
+                                                {getIsModerator(author.id, author.isModerator) ? "Remove Moderator" : "Promote to Moderator"}
+                                            </button>
+                                        )}
+                                    </>
+                                )}
+                            </div>
                                 <RelativeTime value={argument?.createdAt} />
                             </div>
 
@@ -625,11 +719,22 @@ export default function ArgumentCard({
                                     <button
                                         type="button"
                                         className="btn btn-outline-success btn-sm"
-                                        onClick={handleRestoreArgument}
+                                        onClick={() => handleUpdateArgumentVisibility("visible")}
                                         disabled={restoringArgument}
                                         aria-label="Restore argument"
                                     >
                                         {restoringArgument ? "Restoring..." : "Restore"}
+                                    </button>
+                                )}
+                                {canToggleArgumentNoise && (
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-warning btn-sm"
+                                        onClick={() => handleUpdateArgumentVisibility(isArgumentNoise ? "visible" : "noise")}
+                                        disabled={restoringArgument}
+                                        aria-label={isArgumentNoise ? "Unmark noise" : "Mark noise"}
+                                    >
+                                        {restoringArgument ? "Updating..." : isArgumentNoise ? "Unmark Noise" : "Mark Noise"}
                                     </button>
                                 )}
                             </div>
@@ -643,6 +748,7 @@ export default function ArgumentCard({
                                 )}
                             </div>
                         )}
+                        <ContentFactCheckNotice factCheck={(argument as any).contentFactCheck} />
                         <p className="mb-2">{argument.body}</p>
                         <EvidenceList evidence={(argument as any).evidence} />
                         {/* Ontology tags removed as not needed */}
@@ -652,7 +758,7 @@ export default function ArgumentCard({
                             <div className="mt-3">
                                 <h6 className="mb-2">Comments</h6>
                                 <ul className="list-unstyled mb-0">
-                                    {commentStates.map((c) => {
+                                    {displayedComments.map((c) => {
                                         const commenter = resolveUserSummary(c.createdBy);
                                         const pending = (c as any).pending;
                                         const deleting = (c as any).deleting;
@@ -662,7 +768,9 @@ export default function ArgumentCard({
                                         const commentStatusLabel = getVisibilityLabel(commentStatus);
                                         const commentRemoved = c.isRemoved;
                                         const showCommentStatus = moderatorMode && (commentRemoved || !!commentStatusLabel);
-                                        const canRestoreComment = canModerate && !commentRemoved && commentStatusLabel;
+                                        const isCommentNoise = commentStatus === "noise";
+                                        const canRestoreComment = canModerate && !commentRemoved && commentStatus && commentStatus !== "visible" && !isCommentNoise;
+                                        const canToggleCommentNoise = canModerate && !commentRemoved && (commentStatus === "visible" || isCommentNoise);
                                         const commenterIsModerator = getIsModerator(commenter.id, commenter.isModerator);
                                         return (
                                             <li
@@ -673,36 +781,42 @@ export default function ArgumentCard({
                                             >
                                                 <div className="d-flex justify-content-between align-items-start mb-2">
                                                     <div className="d-flex flex-wrap align-items-center gap-3">
-                                                        <UserIdentity
-                                                            userId={commenter.id}
-                                                            name={commenter.name}
-                                                            nickname={commenter.nickname}
-                                                            avatarUrl={commenter.avatarUrl ?? undefined}
-                                                            avatarThumbUrl={commenter.avatarThumbUrl ?? undefined}
-                                                            createdAt={commenter.createdAt}
-                                                            size={28}
-                                                            className="small text-muted fw-semibold"
-                                                            nameClassName="author-link fw-semibold text-muted"
-                                                            fallbackLabel="Anonymous"
-                                                            badges={commenterIsModerator ? [{ label: "MOD", variant: "secondary" }] : undefined}
-                                                            tooltipBadges={commenter.isAdmin ? [{ label: "ADMIN", variant: "danger" }] : undefined}
-                                                            stats={commenter.stats}
-                                                        />
-                                                        {canManageModerators && commenter.id && (
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-outline-secondary btn-sm"
-                                                                onClick={() => handleModeratorToggle(
-                                                                    commenter.id,
-                                                                    !commenterIsModerator,
-                                                                    commenter.name || commenter.nickname || "User"
+                                                        {pending ? (
+                                                            <span className="badge text-bg-info">Sending...</span>
+                                                        ) : (
+                                                            <>
+                                                                <UserIdentity
+                                                                    userId={commenter.id}
+                                                                    name={commenter.name}
+                                                                    nickname={commenter.nickname}
+                                                                    avatarUrl={commenter.avatarUrl ?? undefined}
+                                                                    avatarThumbUrl={commenter.avatarThumbUrl ?? undefined}
+                                                                    createdAt={commenter.createdAt}
+                                                                    size={28}
+                                                                    className="small text-muted fw-semibold"
+                                                                    nameClassName="author-link fw-semibold text-muted"
+                                                                    fallbackLabel="Anonymous"
+                                                                    badges={commenterIsModerator ? [{ label: "MOD", variant: "secondary" }] : undefined}
+                                                                    tooltipBadges={commenter.isAdmin ? [{ label: "ADMIN", variant: "danger" }] : undefined}
+                                                                    stats={commenter.stats}
+                                                                />
+                                                                {canManageModerators && commenter.id && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn btn-outline-secondary btn-sm"
+                                                                        onClick={() => handleModeratorToggle(
+                                                                            commenter.id,
+                                                                            !commenterIsModerator,
+                                                                            commenter.name || commenter.nickname || "User"
+                                                                        )}
+                                                                        disabled={moderatorUpdatingId === commenter.id}
+                                                                    >
+                                                                        {commenterIsModerator ? "Remove Moderator" : "Promote to Moderator"}
+                                                                    </button>
                                                                 )}
-                                                                disabled={moderatorUpdatingId === commenter.id}
-                                                            >
-                                                                {commenterIsModerator ? "Remove Moderator" : "Promote to Moderator"}
-                                                            </button>
+                                                                <RelativeTime value={c.createdAt} />
+                                                            </>
                                                         )}
-                                                        <RelativeTime value={c.createdAt} />
                                                     </div>
                                                     <div className="d-flex align-items-center gap-2">
                                                         <button
@@ -737,12 +851,25 @@ export default function ArgumentCard({
                                                         {canRestoreComment && (
                                                             <button
                                                                 className="btn btn-link btn-sm text-success p-0"
-                                                                onClick={() => handleRestoreComment(c.id)}
+                                                                onClick={() => handleUpdateCommentVisibility(c.id, "visible")}
                                                                 disabled={restoringCommentId === c.id}
                                                                 aria-label="Restore comment"
                                                             >
                                                                 <i className="fa-solid fa-rotate-left me-1" aria-hidden="true"></i>
                                                                 {restoringCommentId === c.id ? "Restoring..." : "Restore"}
+                                                            </button>
+                                                        )}
+                                                        {canToggleCommentNoise && (
+                                                            <button
+                                                                className="btn btn-link btn-sm text-warning p-0"
+                                                                onClick={() => handleUpdateCommentVisibility(c.id, isCommentNoise ? "visible" : "noise")}
+                                                                disabled={restoringCommentId === c.id}
+                                                                aria-label={isCommentNoise ? "Unmark noise" : "Mark noise"}
+                                                            >
+                                                                <i className="fa-solid fa-filter me-1" aria-hidden="true"></i>
+                                                                {restoringCommentId === c.id
+                                                                    ? "Updating..."
+                                                                    : isCommentNoise ? "Unmark Noise" : "Mark Noise"}
                                                             </button>
                                                         )}
                                                     </div>
@@ -757,6 +884,9 @@ export default function ArgumentCard({
                                                 )}
                                                 <div className="ps-2 mb-2">{c.body}</div>
                                                 <div className="ps-2 mb-2">
+                                                    <ContentFactCheckNotice factCheck={(c as any).contentFactCheck} compact />
+                                                </div>
+                                                <div className="ps-2 mb-2">
                                                     <EvidenceList evidence={(c as any).evidence} />
                                                 </div>
                                                 {/* Ontology tags removed as not needed */}
@@ -764,10 +894,26 @@ export default function ArgumentCard({
                                         );
                                     })}
                                 </ul>
+                                {hiddenNoiseCount > 0 && !moderatorMode && (
+                                    <div className="mt-2">
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary btn-sm"
+                                            onClick={() => setShowNoiseComments((prev) => !prev)}
+                                        >
+                                            {showNoiseComments ? "View less replies" : `View more replies (${hiddenNoiseCount})`}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                         <div className="mt-3">
-                            <AddNewCommentComponent argumentId={argument.id} />
+                            <AddNewCommentComponent
+                                argumentId={argument.id}
+                                onOptimisticAdd={addOptimisticComment}
+                                onOptimisticResolve={resolveOptimisticComment}
+                                onOptimisticReject={rejectOptimisticComment}
+                            />
                         </div>
                     </div>
                 </div>
