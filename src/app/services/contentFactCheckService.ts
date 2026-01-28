@@ -46,9 +46,9 @@ function normaliseSources(value: unknown): ContentFactCheckSource[] {
       const url = typeof source.url === "string" ? source.url.trim() : "";
       if (!url) return null;
       return {
-        title: typeof source.title === "string" ? source.title.trim().slice(0, 200) : undefined,
+        title: typeof source.title === "string" ? source.title.trim() : undefined,
         url,
-        snippet: typeof source.snippet === "string" ? source.snippet.trim().slice(0, 240) : undefined,
+        snippet: typeof source.snippet === "string" ? source.snippet.trim() : undefined,
       };
     })
     .filter(Boolean) as ContentFactCheckSource[];
@@ -171,7 +171,7 @@ export async function factCheckPostContent(params: {
 
     const verdict = normaliseVerdict(parsed.verdict);
     const confidence = typeof parsed.confidence === "number" ? clamp(parsed.confidence, 0, 1) : undefined;
-    const summary = typeof parsed.summary === "string" ? parsed.summary.slice(0, 240) : undefined;
+    const summary = typeof parsed.summary === "string" ? parsed.summary : undefined;
     const sources = normaliseSources(parsed.sources);
 
     return {
