@@ -2,15 +2,29 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
 import EvidencePicker from "@/app/components/EvidencePicker";
 import { useEvidenceAttachments } from "@/app/lib/useEvidenceAttachments";
+import { TopicApiResponse } from "@/app/types/topicApiResponse";
 
-export default function AddNewCommentComponent({ argumentId }: { argumentId: string }) {
+export default function AddNewCommentComponent({
+    argumentId,
+    onOptimisticAdd,
+    onOptimisticResolve,
+    onOptimisticReject,
+}: {
+    argumentId: string;
+    onOptimisticAdd?: (_comment: TopicApiResponse["arguments"][number]["comments"][number]) => void;
+    onOptimisticResolve?: (_tempId: string, _comment: TopicApiResponse["arguments"][number]["comments"][number]) => void;
+    onOptimisticReject?: (_tempId: string) => void;
+}) {
     const [showForm, setShowForm] = useState(false);
     const [text, setText] = useState("");
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const { data: session } = useSession();
+    const sessionUser = session?.user as any;
     const {
         evidence,
         evidenceLink,
@@ -44,8 +58,28 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
             toast.info(`Limit reached: up to ${maxItems} items.`);
         }
 
-        // Placeholder: attempt to POST to a comments API if available. If you have an endpoint,
-        // update the URL below. For now we'll optimistically clear and hide the form.
+        const tempId = `temp-comment-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const optimisticComment: TopicApiResponse["arguments"][number]["comments"][number] = {
+            id: tempId,
+            body,
+            createdBy: {
+                _id: sessionUser?.id,
+                name: sessionUser?.name || sessionUser?.email || "You",
+                nickname: sessionUser?.nickname,
+                avatarUrl: sessionUser?.avatarUrl,
+                avatarThumbUrl: sessionUser?.avatarThumbUrl,
+            },
+            createdAt: new Date().toISOString(),
+            upvoteCount: 0,
+            downvoteCount: 0,
+            score: 0,
+            ontologyCategories: [],
+            evidence: preparedEvidence.evidence,
+            visibility: { status: "visible" },
+        };
+
+        onOptimisticAdd?.(optimisticComment);
+
         setSubmitting(true);
         try {
             const res = await fetch("/api/comment", {
@@ -61,11 +95,17 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
                 } else {
                     toast.error(reason);
                 }
+                onOptimisticReject?.(tempId);
                 return;
             }
 
             const status = data?.visibility?.status;
             const reason = data?.visibility?.reason || data?.reason;
+            if (status === "blocked") {
+                onOptimisticReject?.(tempId);
+            } else if (data?.id) {
+                onOptimisticResolve?.(tempId, data);
+            }
             if (status === "blocked" || status === "needs_review" || status === "hidden") {
                 toast.info(
                     reason ? `Submitted for review: ${reason}` : "Submitted for review. It may be hidden until cleared.",
@@ -81,6 +121,7 @@ export default function AddNewCommentComponent({ argumentId }: { argumentId: str
             // ignore network errors here; you can add toast/snackbar handling
             console.error("Submit comment failed", err);
             toast.error("Unable to post right now. Please try again.");
+            onOptimisticReject?.(tempId);
             return;
         } finally {
             setSubmitting(false);

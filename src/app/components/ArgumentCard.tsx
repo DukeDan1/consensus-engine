@@ -342,6 +342,27 @@ export default function ArgumentCard({
     const [moderatorUpdatingId, setModeratorUpdatingId] = useState<string | null>(null);
     const [showNoiseComments, setShowNoiseComments] = useState(false);
 
+    const addOptimisticComment = (comment: TopicApiResponse["arguments"][number]["comments"][number]) => {
+        setCommentStates((prev) => [...prev, { ...comment, pending: true } as any]);
+    };
+
+    const resolveOptimisticComment = (
+        tempId: string,
+        comment: TopicApiResponse["arguments"][number]["comments"][number]
+    ) => {
+        setCommentStates((prev) => {
+            const idx = prev.findIndex((item) => item.id === tempId);
+            if (idx === -1) return [...prev, comment];
+            const next = [...prev];
+            next[idx] = comment as any;
+            return next;
+        });
+    };
+
+    const rejectOptimisticComment = (tempId: string) => {
+        setCommentStates((prev) => prev.filter((item) => item.id !== tempId));
+    };
+
     useEffect(() => {
         setCommentStates(argument.comments?.map((c) => ({ ...c })) ?? []);
     }, [argument.comments]);
@@ -874,7 +895,12 @@ export default function ArgumentCard({
                             </div>
                         )}
                         <div className="mt-3">
-                            <AddNewCommentComponent argumentId={argument.id} />
+                            <AddNewCommentComponent
+                                argumentId={argument.id}
+                                onOptimisticAdd={addOptimisticComment}
+                                onOptimisticResolve={resolveOptimisticComment}
+                                onOptimisticReject={rejectOptimisticComment}
+                            />
                         </div>
                     </div>
                 </div>

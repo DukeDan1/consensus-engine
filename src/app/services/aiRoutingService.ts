@@ -26,7 +26,7 @@ function getGrokClient(): OpenAI | null {
   return grokClient;
 }
 
-async function isFlaggedByModeration(text: string, userId?: string): Promise<boolean> {
+async function isFlaggedByModeration(text: string): Promise<boolean> {
   const client = getOpenAIClient();
   if (!client) return false;
   try {

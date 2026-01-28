@@ -212,7 +212,7 @@ async function requestFactCheck(params: {
     return buildFallbackResult("Fact checking unavailable.", "disabled");
   }
 
-  const model = process.env.OPENAI_FACT_CHECK_MODEL || process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2";
+  const model = process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2";
   const metadata = [
     `Source URL: ${params.url}`,
     params.contentType ? `Content type: ${params.contentType}` : null,
