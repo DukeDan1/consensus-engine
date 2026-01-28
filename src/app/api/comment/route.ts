@@ -87,6 +87,12 @@ export async function POST(req: Request) {
             evidenceCount: safeEvidence.length,
         });
 
+        const aiModerationProvider =
+            moderation.provider === "grok" ? "Grok" :
+            moderation.provider === "openai" ? "OpenAI" :
+            undefined;
+        const aiModerationModel = aiModerationProvider ? moderation.model : undefined;
+
         if (visibility.status === "blocked") {
             if (moderation.recommendedTrustDelta) {
                 await applyTrustDelta({
@@ -105,6 +111,8 @@ export async function POST(req: Request) {
             createdBy: user._id,
             ontologyCategories: [],
             evidence: safeEvidence,
+            aiModerationProvider,
+            aiModerationModel,
             visibility: {
                 status: visibility.status,
                 rankPenalty: visibility.rankPenalty,

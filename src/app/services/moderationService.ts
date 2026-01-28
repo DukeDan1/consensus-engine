@@ -1,6 +1,6 @@
-import OpenAI from 'openai';
 import type mongoose from 'mongoose';
 import { normaliseTrustScore, scoreToTier, shouldApplyStrictPostingRules, type TrustTier } from '@/app/services/trustService';
+import { routeResponsesClient } from '@/app/services/aiRoutingService';
 
 export type ModerationDecision = 'allow' | 'review' | 'block';
 export type ModerationSeverity = 'low' | 'medium' | 'high' | 'critical';
@@ -18,18 +18,10 @@ export type ModerationResult = {
   shortReason: string;
   recommendedTrustDelta: number; // -25..+5
   model?: string;
+  provider?: 'openai' | 'grok' | 'heuristic' | 'disabled';
 };
 
 const moderationEnabled = (process.env.MODERATION_ENABLED ?? 'true').toLowerCase() !== 'false';
-
-let openai: OpenAI | null = null;
-
-function getOpenAIClient(): OpenAI | null {
-  if (!process.env.OPENAI_API_KEY) return null;
-  if (openai) return openai;
-  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  return openai;
-}
 
 function clamp0to100(value: unknown, fallback: number): number {
   const n = typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -72,6 +64,7 @@ function heuristicModeration(
     shortReason: decision === 'review' ? 'Content looks spam-like and needs review.' : 'OK',
     recommendedTrustDelta: decision === 'review' ? -3 : 0,
     model: 'heuristic',
+    provider: 'heuristic',
   };
 }
 
@@ -103,6 +96,7 @@ export async function moderateUserGeneratedText(params: {
       shortReason: 'Moderation disabled.',
       recommendedTrustDelta: 0,
       model: 'disabled',
+      provider: 'disabled',
     };
   }
 
@@ -124,13 +118,12 @@ export async function moderateUserGeneratedText(params: {
       shortReason: 'Empty content.',
       recommendedTrustDelta: -1,
       model: 'local',
+      provider: 'heuristic',
     };
   }
 
-  const client = getOpenAIClient();
-
   // If OpenAI key isn't configured, fall back to lightweight heuristics.
-  if (!client) {
+  if (!process.env.OPENAI_API_KEY) {
     return heuristicModeration(trimmed, contentType, evidenceUrls.length);
   }
 
@@ -138,13 +131,22 @@ export async function moderateUserGeneratedText(params: {
   const tier = (userTrustTier as TrustTier | undefined) ?? scoreToTier(score);
   const strict = shouldApplyStrictPostingRules(tier);
 
-  const model = process.env.OPENAI_MODERATION_MODEL || process.env.OPENAI_RESPONSES_MODEL || 'gpt-5.2';
+  const routed = await routeResponsesClient({
+    text: trimmed,
+    openAiModel: process.env.OPENAI_MODERATION_MODEL || process.env.OPENAI_RESPONSES_MODEL || 'gpt-5.2',
+    grokModel: process.env.GROK_RESPONSES_MODEL,
+    userId: userId ? String(userId) : undefined,
+  });
+  if (!routed) {
+    return heuristicModeration(trimmed, contentType, evidenceUrls.length);
+  }
+  const model = routed.model;
 
   try {
-    const response = await client.responses.create({
+    const response = await routed.client.responses.create({
       model,
       safety_identifier: userId ? String(userId) : "system",
-      reasoning: { effort: 'none' },
+      ...(routed.provider === "grok" ? {} : { reasoning: { effort: "none" } }),
       input: [
         {
           role: 'developer',
@@ -225,6 +227,7 @@ export async function moderateUserGeneratedText(params: {
       shortReason: typeof parsed.shortReason === 'string' ? parsed.shortReason : 'Needs review.',
       recommendedTrustDelta: typeof parsed.recommendedTrustDelta === 'number' ? parsed.recommendedTrustDelta : 0,
       model,
+      provider: routed.provider,
     };
 
     if (evidenceUrls.length) {

@@ -56,6 +56,9 @@ export interface IComment extends Document {
     model?: string;
   };
 
+  aiModerationProvider?: string;
+  aiModerationModel?: string;
+
   visibility?: {
     status: 'visible' | 'hidden' | 'needs_review' | 'blocked' | 'noise';
     rankPenalty?: number;
@@ -135,6 +138,8 @@ const CommentSchema = new Schema<IComment>({
     checkedAt: { type: Date },
     model: { type: String },
   },
+  aiModerationProvider: { type: String },
+  aiModerationModel: { type: String },
   visibility: {
     status: { type: String, enum: ['visible', 'hidden', 'needs_review', 'blocked', 'noise'], default: 'visible', index: true },
     rankPenalty: { type: Number, default: 0 },

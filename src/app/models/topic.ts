@@ -26,6 +26,9 @@ export interface ITopic extends Document {
   moderators?: Types.ObjectId[];
   autoModeratorEnabled?: boolean;
 
+  aiModerationProvider?: string;
+  aiModerationModel?: string;
+
   visibility?: {
     status: 'visible' | 'hidden' | 'needs_review' | 'blocked' | 'noise';
     moderatedAt?: Date;
@@ -66,6 +69,8 @@ const TopicSchema = new Schema<ITopic>({
   score: { type: Number, default: 0 }, // sum of argument scores if you want
   upvotes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
   downvotes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
+  aiModerationProvider: { type: String },
+  aiModerationModel: { type: String },
   visibility: {
     status: { type: String, enum: ['visible', 'hidden', 'needs_review', 'blocked', 'noise'], default: 'visible', index: true },
     moderatedAt: { type: Date },

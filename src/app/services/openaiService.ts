@@ -1,9 +1,5 @@
-import OpenAI from "openai";
 import { ArgumentSide } from "@/app/models/argument";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { routeResponsesClient } from "@/app/services/aiRoutingService";
 
 export type AIAnalysisResult = {
     isFact: boolean;
@@ -14,7 +10,16 @@ export type AIAnalysisResult = {
 };
 
 export async function getAIAnalysisForArgument(argumentText: string, topicName: String, userId?: string): Promise<AIAnalysisResult> {
-    const response = await openai.responses.create({
+    const routed = await routeResponsesClient({
+        text: argumentText,
+        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+        grokModel: process.env.GROK_RESPONSES_MODEL,
+        userId,
+    });
+    if (!routed) {
+        throw new Error("OpenAI client not configured");
+    }
+    const response = await routed.client.responses.create({
         input: [
             {
                 role: "developer",
@@ -25,11 +30,9 @@ export async function getAIAnalysisForArgument(argumentText: string, topicName: 
                 content: argumentText 
             }
         ],
-        model: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+        model: routed.model,
         safety_identifier: userId ? String(userId) : "system",
-        reasoning: {
-            effort: "low"
-        },
+        ...(routed.provider === "grok" ? {} : { reasoning: { effort: "low" } }),
         tool_choice: {
             type: "function",
             name: "analyse_argument"

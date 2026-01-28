@@ -30,7 +30,7 @@ export default function TopTopicCard({ topic, isAuthenticated }: Props) {
       <InteractiveCard
         href={isAuthenticated ? `/topics/${topic._id}` : '/register'}
         className="text-decoration-none text-reset"
-        cardClassName="card h-100 shadow-sm card-hover border-0"
+        cardClassName="card h-100 shadow-sm card-hover topic-card"
       >
         <div className="card-body d-flex flex-column gap-3">
           <div>

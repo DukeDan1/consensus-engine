@@ -352,6 +352,12 @@ export async function POST(request: NextRequest) {
     evidenceCount: 0,
   });
 
+  const aiModerationProvider =
+    moderation.provider === "grok" ? "Grok" :
+    moderation.provider === "openai" ? "OpenAI" :
+    undefined;
+  const aiModerationModel = aiModerationProvider ? moderation.model : undefined;
+
   if (visibility.status === "blocked") {
     if (moderation.recommendedTrustDelta) {
       await applyTrustDelta({
@@ -371,6 +377,8 @@ export async function POST(request: NextRequest) {
     createdBy: creator._id,
     isActive: true,
     slug,
+    aiModerationProvider,
+    aiModerationModel,
     visibility: {
       status: visibility.status,
       moderatedAt: new Date(),
