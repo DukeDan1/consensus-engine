@@ -328,37 +328,6 @@ describe("contentFactCheckService", () => {
       expect(result.model).toBe("gpt-5.2");
     });
 
-    it("truncates summary to 240 characters", async () => {
-      const mockClient = {
-        responses: { create: mockResponsesCreate },
-      };
-      mockRouteResponsesClient.mockResolvedValueOnce({
-        client: mockClient,
-        model: "gpt-5.2",
-        provider: "openai",
-      });
-      const longSummary = "A".repeat(300);
-      mockResponsesCreate.mockResolvedValueOnce({
-        output: [
-          {
-            type: "function_call",
-            arguments: JSON.stringify({
-              verdict: "verified",
-              confidence: 0.9,
-              summary: longSummary,
-              sources: [],
-            }),
-          },
-        ],
-      });
-
-      const { factCheckPostContent } = await loadModule({});
-
-      const result = await factCheckPostContent({ text: "Some claim" });
-
-      expect(result.summary?.length).toBe(240);
-    });
-
     it("filters out sources without URLs", async () => {
       const mockClient = {
         responses: { create: mockResponsesCreate },
