@@ -8,6 +8,7 @@ const openaiMock = vi.hoisted(() => ({
     create: vi.fn(),
   },
 }));
+const routeResponsesClientMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/app/services/gcsService", () => ({
   getSignedReadUrlFromUrl: getSignedReadUrlFromUrlMock,
@@ -15,6 +16,10 @@ vi.mock("@/app/services/gcsService", () => ({
 
 vi.mock("openai", () => ({
   default: vi.fn(() => openaiMock),
+}));
+
+vi.mock("@/app/services/aiRoutingService", () => ({
+  routeResponsesClient: routeResponsesClientMock,
 }));
 
 // Mock fetch globally
@@ -33,6 +38,12 @@ describe("evidenceFactCheckService", () => {
     // Set environment variable to enable fact checking
     process.env.OPENAI_API_KEY = "test-key";
     process.env.EVIDENCE_FACT_CHECK_ENABLED = "true";
+    // Mock routing to return OpenAI client
+    routeResponsesClientMock.mockResolvedValue({
+      client: openaiMock,
+      model: "gpt-5.2",
+      provider: "openai",
+    });
   });
 
   afterEach(() => {

@@ -82,7 +82,7 @@ export async function factCheckPostContent(params: {
 
   const routed = await routeResponsesClient({
     text: trimmed,
-    openAiModel: process.env.OPENAI_FACT_CHECK_MODEL || process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+    openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
     grokModel: process.env.GROK_RESPONSES_MODEL,
     userId: params.userId,
   });
@@ -136,7 +136,7 @@ export async function factCheckPostContent(params: {
             properties: {
               verdict: { type: "string", enum: ["verified", "inaccurate", "mixed", "unverified"] },
               confidence: { type: "number", minimum: 0, maximum: 1 },
-              summary: { type: "string", maxLength: 240 },
+              summary: { type: "string" },
               sources: {
                 type: "array",
                 maxItems: 3,

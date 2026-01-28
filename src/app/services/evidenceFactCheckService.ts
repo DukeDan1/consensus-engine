@@ -3,6 +3,7 @@ import { Buffer } from "buffer";
 import type { EvidenceItem } from "@/app/lib/evidence";
 import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
 import { FactCheckVerdict } from "@/app/lib/evidence";
+import { routeResponsesClient } from "@/app/services/aiRoutingService";
 
 export type EvidenceFactCheckResult = {
   verdict: FactCheckVerdict;
@@ -22,15 +23,6 @@ const FACT_CHECK_ENABLED = (process.env.EVIDENCE_FACT_CHECK_ENABLED ?? "true").t
 const MAX_TEXT_CHARS = 12000;
 const MAX_TEXT_BYTES = 1_000_000; // 1MB
 const FETCH_TIMEOUT_MS = 15000;
-
-let openai: OpenAI | null = null;
-
-function getOpenAIClient(): OpenAI | null {
-  if (!process.env.OPENAI_API_KEY) return null;
-  if (openai) return openai;
-  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  return openai;
-}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -207,12 +199,23 @@ async function requestFactCheck(params: {
   fileData?: string;
   userId?: string;
 }): Promise<EvidenceFactCheckResult> {
-  const client = getOpenAIClient();
-  if (!client || !FACT_CHECK_ENABLED) {
+  if (!FACT_CHECK_ENABLED) {
     return buildFallbackResult("Fact checking unavailable.", "disabled");
   }
 
-  const model = process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2";
+  // Use the text content (or URL as fallback) for routing decision
+  const textForRouting = params.text || params.url;
+  const routed = await routeResponsesClient({
+    text: textForRouting,
+    openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+    grokModel: process.env.GROK_RESPONSES_MODEL,
+    userId: params.userId,
+  });
+  if (!routed) {
+    return buildFallbackResult("Fact checking unavailable.", "disabled");
+  }
+
+  const model = routed.model;
   const metadata = [
     `Source URL: ${params.url}`,
     params.contentType ? `Content type: ${params.contentType}` : null,
@@ -239,10 +242,10 @@ async function requestFactCheck(params: {
     });
   }
 
-  const response = await client.responses.create({
+  const response = await routed.client.responses.create({
     model,
     safety_identifier: params.userId ? String(params.userId) : "system",
-    reasoning: { effort: "low" },
+    ...(routed.provider === "grok" ? {} : { reasoning: { effort: "low" } }),
     input: [
       {
         role: "developer",

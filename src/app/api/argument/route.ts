@@ -302,9 +302,11 @@ export async function POST(req: Request) {
                     }
                 }
 
-                if (analysis?.isFact && analysis?.factualPart) {
+                // Always fact-check arguments - use factual part if extracted, otherwise use full text
+                const textToFactCheck = analysis?.factualPart || trimmed;
+                {
                     const contentFactCheck = await factCheckPostContent({
-                        text: analysis.factualPart,
+                        text: textToFactCheck,
                         contentType: "argument",
                         topicTitle: topic?.title ?? undefined,
                         userId: user._id.toString(),
