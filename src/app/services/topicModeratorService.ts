@@ -34,11 +34,21 @@ export function hasTopicModeratorRole(topic: any, userId: string) {
     : false;
 }
 
+const EXCLUDED_VISIBILITY_STATUSES = ["blocked", "hidden", "needs_review"];
+
 async function getUserGlobalActivityCount(userId: string) {
   const userObjectId = toObjectId(userId);
   const [argumentCount, commentCount] = await Promise.all([
-    Argument.countDocuments({ createdBy: userObjectId, isRemoved: false }),
-    Comment.countDocuments({ createdBy: userObjectId, isRemoved: false }),
+    Argument.countDocuments({
+      createdBy: userObjectId,
+      isRemoved: false,
+      "visibility.status": { $nin: EXCLUDED_VISIBILITY_STATUSES },
+    }),
+    Comment.countDocuments({
+      createdBy: userObjectId,
+      isRemoved: false,
+      "visibility.status": { $nin: EXCLUDED_VISIBILITY_STATUSES },
+    }),
   ]);
   return argumentCount + commentCount;
 }
@@ -48,9 +58,20 @@ async function getUserTopicActivityCount(userId: string, topicId: string) {
   const topicObjectId = toObjectId(topicId);
 
   const [argumentCount, commentCounts] = await Promise.all([
-    Argument.countDocuments({ topic: topicObjectId, createdBy: userObjectId, isRemoved: false }),
+    Argument.countDocuments({
+      topic: topicObjectId,
+      createdBy: userObjectId,
+      isRemoved: false,
+      "visibility.status": { $nin: EXCLUDED_VISIBILITY_STATUSES },
+    }),
     Comment.aggregate([
-      { $match: { createdBy: userObjectId, isRemoved: false } },
+      {
+        $match: {
+          createdBy: userObjectId,
+          isRemoved: false,
+          "visibility.status": { $nin: EXCLUDED_VISIBILITY_STATUSES },
+        },
+      },
       { $lookup: { from: "arguments", localField: "argument", foreignField: "_id", as: "argument" } },
       { $unwind: "$argument" },
       { $match: { "argument.topic": topicObjectId } },
@@ -65,9 +86,18 @@ async function getUserTopicActivityCount(userId: string, topicId: string) {
 async function getTopicActivityCount(topicId: string) {
   const topicObjectId = toObjectId(topicId);
   const [argumentCount, commentCounts] = await Promise.all([
-    Argument.countDocuments({ topic: topicObjectId, isRemoved: false }),
+    Argument.countDocuments({
+      topic: topicObjectId,
+      isRemoved: false,
+      "visibility.status": { $nin: EXCLUDED_VISIBILITY_STATUSES },
+    }),
     Comment.aggregate([
-      { $match: { isRemoved: false } },
+      {
+        $match: {
+          isRemoved: false,
+          "visibility.status": { $nin: EXCLUDED_VISIBILITY_STATUSES },
+        },
+      },
       { $lookup: { from: "arguments", localField: "argument", foreignField: "_id", as: "argument" } },
       { $unwind: "$argument" },
       { $match: { "argument.topic": topicObjectId } },

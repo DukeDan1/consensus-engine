@@ -47,13 +47,13 @@ export default function TopTopicCard({ topic, isAuthenticated }: Props) {
               <i className="fa-solid fa-thumbs-down me-1" aria-hidden="true"></i>
               {topic.downvoteCount}
             </span>
-            <span className="badge bg-secondary-subtle text-secondary">
-              <i className="fa-solid fa-comments me-1" aria-hidden="true"></i>
-              {commentCount} replies
-            </span>
             <span className="badge bg-primary-subtle text-primary">
               <i className="fa-solid fa-layer-group me-1" aria-hidden="true"></i>
               {argumentCount} posts
+            </span>
+            <span className="badge bg-secondary-subtle text-secondary">
+              <i className="fa-solid fa-comments me-1" aria-hidden="true"></i>
+              {commentCount} replies
             </span>
           </div>
           <div className="mt-auto d-flex align-items-center justify-content-between">

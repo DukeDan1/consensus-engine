@@ -147,13 +147,16 @@ export async function POST(req: Request) {
         }
 
         let moderatorPromotion = { promoted: false };
-        try {
-            moderatorPromotion = await maybeAutoPromoteModerator({
-                userId: user._id.toString(),
-                topicId: topicObjId.toString(),
-            });
-        } catch (err) {
-            console.error("Auto-promote moderator failed", err);
+        // Only consider auto-promotion for non-blocked content
+        if (visibility.status !== "blocked") {
+            try {
+                moderatorPromotion = await maybeAutoPromoteModerator({
+                    userId: user._id.toString(),
+                    topicId: topicObjId.toString(),
+                });
+            } catch (err) {
+                console.error("Auto-promote moderator failed", err);
+            }
         }
 
         if (moderatorPromotion?.promoted) {

@@ -145,15 +145,18 @@ export async function POST(req: Request) {
 
         let moderatorPromotion = { promoted: false };
         const topicId = parentArgument?.topic?.toString?.() ?? "";
-        try {
-            if (topicId) {
-                moderatorPromotion = await maybeAutoPromoteModerator({
-                    userId: user._id.toString(),
-                    topicId,
-                });
+        // Only consider auto-promotion for non-blocked content
+        if (visibility.status !== "blocked") {
+            try {
+                if (topicId) {
+                    moderatorPromotion = await maybeAutoPromoteModerator({
+                        userId: user._id.toString(),
+                        topicId,
+                    });
+                }
+            } catch (err) {
+                console.error("Auto-promote moderator failed", err);
             }
-        } catch (err) {
-            console.error("Auto-promote moderator failed", err);
         }
 
         if (moderatorPromotion?.promoted && topicId) {

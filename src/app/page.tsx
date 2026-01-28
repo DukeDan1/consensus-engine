@@ -69,8 +69,8 @@ export default async function Home() {
       {/* Featured Topics Section */}
       <div className="py-5">
         <div className="row mb-4">
-          <div className="col">
-            <h2 className="h3 mb-1">Featured Debates</h2>
+          <div className="col align-content-center text-center">
+            <h2 className="h2 mb-1">Featured Debates</h2>
             <p className="text-muted">Explore current discussions and join the conversation</p>
           </div>
         </div>

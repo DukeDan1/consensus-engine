@@ -18,23 +18,6 @@ export async function GET() {
           },
         },
         {
-          $project: {
-            title: 1,
-            description: 1,
-            createdBy: 1,
-            createdAt: 1,
-            upvoteCount: { $size: { $ifNull: ["$upvotes", []] } },
-            downvoteCount: { $size: { $ifNull: ["$downvotes", []] } },
-            ontologyCategories: { $ifNull: ["$ontologyCategories", []] },
-            argumentCounts: 1,
-          },
-        },
-        {
-          $addFields: {
-            totalVotes: { $add: ["$upvoteCount", "$downvoteCount"] },
-          },
-        },
-        {
           $lookup: {
             from: "arguments",
             let: { topicId: "$_id" },
@@ -46,9 +29,16 @@ export async function GET() {
                   "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] },
                 },
               },
-              { $count: "count" },
+              {
+                $group: {
+                  _id: null,
+                  count: { $sum: 1 },
+                  upvotes: { $sum: { $ifNull: ["$upvoteCount", 0] } },
+                  downvotes: { $sum: { $ifNull: ["$downvoteCount", 0] } },
+                },
+              },
             ],
-            as: "argumentCountsAgg",
+            as: "argumentStats",
           },
         },
         {
@@ -72,20 +62,39 @@ export async function GET() {
                   "visibility.status": { $nin: ["blocked", "hidden", "needs_review", "noise"] },
                 },
               },
-              { $count: "count" },
+              {
+                $group: {
+                  _id: null,
+                  count: { $sum: 1 },
+                  upvotes: { $sum: { $ifNull: ["$upvoteCount", 0] } },
+                  downvotes: { $sum: { $ifNull: ["$downvoteCount", 0] } },
+                },
+              },
             ],
-            as: "commentCountsAgg",
+            as: "commentStats",
           },
         },
         {
           $addFields: {
-            argumentCount: {
-              $ifNull: [
-                { $first: "$argumentCountsAgg.count" },
-                { $ifNull: ["$argumentCounts.total", 0] },
+            argumentCount: { $ifNull: [{ $first: "$argumentStats.count" }, 0] },
+            commentCount: { $ifNull: [{ $first: "$commentStats.count" }, 0] },
+            upvoteCount: {
+              $add: [
+                { $ifNull: [{ $first: "$argumentStats.upvotes" }, 0] },
+                { $ifNull: [{ $first: "$commentStats.upvotes" }, 0] },
               ],
             },
-            commentCount: { $ifNull: [{ $first: "$commentCountsAgg.count" }, 0] },
+            downvoteCount: {
+              $add: [
+                { $ifNull: [{ $first: "$argumentStats.downvotes" }, 0] },
+                { $ifNull: [{ $first: "$commentStats.downvotes" }, 0] },
+              ],
+            },
+          },
+        },
+        {
+          $addFields: {
+            totalVotes: { $add: ["$upvoteCount", "$downvoteCount"] },
           },
         },
         {
@@ -117,7 +126,7 @@ export async function GET() {
             totalVotes: 1,
             argumentCount: 1,
             commentCount: 1,
-            ontologyCategories: 1,
+            ontologyCategories: { $ifNull: ["$ontologyCategories", []] },
             creatorName: {
               $ifNull: ["$creator.name", "Unknown"],
             },
