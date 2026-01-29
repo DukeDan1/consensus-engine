@@ -5,7 +5,8 @@ import Comment from "@/app/models/comment";
 import User from "@/app/models/user";
 import { normaliseTrustScore, scoreToTier } from "@/app/services/trustService";
 
-const MIN_MEMBER_DAYS = 30;
+// Change requirements as needed
+const MIN_MEMBER_DAYS = 0;
 const MIN_GLOBAL_ACTIVITY = 50;
 const MIN_TOPIC_ACTIVITY = 5;
 const EARLY_ACTIVITY_THRESHOLD = 5;

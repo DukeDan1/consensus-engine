@@ -191,7 +191,19 @@ export async function POST(req: Request) {
                     const evidenceForCheck = (created.evidence ?? safeEvidence).map((item: any) =>
                         typeof item?.toObject === "function" ? item.toObject() : item
                     );
-                    const { evidence: checkedEvidence, evidenceRankScore } = await factCheckEvidenceItems(evidenceForCheck, user._id.toString());
+                    const claimContext = [
+                        trimmed ? `Comment: ${trimmed}` : null,
+                        parentArgument?.body
+                            ? `Parent argument: ${String(parentArgument.body).slice(0, 600)}`
+                            : null,
+                    ]
+                        .filter(Boolean)
+                        .join("\n");
+                    const { evidence: checkedEvidence, evidenceRankScore } = await factCheckEvidenceItems(
+                        evidenceForCheck,
+                        user._id.toString(),
+                        { claimText: claimContext }
+                    );
                     await Comment.updateOne(
                         { _id: created._id },
                         { $set: { evidence: checkedEvidence, evidenceRankScore } }

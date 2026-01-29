@@ -16,7 +16,7 @@ export type ModerationResult = {
   illegalOrHarmfulLikelihood: number; // 0-100
   quality: number; // 0-100
   shortReason: string;
-  recommendedTrustDelta: number; // -25..+5
+  recommendedTrustDelta: number; // -25..+25
   model?: string;
   provider?: 'openai' | 'grok' | 'heuristic' | 'disabled';
 };
@@ -155,6 +155,7 @@ export async function moderateUserGeneratedText(params: {
             'Your job is to prevent spam, abuse, illegal/harmful content, and also detect troll/brigade-style manipulation. ' +
             'Return a decision: allow, review, or block. Prefer review over block when uncertain. ' +
             'Quality should reflect how substantive and interesting the content is (higher for insightful, evidence-backed, or thought-provoking content; lower for low-effort). ' +
+            'IMPORTANT: For recommendedTrustDelta, actively reward good contributions! Use the full positive range: +15 to +25 for high-quality content with sources/evidence, +8 to +15 for solid contributions, +3 to +8 for acceptable content. Only use 0 to +3 for minimal-effort content. Negative values are for problematic content only. ' +
             `The content type is: ${contentType}.` +
             (contentType === 'comment'
               ? ' Comments can be short and conversational; do not require new evidence or high verbosity. Only flag spam, obvious abuse/harassment, or clearly off-topic replies.'
@@ -200,8 +201,8 @@ export async function moderateUserGeneratedText(params: {
               offTopicLikelihood: { type: 'number', minimum: 0, maximum: 100 },
               illegalOrHarmfulLikelihood: { type: 'number', minimum: 0, maximum: 100 },
               quality: { type: 'number', minimum: 0, maximum: 100 },
-              shortReason: { type: 'string', maxLength: 240, description: 'A user-facing short explanation for the moderation decision.' },
-              recommendedTrustDelta: { type: 'number', minimum: -25, maximum: 5 },
+              shortReason: { type: 'string', description: 'A user-facing short explanation for the moderation decision.' },
+              recommendedTrustDelta: { type: 'number', minimum: -25, maximum: 25, description: 'Recommended change to user trust score. ACTIVELY REWARD QUALITY: +20 to +25 for exceptional content with evidence/sources, +12 to +20 for well-reasoned arguments, +5 to +12 for decent contributions, +1 to +5 for minimal acceptable content, 0 for neutral, negative for problematic content (-5 to -10 for low quality, -10 to -20 for violations, -20 to -25 for severe abuse). Do not default to small positive values - use the full range.' },
             },
           },
         },
