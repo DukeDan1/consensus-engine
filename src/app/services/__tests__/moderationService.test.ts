@@ -107,6 +107,141 @@ describe('moderationService.moderateUserGeneratedText', () => {
     expect(result.decision).toBe('allow');
     expect(result.model).toBe('heuristic');
   });
+
+  it('accepts high positive recommendedTrustDelta values up to +25 for quality content', async () => {
+    mockResponsesCreate.mockResolvedValueOnce({
+      output: [
+        {
+          type: 'function_call',
+          name: 'moderate_content',
+          arguments: JSON.stringify({
+            decision: 'allow',
+            severity: 'low',
+            categories: [],
+            spamLikelihood: 0,
+            trollingLikelihood: 0,
+            offTopicLikelihood: 0,
+            illegalOrHarmfulLikelihood: 0,
+            quality: 95,
+            shortReason: 'High quality argument with strong evidence',
+            recommendedTrustDelta: 22,
+          }),
+        },
+      ],
+    });
+
+    const { moderateUserGeneratedText } = await loadModerationService({ OPENAI_API_KEY: 'test-key' });
+
+    const result = await moderateUserGeneratedText({
+      text: 'A well-researched argument with multiple peer-reviewed sources supporting the claims.',
+      contentType: 'argument',
+    });
+
+    expect(result.decision).toBe('allow');
+    expect(result.recommendedTrustDelta).toBe(22);
+    expect(result.quality).toBe(95);
+  });
+
+  it('accepts recommendedTrustDelta at maximum boundary of +25', async () => {
+    mockResponsesCreate.mockResolvedValueOnce({
+      output: [
+        {
+          type: 'function_call',
+          name: 'moderate_content',
+          arguments: JSON.stringify({
+            decision: 'allow',
+            severity: 'low',
+            categories: [],
+            spamLikelihood: 0,
+            trollingLikelihood: 0,
+            offTopicLikelihood: 0,
+            illegalOrHarmfulLikelihood: 0,
+            quality: 100,
+            shortReason: 'Exceptional contribution with original research',
+            recommendedTrustDelta: 25,
+          }),
+        },
+      ],
+    });
+
+    const { moderateUserGeneratedText } = await loadModerationService({ OPENAI_API_KEY: 'test-key' });
+
+    const result = await moderateUserGeneratedText({
+      text: 'Exceptional content worthy of maximum trust reward.',
+      contentType: 'argument',
+    });
+
+    expect(result.decision).toBe('allow');
+    expect(result.recommendedTrustDelta).toBe(25);
+  });
+
+  it('accepts negative recommendedTrustDelta down to -25 for severe violations', async () => {
+    mockResponsesCreate.mockResolvedValueOnce({
+      output: [
+        {
+          type: 'function_call',
+          name: 'moderate_content',
+          arguments: JSON.stringify({
+            decision: 'block',
+            severity: 'high',
+            categories: ['abuse', 'harassment'],
+            spamLikelihood: 10,
+            trollingLikelihood: 90,
+            offTopicLikelihood: 20,
+            illegalOrHarmfulLikelihood: 85,
+            quality: 5,
+            shortReason: 'Severe harassment and abuse',
+            recommendedTrustDelta: -25,
+          }),
+        },
+      ],
+    });
+
+    const { moderateUserGeneratedText } = await loadModerationService({ OPENAI_API_KEY: 'test-key' });
+
+    const result = await moderateUserGeneratedText({
+      text: 'Content that warrants maximum penalty.',
+      contentType: 'argument',
+    });
+
+    expect(result.decision).toBe('block');
+    expect(result.recommendedTrustDelta).toBe(-25);
+    expect(result.illegalOrHarmfulLikelihood).toBe(85);
+  });
+
+  it('uses moderate positive delta for solid contributions', async () => {
+    mockResponsesCreate.mockResolvedValueOnce({
+      output: [
+        {
+          type: 'function_call',
+          name: 'moderate_content',
+          arguments: JSON.stringify({
+            decision: 'allow',
+            severity: 'low',
+            categories: [],
+            spamLikelihood: 0,
+            trollingLikelihood: 0,
+            offTopicLikelihood: 5,
+            illegalOrHarmfulLikelihood: 0,
+            quality: 75,
+            shortReason: 'Good thoughtful comment',
+            recommendedTrustDelta: 12,
+          }),
+        },
+      ],
+    });
+
+    const { moderateUserGeneratedText } = await loadModerationService({ OPENAI_API_KEY: 'test-key' });
+
+    const result = await moderateUserGeneratedText({
+      text: 'A thoughtful response contributing to the discussion.',
+      contentType: 'comment',
+    });
+
+    expect(result.decision).toBe('allow');
+    expect(result.recommendedTrustDelta).toBe(12);
+    expect(result.quality).toBe(75);
+  });
 });
 
 describe('moderationService.moderationToVisibility', () => {
