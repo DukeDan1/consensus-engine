@@ -84,13 +84,13 @@ function getVisibilityLabel(status?: string) {
 function FactCheckBadge({ factCheck }: { factCheck?: any }) {
     const badgeRef = useRef<HTMLSpanElement | null>(null);
     const verdict = factCheck?.verdict;
-    if (!verdict || verdict === "unverified") return null;
+    const shouldRender = verdict && verdict !== "unverified";
     const meta =
         verdict === "verified"
-            ? { label: "Verified", className: "text-bg-success" }
+            ? { label: "Source verified", className: "text-bg-success" }
             : verdict === "inaccurate"
-                ? { label: "Inaccurate", className: "text-bg-danger" }
-                : { label: "Accuracy unknown", className: "text-bg-warning" };
+                ? { label: "Source unreliable", className: "text-bg-danger" }
+                : { label: "Source mixed", className: "text-bg-warning" };
     const summary = factCheck?.summary ? String(factCheck.summary).trim() : "";
     const qualityScore = typeof factCheck?.qualityScore === "number" ? Math.round(factCheck.qualityScore) : null;
     const confidence =
@@ -98,6 +98,7 @@ function FactCheckBadge({ factCheck }: { factCheck?: any }) {
             ? `${Math.round(factCheck.confidence * 100)}%`
             : null;
     const detailBits = [
+        "Evidence quality only",
         summary ? `Summary: ${summary}` : null,
         qualityScore !== null ? `Quality: ${qualityScore}/100` : null,
         confidence ? `Confidence: ${confidence}` : null,
@@ -105,6 +106,7 @@ function FactCheckBadge({ factCheck }: { factCheck?: any }) {
     const title = detailBits.length ? detailBits.join(" • ") : undefined;
 
     useEffect(() => {
+        if (!shouldRender) return;
         let tooltipInstance: any;
         const setupTooltip = async () => {
             if (!badgeRef.current || !title) return;
@@ -117,7 +119,9 @@ function FactCheckBadge({ factCheck }: { factCheck?: any }) {
                 tooltipInstance.dispose();
             }
         };
-    }, [title]);
+    }, [title, shouldRender]);
+
+    if (!shouldRender) return null;
 
     return (
         <span
@@ -749,7 +753,7 @@ export default function ArgumentCard({
                             </div>
                         )}
                         <ContentFactCheckNotice factCheck={(argument as any).contentFactCheck} />
-                        <p className="mb-2">{argument.body}</p>
+                        <p className="mb-2 mt-2" style={{ whiteSpace: "pre-wrap" }}>{argument.body}</p>
                         <EvidenceList evidence={(argument as any).evidence} />
                         {/* Ontology tags removed as not needed */}
 
@@ -882,8 +886,8 @@ export default function ArgumentCard({
                                                         )}
                                                     </div>
                                                 )}
-                                                <div className="ps-2 mb-2">{c.body}</div>
-                                                <div className="ps-2 mb-2">
+                                                <div className="ps-2 mb-2" style={{ whiteSpace: "pre-wrap" }}>{c.body}</div>
+                                                <div className="ps-2 mb-2 mt-2">
                                                     <ContentFactCheckNotice factCheck={(c as any).contentFactCheck} compact />
                                                 </div>
                                                 <div className="ps-2 mb-2">

@@ -24,6 +24,7 @@ export interface ITopic extends Document {
   updatedAt: Date;
   slug: string;           // for friendly URLs
   moderators?: Types.ObjectId[];
+  manualModerators?: Types.ObjectId[];
   autoModeratorEnabled?: boolean;
 
   aiModerationProvider?: string;
@@ -84,6 +85,7 @@ const TopicSchema = new Schema<ITopic>({
     model: { type: String },
   },
   moderators: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
+  manualModerators: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
   autoModeratorEnabled: { type: Boolean, default: true },
 }, { timestamps: true });
 

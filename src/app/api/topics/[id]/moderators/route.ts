@@ -127,8 +127,10 @@ export async function POST(req: Request, ctx: any) {
     : false;
 
   if (!alreadyModerator) {
-    await Topic.findByIdAndUpdate(topicId, { $addToSet: { moderators: user._id } }).exec();
-
+    await Topic.findByIdAndUpdate(
+      topicId,
+      { $addToSet: { moderators: user._id, manualModerators: user._id } }
+    ).exec();
     const adminUser = await User.findOne({ email: adminResult.session?.user?.email })
       .select({ _id: 1, name: 1, nickname: 1 })
       .lean();
@@ -145,6 +147,11 @@ export async function POST(req: Request, ctx: any) {
       actorName,
       baseUrl,
     });
+  } else {
+    await Topic.findByIdAndUpdate(
+      topicId,
+      { $addToSet: { manualModerators: user._id } }
+    ).exec();
   }
 
   const result = await loadModerators(topicId);
@@ -188,7 +195,10 @@ export async function DELETE(req: Request, ctx: any) {
     : false;
 
   if (wasModerator) {
-    await Topic.findByIdAndUpdate(topicId, { $pull: { moderators: user._id } }).exec();
+    await Topic.findByIdAndUpdate(
+      topicId,
+      { $pull: { moderators: user._id, manualModerators: user._id } }
+    ).exec();
 
     const adminUser = await User.findOne({ email: adminResult.session?.user?.email })
       .select({ _id: 1, name: 1, nickname: 1 })

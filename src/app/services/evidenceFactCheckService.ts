@@ -21,6 +21,7 @@ export type EvidenceFactCheckOutcome = {
 
 const FACT_CHECK_ENABLED = (process.env.EVIDENCE_FACT_CHECK_ENABLED ?? "true").toLowerCase() !== "false";
 const MAX_TEXT_CHARS = 12000;
+const MAX_CLAIM_CHARS = 1600;
 const MAX_TEXT_BYTES = 1_000_000; // 1MB
 const FETCH_TIMEOUT_MS = 15000;
 
@@ -36,13 +37,54 @@ function stripHtml(value: string) {
   return value
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ");
+    .replace(/<noscript[^>]*>[\s\S]*?<\/noscript>/gi, " ")
+    .replace(/<svg[^>]*>[\s\S]*?<\/svg>/gi, " ")
+    .replace(/<canvas[^>]*>[\s\S]*?<\/canvas>/gi, " ")
+    .replace(/<iframe[^>]*>[\s\S]*?<\/iframe>/gi, " ")
+    .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, " ")
+    .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, " ")
+    .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, " ")
+    .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, " ")
+    .replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, " ")
+    .replace(/<form[^>]*>[\s\S]*?<\/form>/gi, " ")
+    .replace(/<[^>]+>/g, "\n");
+}
+
+function looksLikeCssOrJs(line: string) {
+  const trimmed = line.trim();
+  if (!trimmed) return true;
+  if (/^@media\b/i.test(trimmed)) return true;
+  if (/^(var|let|const)\s+\w+/i.test(trimmed)) return true;
+  if (/function\s*\(|=>/.test(trimmed)) return true;
+  if (/[{}]/.test(trimmed) && /;/.test(trimmed)) return true;
+  if (/^\.[\w-]+/.test(trimmed) || /^#[\w-]+/.test(trimmed)) return true;
+  if (/\b(color|font|margin|padding|display|position|background|border|grid|flex|width|height)\s*:/i.test(trimmed)) {
+    return true;
+  }
+  return false;
+}
+
+function extractReadableText(html: string) {
+  const raw = stripHtml(html);
+  const lines = raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const filtered = lines.filter((line) => !looksLikeCssOrJs(line));
+  const joined = filtered.length ? filtered.join(" ") : raw;
+  return normaliseWhitespace(joined);
 }
 
 function truncateText(value: string, maxChars = MAX_TEXT_CHARS) {
   if (!value) return "";
   if (value.length <= maxChars) return value;
   return value.slice(0, maxChars);
+}
+
+function normaliseClaimText(value?: string) {
+  const trimmed = (value || "").trim();
+  if (!trimmed) return undefined;
+  return truncateText(trimmed, MAX_CLAIM_CHARS);
 }
 
 function looksLikePdf(contentType?: string, url?: string) {
@@ -62,6 +104,7 @@ function shouldCheckEvidence(item: EvidenceItem) {
 
 function isSupportedTextContentType(contentType: string) {
   const lower = contentType.toLowerCase();
+  if (lower.includes("text/css") || lower.includes("javascript")) return false;
   return (
     lower.startsWith("text/") ||
     lower.includes("html") ||
@@ -79,6 +122,8 @@ function isHttpUrl(value: string) {
   }
 }
 
+
+// AI generated function to check for private or local addresses
 function isPrivateOrLocalAddress(hostname: string): boolean {
   // Check for localhost variations
   if (
@@ -123,6 +168,7 @@ function isPrivateOrLocalAddress(hostname: string): boolean {
   return false;
 }
 
+// AI generated function to check for private or local addresses
 function isSafeUrl(urlString: string): boolean {
   try {
     const url = new URL(urlString);
@@ -198,13 +244,14 @@ async function requestFactCheck(params: {
   text?: string;
   fileData?: string;
   userId?: string;
+  claimText?: string;
 }): Promise<EvidenceFactCheckResult> {
   if (!FACT_CHECK_ENABLED) {
     return buildFallbackResult("Fact checking unavailable.", "disabled");
   }
 
   // Use the text content (or URL as fallback) for routing decision
-  const textForRouting = params.text || params.url;
+  const textForRouting = params.text || params.claimText || params.url;
   const routed = await routeResponsesClient({
     text: textForRouting,
     openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
@@ -216,8 +263,10 @@ async function requestFactCheck(params: {
   }
 
   const model = routed.model;
+  const claimText = normaliseClaimText(params.claimText);
   const metadata = [
     `Source URL: ${params.url}`,
+    claimText ? `Claim/Context: ${claimText}` : null,
     params.contentType ? `Content type: ${params.contentType}` : null,
     params.fileName ? `File name: ${params.fileName}` : null,
   ]
@@ -250,10 +299,11 @@ async function requestFactCheck(params: {
       {
         role: "developer",
         content:
-          "You are a source-quality and factuality evaluator for evidence in a debate platform. " +
-          "Determine whether the source is factual/high quality or contains false/misleading information. " +
-          "Return verified only when the source is reliable and factual; inaccurate only when the source is clearly unreliable or contains false claims. " +
-          "Use mixed for partially reliable sources and unverified when uncertain. " +
+          "You are a source-quality and relevance evaluator for evidence in a debate platform. " +
+          "When a claim/context is provided, determine whether the source is both reliable and relevant to that claim. " +
+          "Return verified only when the source is reliable and directly relevant to the claim; inaccurate only when the source is clearly unreliable or contains false claims. " +
+          "Use mixed for partially reliable or partially relevant sources, and unverified when uncertain or when the source is unrelated to the claim. " +
+          "If no claim/context is provided, evaluate source quality only. " +
           "You may use the web search tool to validate the source's legitimacy or provenance. You could do this by looking at the provided source directly, or by looking for other sources to corroborate the claims made by the provided source. " +
           "Always return your final assessment by calling the fact_check_source tool.",
       },
@@ -277,7 +327,7 @@ async function requestFactCheck(params: {
             verdict: { type: "string", enum: ["verified", "inaccurate", "mixed", "unverified"] },
             qualityScore: { type: "number", minimum: 0, maximum: 100 },
             confidence: { type: "number", minimum: 0, maximum: 1 },
-            summary: { type: "string", maxLength: 240 },
+            summary: { type: "string" },
           },
         },
       },
@@ -300,7 +350,7 @@ async function requestFactCheck(params: {
     verdict: normaliseVerdict(parsed.verdict),
     qualityScore: typeof parsed.qualityScore === "number" ? clamp(parsed.qualityScore, 0, 100) : undefined,
     confidence: typeof parsed.confidence === "number" ? clamp(parsed.confidence, 0, 1) : undefined,
-    summary: typeof parsed.summary === "string" ? parsed.summary.slice(0, 240) : undefined,
+    summary: typeof parsed.summary === "string" ? parsed.summary : undefined,
     checkedAt: new Date(),
     model,
   };
@@ -324,7 +374,11 @@ export function calculateEvidenceRankScore(evidence: EvidenceItem[]): number {
   return clamp(total, -25, 20);
 }
 
-async function checkSingleEvidenceItem(item: EvidenceItem, userId?: string): Promise<EvidenceItem> {
+async function checkSingleEvidenceItem(
+  item: EvidenceItem,
+  userId?: string,
+  claimText?: string
+): Promise<EvidenceItem> {
   // Skip items that don't need checking
   if (!item || !item.url || item.factCheck?.checkedAt || !shouldCheckEvidence(item)) {
     return item;
@@ -354,6 +408,7 @@ async function checkSingleEvidenceItem(item: EvidenceItem, userId?: string): Pro
       const result = await requestFactCheck({
         url: fetchUrl,
         userId,
+        claimText,
       });
       return { ...item, factCheck: result };
     }
@@ -364,7 +419,7 @@ async function checkSingleEvidenceItem(item: EvidenceItem, userId?: string): Pro
     }
     const rawText = buffer.toString("utf-8");
     const textContent = contentType.includes("html")
-      ? normaliseWhitespace(stripHtml(rawText))
+      ? extractReadableText(rawText)
       : normaliseWhitespace(rawText);
 
     if (!textContent) {
@@ -377,6 +432,7 @@ async function checkSingleEvidenceItem(item: EvidenceItem, userId?: string): Pro
       fileName: item.fileName,
       text: textContent,
       userId,
+      claimText,
     });
     return { ...item, factCheck: result };
   } catch (err) {
@@ -387,16 +443,21 @@ async function checkSingleEvidenceItem(item: EvidenceItem, userId?: string): Pro
 
 export async function factCheckEvidenceItems(
   evidence: EvidenceItem[],
-  userId?: string
+  userId?: string,
+  options?: {
+    claimText?: string;
+  }
 ): Promise<EvidenceFactCheckOutcome> {
   if (!Array.isArray(evidence) || evidence.length === 0) {
     return { evidence: evidence || [], evidenceRankScore: 0 };
   }
 
+  const claimText = normaliseClaimText(options?.claimText);
+
   // Process all evidence items in parallel using Promise.allSettled
   // This ensures one failure doesn't stop others from being checked
   const results = await Promise.allSettled(
-    evidence.map((item) => checkSingleEvidenceItem(item, userId))
+    evidence.map((item) => checkSingleEvidenceItem(item, userId, claimText))
   );
 
   // Extract successful results and handle any failures

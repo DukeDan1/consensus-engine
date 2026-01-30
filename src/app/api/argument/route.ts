@@ -268,6 +268,8 @@ export async function POST(req: Request) {
 
         // Track background AI processing for graceful shutdown
         const backgroundTask = (async () => {
+            let analysis: Awaited<ReturnType<typeof getAIAnalysisForArgument>> | null = null;
+
             try {
                 const classifications = await classifyTextToOntology(trimmed, { topK: 12, safetyIdentifier: user._id.toString() }).catch((err) => {
                     console.error("Argument classification failed", err);
@@ -278,7 +280,7 @@ export async function POST(req: Request) {
                     await Argument.findByIdAndUpdate(created._id, { ontologyCategories }).exec();
                 }
 
-                const analysis = await getAIAnalysisForArgument(trimmed, topic?.title || "", user._id.toString());
+                analysis = await getAIAnalysisForArgument(trimmed, topic?.title || "", user._id.toString());
 
                 await Argument.findByIdAndUpdate(created._id, { 
                     side: analysis.side,
@@ -302,9 +304,13 @@ export async function POST(req: Request) {
                     }
                 }
 
-                // Always fact-check arguments - use factual part if extracted, otherwise use full text
+                // Fact-check only when content looks factual to reduce unnecessary calls.
                 const textToFactCheck = analysis?.factualPart || trimmed;
-                {
+                const factualSignals = /\b(\d{2,}|%|percent|study|report|survey|data|statistics|evidence|research|cdc|who)\b/i;
+                const shouldFactCheck =
+                    Boolean(analysis?.isFact || (analysis?.factualPart && analysis.factualPart.trim())) ||
+                    factualSignals.test(textToFactCheck);
+                if (shouldFactCheck) {
                     const contentFactCheck = await factCheckPostContent({
                         text: textToFactCheck,
                         contentType: "argument",
@@ -342,7 +348,18 @@ export async function POST(req: Request) {
                     const evidenceForCheck = (created.evidence ?? safeEvidence).map((item: any) =>
                         typeof item?.toObject === "function" ? item.toObject() : item
                     );
-                    const { evidence: checkedEvidence, evidenceRankScore } = await factCheckEvidenceItems(evidenceForCheck, user._id.toString());
+                    const claimText = analysis?.factualPart || trimmed;
+                    const claimContext = [
+                        topic?.title ? `Topic: ${topic.title}` : null,
+                        claimText ? `Claim: ${claimText}` : null,
+                    ]
+                        .filter(Boolean)
+                        .join("\n");
+                    const { evidence: checkedEvidence, evidenceRankScore } = await factCheckEvidenceItems(
+                        evidenceForCheck,
+                        user._id.toString(),
+                        { claimText: claimContext }
+                    );
                     await Argument.updateOne(
                         { _id: created._id },
                         { $set: { evidence: checkedEvidence, evidenceRankScore } }

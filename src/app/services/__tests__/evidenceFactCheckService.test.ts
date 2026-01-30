@@ -382,6 +382,29 @@ describe("evidenceFactCheckService", () => {
       }
     });
 
+    it("includes claim context when provided", async () => {
+      (global.fetch as any).mockResolvedValue({
+        ok: true,
+        headers: new Map([["content-type", "text/html"]]),
+        arrayBuffer: async () => {
+          const encoder = new TextEncoder();
+          return encoder.encode("<html><body>Evidence content</body></html>").buffer;
+        },
+      });
+
+      const evidence: EvidenceItem[] = [
+        { url: "https://example.com/claim", kind: "link" },
+      ];
+
+      await factCheckEvidenceItems(evidence, userId, { claimText: "Claim: The sky is blue." });
+
+      expect(openaiMock.responses.create).toHaveBeenCalled();
+      const callArgs = openaiMock.responses.create.mock.calls[0][0];
+      const userMessage = callArgs.input.find((msg: any) => msg.role === "user");
+      const textContent = userMessage.content[0].text;
+      expect(textContent).toContain("Claim/Context: Claim: The sky is blue.");
+    });
+
     it("rejects oversized content", async () => {
       (global.fetch as any).mockRejectedValue(new Error("Content too large"));
 

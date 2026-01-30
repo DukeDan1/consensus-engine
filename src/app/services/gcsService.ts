@@ -236,7 +236,6 @@ export async function getSignedReadUrlFromUrl(objectUrl: string, expiresInSecond
       return objectUrl;
     }
     if (parseResult.error === 'non-gcs') {
-      console.warn('getSignedReadUrlFromUrl: non-GCS URL, returning original', { objectUrl, host: parseResult.host });
       return objectUrl;
     }
     console.warn('getSignedReadUrlFromUrl: different bucket in URL, returning original', { objectUrl, bucketInUrl: parseResult.bucketInUrl });

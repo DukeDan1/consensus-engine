@@ -51,7 +51,7 @@ function normaliseContentFactCheck(value: any) {
   return {
     verdict: value.verdict ?? undefined,
     confidence: typeof value.confidence === "number" ? value.confidence : undefined,
-    summary: value.summary ? String(value.summary).slice(0, 240) : undefined,
+    summary: value.summary ?? undefined,
     sources,
     checkedAt: value.checkedAt ? new Date(value.checkedAt) : undefined,
     model: value.model ? String(value.model).slice(0, 100) : undefined,

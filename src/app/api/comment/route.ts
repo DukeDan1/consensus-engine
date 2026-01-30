@@ -191,7 +191,19 @@ export async function POST(req: Request) {
                     const evidenceForCheck = (created.evidence ?? safeEvidence).map((item: any) =>
                         typeof item?.toObject === "function" ? item.toObject() : item
                     );
-                    const { evidence: checkedEvidence, evidenceRankScore } = await factCheckEvidenceItems(evidenceForCheck, user._id.toString());
+                    const claimContext = [
+                        trimmed ? `Comment: ${trimmed}` : null,
+                        parentArgument?.body
+                            ? `Parent argument: ${String(parentArgument.body).slice(0, 600)}`
+                            : null,
+                    ]
+                        .filter(Boolean)
+                        .join("\n");
+                    const { evidence: checkedEvidence, evidenceRankScore } = await factCheckEvidenceItems(
+                        evidenceForCheck,
+                        user._id.toString(),
+                        { claimText: claimContext }
+                    );
                     await Comment.updateOne(
                         { _id: created._id },
                         { $set: { evidence: checkedEvidence, evidenceRankScore } }
@@ -205,32 +217,40 @@ export async function POST(req: Request) {
                 const parentContext = parentArgument?.body
                     ? `Replying to: ${String(parentArgument.body).slice(0, 600)}`
                     : undefined;
-                const contentFactCheck = await factCheckPostContent({
-                    text: trimmed,
-                    contentType: "comment",
-                    context: parentContext,
-                    userId: user._id.toString(),
-                });
-                if (contentFactCheck) {
-                    const shouldNoise =
-                        contentFactCheck.verdict === "inaccurate" &&
-                        !["blocked", "needs_review"].includes(created.visibility?.status || "");
-                    await Comment.updateOne(
-                        { _id: created._id },
-                        {
-                            $set: {
-                                contentFactCheck,
-                                ...(shouldNoise
-                                    ? {
-                                        "visibility.status": "noise",
-                                        "visibility.moderatedAt": new Date(),
-                                        "visibility.reason": "Marked incorrect by automated fact check",
-                                        "visibility.rankPenalty": -50,
-                                    }
-                                    : {}),
-                            },
-                        }
-                    ).exec();
+                const factualSignals = /\b(\d{2,}|%|percent|study|report|survey|data|statistics|evidence|research|cdc|who)\b/i;
+                const quality = typeof moderation?.quality === "number" ? moderation.quality : 0;
+                const shouldFactCheck =
+                    quality >= 55 &&
+                    trimmed.length >= 40 &&
+                    (factualSignals.test(trimmed) || trimmed.length >= 120);
+                if (shouldFactCheck) {
+                    const contentFactCheck = await factCheckPostContent({
+                        text: trimmed,
+                        contentType: "comment",
+                        context: parentContext,
+                        userId: user._id.toString(),
+                    });
+                    if (contentFactCheck) {
+                        const shouldNoise =
+                            contentFactCheck.verdict === "inaccurate" &&
+                            !["blocked", "needs_review"].includes(created.visibility?.status || "");
+                        await Comment.updateOne(
+                            { _id: created._id },
+                            {
+                                $set: {
+                                    contentFactCheck,
+                                    ...(shouldNoise
+                                        ? {
+                                            "visibility.status": "noise",
+                                            "visibility.moderatedAt": new Date(),
+                                            "visibility.reason": "Marked incorrect by automated fact check",
+                                            "visibility.rankPenalty": -50,
+                                        }
+                                        : {}),
+                                },
+                            }
+                        ).exec();
+                    }
                 }
             } catch (err) {
                 console.error("Content fact check failed for comment", created._id, err);
