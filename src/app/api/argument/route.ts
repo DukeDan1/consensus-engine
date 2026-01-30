@@ -304,9 +304,13 @@ export async function POST(req: Request) {
                     }
                 }
 
-                // Always fact-check arguments - use factual part if extracted, otherwise use full text
+                // Fact-check only when content looks factual to reduce unnecessary calls.
                 const textToFactCheck = analysis?.factualPart || trimmed;
-                {
+                const factualSignals = /\b(\d{2,}|%|percent|study|report|survey|data|statistics|evidence|research|cdc|who)\b/i;
+                const shouldFactCheck =
+                    Boolean(analysis?.isFact || (analysis?.factualPart && analysis.factualPart.trim())) ||
+                    factualSignals.test(textToFactCheck);
+                if (shouldFactCheck) {
                     const contentFactCheck = await factCheckPostContent({
                         text: textToFactCheck,
                         contentType: "argument",

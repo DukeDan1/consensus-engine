@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 import User from '@/app/models/user';
+import Topic from '@/app/models/topic';
+import { notifyModeratorStatusChange } from '@/app/services/moderatorNotificationService';
 
 export type TrustTier = 'low' | 'new' | 'standard' | 'trusted' | 'high';
 
@@ -8,6 +10,48 @@ const TRUST_MIN = 0;
 const TRUST_MAX = 100;
 
 const HALF_LIFE_DAYS = 30;
+const MODERATOR_ELIGIBLE_TIERS = new Set<TrustTier>(['trusted', 'high']);
+
+async function demoteModeratorsIfLowTrust(params: {
+  userId: mongoose.Types.ObjectId | string;
+  prevTier: TrustTier;
+  nextTier: TrustTier;
+  isAdmin?: boolean;
+}) {
+  const { userId, prevTier, nextTier, isAdmin } = params;
+  if (isAdmin) return;
+  const wasEligible = MODERATOR_ELIGIBLE_TIERS.has(prevTier);
+  const stillEligible = MODERATOR_ELIGIBLE_TIERS.has(nextTier);
+  if (!wasEligible || stillEligible) return;
+
+  const userIdValue = typeof userId === 'string' ? userId : userId.toString();
+  const userObjectId = typeof userId === 'string' ? new mongoose.Types.ObjectId(userId) : userId;
+
+  const topics = await Topic.find({
+    moderators: userObjectId,
+    manualModerators: { $ne: userObjectId },
+  })
+    .select({ _id: 1, title: 1 })
+    .lean();
+  if (!topics.length) return;
+
+  await Topic.updateMany(
+    { _id: { $in: topics.map((topic) => topic._id) } },
+    { $pull: { moderators: userObjectId } }
+  ).exec();
+
+  await Promise.allSettled(
+    topics.map((topic) =>
+      notifyModeratorStatusChange({
+        recipientId: userIdValue,
+        topicId: topic._id?.toString?.() ?? '',
+        topicTitle: topic.title || 'this topic',
+        action: 'removed',
+        source: 'auto',
+      })
+    )
+  );
+}
 
 export function normaliseTrustScore(raw: unknown): number {
   const value = typeof raw === 'number' && Number.isFinite(raw) ? raw : TRUST_BASELINE;
@@ -44,7 +88,7 @@ export async function applyTrustDelta(params: {
 
   const now = new Date();
   const userDoc: any = await User.findById(userId)
-    .select({ trustScore: 1, trustTier: 1, trustUpdatedAt: 1 })
+    .select({ trustScore: 1, trustTier: 1, trustUpdatedAt: 1, isAdmin: 1 })
     .lean()
     .exec()
     .catch(() => null);
@@ -54,6 +98,9 @@ export async function applyTrustDelta(params: {
   const current = normaliseTrustScore(userDoc.trustScore);
   const decayed = decayTrustScore(current, userDoc.trustUpdatedAt, now);
   const nextScore = normaliseTrustScore(decayed + (Number.isFinite(delta) ? delta : 0));
+  const prevTier = typeof userDoc.trustTier === 'string'
+    ? (userDoc.trustTier as TrustTier)
+    : scoreToTier(decayed);
   const nextTier = scoreToTier(nextScore);
 
   await User.findOneAndUpdate(
@@ -80,6 +127,16 @@ export async function applyTrustDelta(params: {
     },
     { upsert: false }
   ).exec();
+
+  const demotionTask = demoteModeratorsIfLowTrust({
+    userId: userDoc._id,
+    prevTier,
+    nextTier,
+    isAdmin: userDoc.isAdmin,
+  });
+  demotionTask.catch((err) => {
+    console.error('Failed to auto-demote moderators for low trust', err);
+  });
 }
 
 export function getTierRankPenalty(tier: TrustTier | string | undefined): number {

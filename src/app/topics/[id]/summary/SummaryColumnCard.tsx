@@ -6,6 +6,7 @@ import Link from "next/link";
 export type SummaryItem = {
   text: string;
   argument?: string;
+  comment?: string;
   stance: "for" | "against" | "neutral" | string;
   lastUpdatedAt?: string;
   justification?: string;
@@ -58,7 +59,7 @@ export default function SummaryColumnCard({
           ) : (
             <ul className="list-unstyled mb-0">
               {items.map((item, idx) => (
-                <li key={`${item.argument ?? idx}-${label}`} className="mb-3 pb-3 border-bottom">
+                <li key={`${item.comment ?? item.argument ?? idx}-${label}`} className="mb-3 pb-3 border-bottom">
                   <p className="mb-2">{item.text || "AI summary unavailable."}</p>
                   <div className="mb-2">
                     <span
@@ -68,9 +69,12 @@ export default function SummaryColumnCard({
                       className="badge text-bg-info-subtle text-dark border"
                       data-bs-toggle="tooltip"
                       data-bs-placement="top"
-                      title={item.justification || "AI justification not provided."}
+                      title={
+                        item.justification ||
+                        (item.comment ? "Highlighted community discussion." : "AI justification not provided.")
+                      }
                     >
-                      AI generated
+                      {item.comment ? "Community highlight" : "AI generated"}
                     </span>
                   </div>
                   <div className="d-flex justify-content-between align-items-center">
@@ -78,7 +82,11 @@ export default function SummaryColumnCard({
                       Updated {item.lastUpdatedAt ? new Date(item.lastUpdatedAt).toLocaleString() : "recently"}
                     </small>
                     <Link
-                      href={`/topics/${topicId}?ordering=relevant${item.argument ? `#argument-${item.argument}` : ""}`}
+                      href={`/topics/${topicId}?ordering=relevant${item.comment
+                        ? `#comment-${item.comment}`
+                        : item.argument
+                          ? `#argument-${item.argument}`
+                          : ""}`}
                       className="btn btn-outline-secondary btn-sm"
                     >
                       Discuss

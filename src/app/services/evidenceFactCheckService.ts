@@ -37,7 +37,42 @@ function stripHtml(value: string) {
   return value
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ");
+    .replace(/<noscript[^>]*>[\s\S]*?<\/noscript>/gi, " ")
+    .replace(/<svg[^>]*>[\s\S]*?<\/svg>/gi, " ")
+    .replace(/<canvas[^>]*>[\s\S]*?<\/canvas>/gi, " ")
+    .replace(/<iframe[^>]*>[\s\S]*?<\/iframe>/gi, " ")
+    .replace(/<head[^>]*>[\s\S]*?<\/head>/gi, " ")
+    .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, " ")
+    .replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, " ")
+    .replace(/<header[^>]*>[\s\S]*?<\/header>/gi, " ")
+    .replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, " ")
+    .replace(/<form[^>]*>[\s\S]*?<\/form>/gi, " ")
+    .replace(/<[^>]+>/g, "\n");
+}
+
+function looksLikeCssOrJs(line: string) {
+  const trimmed = line.trim();
+  if (!trimmed) return true;
+  if (/^@media\b/i.test(trimmed)) return true;
+  if (/^(var|let|const)\s+\w+/i.test(trimmed)) return true;
+  if (/function\s*\(|=>/.test(trimmed)) return true;
+  if (/[{}]/.test(trimmed) && /;/.test(trimmed)) return true;
+  if (/^\.[\w-]+/.test(trimmed) || /^#[\w-]+/.test(trimmed)) return true;
+  if (/\b(color|font|margin|padding|display|position|background|border|grid|flex|width|height)\s*:/i.test(trimmed)) {
+    return true;
+  }
+  return false;
+}
+
+function extractReadableText(html: string) {
+  const raw = stripHtml(html);
+  const lines = raw
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const filtered = lines.filter((line) => !looksLikeCssOrJs(line));
+  const joined = filtered.length ? filtered.join(" ") : raw;
+  return normaliseWhitespace(joined);
 }
 
 function truncateText(value: string, maxChars = MAX_TEXT_CHARS) {
@@ -69,6 +104,7 @@ function shouldCheckEvidence(item: EvidenceItem) {
 
 function isSupportedTextContentType(contentType: string) {
   const lower = contentType.toLowerCase();
+  if (lower.includes("text/css") || lower.includes("javascript")) return false;
   return (
     lower.startsWith("text/") ||
     lower.includes("html") ||
@@ -383,7 +419,7 @@ async function checkSingleEvidenceItem(
     }
     const rawText = buffer.toString("utf-8");
     const textContent = contentType.includes("html")
-      ? normaliseWhitespace(stripHtml(rawText))
+      ? extractReadableText(rawText)
       : normaliseWhitespace(rawText);
 
     if (!textContent) {
