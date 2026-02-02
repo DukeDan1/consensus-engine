@@ -49,13 +49,8 @@ export default function TopicArgumentList({
     : "No posts yet.";
 
   useEffect(() => {
-    if (moderatorMode) {
-      setShowNoise(true);
-    } else {
-      setShowNoise(false);
-    }
+    setShowNoise(moderatorMode);
   }, [moderatorMode]);
-
   if (displayedArguments.length === 0) {
     return (
       <div className="row g-3">
