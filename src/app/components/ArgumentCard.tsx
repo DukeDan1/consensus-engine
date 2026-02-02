@@ -717,8 +717,8 @@ export default function ArgumentCard({
                                         disabled={deletingArgument}
                                         aria-label="Delete argument"
                                     >
-                                        <i className="fa-solid fa-trash d-sm-none" aria-hidden="true"></i>
-                                        <span className="d-none d-sm-inline">{deletingArgument ? "Deleting..." : "Delete"}</span>
+                                        <i className="fa-solid fa-trash" aria-hidden="true"></i>
+                                        <span className="d-none d-sm-inline ms-1">{deletingArgument ? "Deleting..." : "Delete"}</span>
                                     </button>
                                 )}
                                 {canRestoreArgument && (
@@ -729,8 +729,8 @@ export default function ArgumentCard({
                                         disabled={restoringArgument}
                                         aria-label="Restore argument"
                                     >
-                                        <i className="fa-solid fa-rotate-left d-sm-none" aria-hidden="true"></i>
-                                        <span className="d-none d-sm-inline">{restoringArgument ? "Restoring..." : "Restore"}</span>
+                                        <i className="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                                        <span className="d-none d-sm-inline ms-1">{restoringArgument ? "Restoring..." : "Restore"}</span>
                                     </button>
                                 )}
                                 {canToggleArgumentNoise && (
@@ -741,8 +741,8 @@ export default function ArgumentCard({
                                         disabled={restoringArgument}
                                         aria-label={isArgumentNoise ? "Unmark noise" : "Mark noise"}
                                     >
-                                        <i className="fa-solid fa-filter d-sm-none" aria-hidden="true"></i>
-                                        <span className="d-none d-sm-inline">{restoringArgument ? "Updating..." : isArgumentNoise ? "Unmark Noise" : "Mark Noise"}</span>
+                                        <i className="fa-solid fa-filter" aria-hidden="true"></i>
+                                        <span className="d-none d-sm-inline ms-1">{restoringArgument ? "Updating..." : isArgumentNoise ? "Unmark Noise" : "Mark Noise"}</span>
                                     </button>
                                 )}
                             </div>
