@@ -214,6 +214,14 @@ export async function GET(
       .limit(50)
       .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt isAdmin" })
       .lean();
+  } else {
+    noiseArguments = await Argument.find({
+      ...baseArgumentFilters,
+      "visibility.status": "noise",
+    })
+      .sort({ createdAt: -1 })
+      .populate({ path: "createdBy", select: "name nickname avatarUrl avatarThumbUrl createdAt isAdmin" })
+      .lean();
   }
 
   // Fetch comments for each argument, ordering by relevancy (approx: newest first for now) or could extend with score if added later
@@ -420,8 +428,9 @@ export async function GET(
   const limitedArguments = isRelevant ? argumentsForResponse.slice(0, numArguments) : argumentsForResponse;
 
   const combinedArguments = (() => {
-    if (canSeeModeration) return limitedArguments;
-    const combined = [...limitedArguments, ...ownHiddenArguments, ...noiseArguments];
+    const combined = canSeeModeration
+      ? [...limitedArguments, ...noiseArguments]
+      : [...limitedArguments, ...ownHiddenArguments, ...noiseArguments];
     const seen = new Set<string>();
     return combined.filter((arg) => {
       const id = arg?._id?.toString?.() ?? "";
