@@ -344,7 +344,7 @@ export default function ArgumentCard({
     const [argumentRemoved, setArgumentRemoved] = useState(!!argument.isRemoved);
     const [moderatorOverrides, setModeratorOverrides] = useState<Record<string, boolean>>({});
     const [moderatorUpdatingId, setModeratorUpdatingId] = useState<string | null>(null);
-    const [showNoiseComments, setShowNoiseComments] = useState(false);
+    const [showNoiseComments, setShowNoiseComments] = useState(moderatorMode);
 
     const addOptimisticComment = (comment: TopicApiResponse["arguments"][number]["comments"][number]) => {
         setCommentStates((prev) => [...prev, { ...comment, pending: true } as any]);
@@ -375,6 +375,10 @@ export default function ArgumentCard({
         setArgumentVisibility(argument.visibility);
         setArgumentRemoved(!!argument.isRemoved);
     }, [argument.visibility, argument.isRemoved]);
+
+    useEffect(() => {
+        setShowNoiseComments(moderatorMode);
+    }, [moderatorMode]);
 
     useEffect(() => {
         if (typeof window === "undefined") return;

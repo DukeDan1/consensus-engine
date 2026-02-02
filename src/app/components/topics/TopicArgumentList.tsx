@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import ArgumentCard from "@/app/components/ArgumentCard";
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
@@ -18,7 +18,11 @@ export default function TopicArgumentList({
 }) {
   const { data: session } = useSession();
   const currentUserId = session?.user?.id || viewerId;
-  const [showNoise, setShowNoise] = useState(false);
+  const [showNoise, setShowNoise] = useState(moderatorMode);
+
+  useEffect(() => {
+    setShowNoise(moderatorMode);
+  }, [moderatorMode]);
 
   const { visibleArguments, noiseArguments } = useMemo(() => {
     if (moderatorMode) {
@@ -63,8 +67,8 @@ export default function TopicArgumentList({
             <button
               type="button"
               className="btn btn-outline-secondary btn-sm"
-            onClick={() => setShowNoise(true)}
-          >
+              onClick={() => setShowNoise(true)}
+            >
               {`View more posts (${hiddenNoiseCount})`}
             </button>
           </div>
