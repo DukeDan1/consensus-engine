@@ -879,7 +879,7 @@ export default function ArgumentCard({
                                                                 <span className="d-none d-sm-inline ms-1">
                                                                     {restoringCommentId === c.id
                                                                         ? "Updating..."
-                                                                        : isCommentNoise ? "Unmark" : "Noise"}
+                                                                        : isCommentNoise ? "Unmark Noise" : "Mark Noise"}
                                                                 </span>
                                                             </button>
                                                         )}
