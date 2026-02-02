@@ -220,3 +220,115 @@ body {
 body.notifications-open {
   overflow: hidden;
 }
+
+/* Mobile responsiveness fixes */
+@media (max-width: 575.98px) {
+  /* Prevent body horizontal scroll */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Container padding adjustments */
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  /* Topic page header controls */
+  .topic-header-controls {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100%;
+  }
+
+  .topic-header-controls > * {
+    width: 100%;
+  }
+
+  .topic-header-controls .btn-group {
+    display: flex;
+    width: 100%;
+  }
+
+  .topic-header-controls .btn-group .btn {
+    flex: 1;
+  }
+
+  /* ArgumentCard action buttons */
+  .argument-actions {
+    flex-wrap: wrap;
+    gap: 0.375rem !important;
+    justify-content: flex-start !important;
+  }
+
+  .argument-actions .badge,
+  .argument-actions .btn {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  /* Comment action buttons */
+  .comment-actions {
+    flex-wrap: wrap;
+    gap: 0.25rem !important;
+    justify-content: flex-start !important;
+  }
+
+  .comment-actions .btn {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.35rem;
+  }
+
+  /* Prevent horizontal overflow from long words */
+  .card-body {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+  }
+
+  /* Make cards take full width and prevent overflow */
+  .card {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  /* Comment list items */
+  .comment-item-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Evidence links */
+  .badge.text-bg-secondary {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Breadcrumb text size */
+  .breadcrumb {
+    font-size: 0.85rem;
+  }
+
+  /* Topic title sizing */
+  h1.h4 {
+    font-size: 1.15rem;
+  }
+}
+
+/* Tablet breakpoint adjustments */
+@media (max-width: 767.98px) {
+  .argument-card-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+
+  .argument-card-header .argument-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+

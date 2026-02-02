@@ -636,7 +636,7 @@ export default function ArgumentCard({
             <div id={`argument-${argument.id}`} className="col-12" key={argument.id}>
                 <div className="card h-100 shadow-sm">
                     <div className="card-body">
-                        <div className="d-flex align-items-start justify-content-between mb-3">
+                        <div className="d-flex align-items-start justify-content-between mb-3 argument-card-header">
                             <div className="d-flex flex-column gap-1">
                             <div className="d-flex flex-wrap align-items-center gap-2">
                                 {isArgumentPending ? (
@@ -677,7 +677,7 @@ export default function ArgumentCard({
                                 <RelativeTime value={argument?.createdAt} />
                             </div>
 
-                            <div className="d-flex align-items-center gap-2 align-self-end">
+                            <div className="d-flex align-items-center gap-2 argument-actions">
                                 <button
                                     type="button"
                                     className="badge bg-success-subtle text-success border-0 shadow-none"
@@ -700,7 +700,8 @@ export default function ArgumentCard({
                                 </button>
                                 <span className="badge text-bg-light">
                                     <i className="fa-regular fa-comments me-1" aria-hidden="true"></i>
-                                    {commentStates.length} replies
+                                    <span className="d-none d-sm-inline">{commentStates.length} replies</span>
+                                    <span className="d-sm-none">{commentStates.length}</span>
                                 </span>
                                 <NotificationSubscribeButton
                                     targetType="argument"
@@ -716,7 +717,8 @@ export default function ArgumentCard({
                                         disabled={deletingArgument}
                                         aria-label="Delete argument"
                                     >
-                                        {deletingArgument ? "Deleting..." : "Delete"}
+                                        <i className="fa-solid fa-trash d-sm-none" aria-hidden="true"></i>
+                                        <span className="d-none d-sm-inline">{deletingArgument ? "Deleting..." : "Delete"}</span>
                                     </button>
                                 )}
                                 {canRestoreArgument && (
@@ -727,7 +729,8 @@ export default function ArgumentCard({
                                         disabled={restoringArgument}
                                         aria-label="Restore argument"
                                     >
-                                        {restoringArgument ? "Restoring..." : "Restore"}
+                                        <i className="fa-solid fa-rotate-left d-sm-none" aria-hidden="true"></i>
+                                        <span className="d-none d-sm-inline">{restoringArgument ? "Restoring..." : "Restore"}</span>
                                     </button>
                                 )}
                                 {canToggleArgumentNoise && (
@@ -738,7 +741,8 @@ export default function ArgumentCard({
                                         disabled={restoringArgument}
                                         aria-label={isArgumentNoise ? "Unmark noise" : "Mark noise"}
                                     >
-                                        {restoringArgument ? "Updating..." : isArgumentNoise ? "Unmark Noise" : "Mark Noise"}
+                                        <i className="fa-solid fa-filter d-sm-none" aria-hidden="true"></i>
+                                        <span className="d-none d-sm-inline">{restoringArgument ? "Updating..." : isArgumentNoise ? "Unmark Noise" : "Mark Noise"}</span>
                                     </button>
                                 )}
                             </div>
@@ -783,8 +787,8 @@ export default function ArgumentCard({
                                                 className="mb-2 p-2 rounded bg-light border"
                                                 style={{ borderLeft: "4px solid #6c757d" }}
                                             >
-                                                <div className="d-flex justify-content-between align-items-start mb-2">
-                                                    <div className="d-flex flex-wrap align-items-center gap-3">
+                                                <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start gap-2 mb-2 comment-item-header">
+                                                    <div className="d-flex flex-wrap align-items-center gap-2">
                                                         {pending ? (
                                                             <span className="badge text-bg-info">Sending...</span>
                                                         ) : (
@@ -815,14 +819,15 @@ export default function ArgumentCard({
                                                                         )}
                                                                         disabled={moderatorUpdatingId === commenter.id}
                                                                     >
-                                                                        {commenterIsModerator ? "Remove Moderator" : "Promote to Moderator"}
+                                                                        <span className="d-none d-sm-inline">{commenterIsModerator ? "Remove Moderator" : "Promote to Moderator"}</span>
+                                                                        <span className="d-sm-none">{commenterIsModerator ? "Remove Mod" : "Promote"}</span>
                                                                     </button>
                                                                 )}
                                                                 <RelativeTime value={c.createdAt} />
                                                             </>
                                                         )}
                                                     </div>
-                                                    <div className="d-flex align-items-center gap-2">
+                                                    <div className="d-flex flex-wrap align-items-center gap-2 comment-actions">
                                                         <button
                                                             className="btn btn-link btn-sm text-success p-0"
                                                             onClick={() => sendCommentVote(c.id, 1)}
@@ -848,8 +853,8 @@ export default function ArgumentCard({
                                                                 disabled={deleting}
                                                                 aria-label="Delete comment"
                                                             >
-                                                                <i className="fa-solid fa-trash me-1" aria-hidden="true"></i>
-                                                                {deleting ? "Deleting..." : "Delete"}
+                                                                <i className="fa-solid fa-trash" aria-hidden="true"></i>
+                                                                <span className="d-none d-sm-inline ms-1">{deleting ? "Deleting..." : "Delete"}</span>
                                                             </button>
                                                         )}
                                                         {canRestoreComment && (
@@ -859,8 +864,8 @@ export default function ArgumentCard({
                                                                 disabled={restoringCommentId === c.id}
                                                                 aria-label="Restore comment"
                                                             >
-                                                                <i className="fa-solid fa-rotate-left me-1" aria-hidden="true"></i>
-                                                                {restoringCommentId === c.id ? "Restoring..." : "Restore"}
+                                                                <i className="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                                                                <span className="d-none d-sm-inline ms-1">{restoringCommentId === c.id ? "Restoring..." : "Restore"}</span>
                                                             </button>
                                                         )}
                                                         {canToggleCommentNoise && (
@@ -870,10 +875,12 @@ export default function ArgumentCard({
                                                                 disabled={restoringCommentId === c.id}
                                                                 aria-label={isCommentNoise ? "Unmark noise" : "Mark noise"}
                                                             >
-                                                                <i className="fa-solid fa-filter me-1" aria-hidden="true"></i>
-                                                                {restoringCommentId === c.id
-                                                                    ? "Updating..."
-                                                                    : isCommentNoise ? "Unmark Noise" : "Mark Noise"}
+                                                                <i className="fa-solid fa-filter" aria-hidden="true"></i>
+                                                                <span className="d-none d-sm-inline ms-1">
+                                                                    {restoringCommentId === c.id
+                                                                        ? "Updating..."
+                                                                        : isCommentNoise ? "Unmark" : "Noise"}
+                                                                </span>
                                                             </button>
                                                         )}
                                                     </div>
@@ -886,10 +893,10 @@ export default function ArgumentCard({
                                                         )}
                                                     </div>
                                                 )}
-                                                <div className="ps-2 mb-2" style={{ whiteSpace: "pre-wrap" }}>{c.body}</div>
                                                 <div className="ps-2 mb-2 mt-2">
                                                     <ContentFactCheckNotice factCheck={(c as any).contentFactCheck} compact />
                                                 </div>
+                                                <div className="ps-2 mb-2" style={{ whiteSpace: "pre-wrap" }}>{c.body}</div>
                                                 <div className="ps-2 mb-2">
                                                     <EvidenceList evidence={(c as any).evidence} />
                                                 </div>

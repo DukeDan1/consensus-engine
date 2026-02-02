@@ -120,14 +120,16 @@ export default async function TopicPage({ params, searchParams }: any) {
             />
           </div>
         </div>
-        <div className="d-flex flex-wrap gap-2">
+        <div className="d-flex flex-wrap gap-2 topic-header-controls">
           <Link href={`/topics/${id}/summary`} className="btn btn-outline-primary btn-sm">
             <i className="fa-solid fa-file-lines me-1" aria-hidden></i>
-            Summary view
+            <span className="d-none d-sm-inline">Summary</span>
+            <span className="d-sm-none">Summary</span>
           </Link>
           <Link href={`/topics/${id}/facts`} className="btn btn-outline-secondary btn-sm">
             <i className="fa-solid fa-lightbulb me-1" aria-hidden></i>
-            Facts view
+            <span className="d-none d-sm-inline">Facts</span>
+            <span className="d-sm-none">Facts</span>
           </Link>
           <NotificationSubscribeButton
             targetType="topic"
