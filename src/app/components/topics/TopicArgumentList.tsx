@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import ArgumentCard from "@/app/components/ArgumentCard";
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
@@ -18,13 +18,9 @@ export default function TopicArgumentList({
 }) {
   const { data: session } = useSession();
   const currentUserId = session?.user?.id || viewerId;
-  const [showNoise, setShowNoise] = useState(false);
+  const [showNoise, setShowNoise] = useState(moderatorMode);
 
   const { visibleArguments, noiseArguments } = useMemo(() => {
-    if (moderatorMode) {
-      return { visibleArguments: allArguments, noiseArguments: [] };
-    }
-
     const isOwner = (argument: TopicApiResponse["arguments"][number]) => {
       const ownerId = argument.createdBy?._id;
       return !!currentUserId && !!ownerId && currentUserId === ownerId;
@@ -51,6 +47,14 @@ export default function TopicArgumentList({
   const emptyMessage = showNoiseToggle && !showNoise
     ? "No visible posts yet."
     : "No posts yet.";
+
+  useEffect(() => {
+    if (moderatorMode) {
+      setShowNoise(true);
+    } else {
+      setShowNoise(false);
+    }
+  }, [moderatorMode]);
 
   if (displayedArguments.length === 0) {
     return (
