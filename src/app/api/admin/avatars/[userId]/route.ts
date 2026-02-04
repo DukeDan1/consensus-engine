@@ -10,6 +10,16 @@ import { renderEmail } from "@/app/emails/renderEmail";
 
 type Action = "approve" | "remove";
 
+function queueEmail(task: () => Promise<void>, label: string) {
+  void (async () => {
+    try {
+      await task();
+    } catch (err) {
+      console.error(label, err);
+    }
+  })();
+}
+
 async function requireAdmin() {
   const session = await getServerSession();
   if (!session?.user?.email) {
@@ -34,7 +44,7 @@ function buildModerationUpdate(existing: any, status: "approved" | "removed", re
   };
 }
 
-async function notifyAvatarOutcome(
+function notifyAvatarOutcome(
   user: { email?: string | null; name?: string | null; id?: string | null },
   action: Action
 ) {
@@ -43,13 +53,10 @@ async function notifyAvatarOutcome(
   const subject = action === "approve" ? "Your avatar has been approved" : "Your avatar has been removed";
   const baseUrl = process.env.NEXTJS_APP_BASE_URL || "https://ce.dukedan.uk";
   const profileUrl = user?.id ? `${baseUrl}/profile/${user.id}` : `${baseUrl}/profile`;
-  const { html, text } = await renderEmail(AvatarModerationEmail({ name, action, profileUrl }));
-
-  try {
-    await sendEmail(user.email, subject, html, text);
-  } catch (err) {
-    console.error("Failed to send avatar moderation email", err);
-  }
+  queueEmail(async () => {
+    const { html, text } = await renderEmail(AvatarModerationEmail({ name, action, profileUrl }));
+    await sendEmail(user.email as string, subject, html, text);
+  }, "Failed to send avatar moderation email");
 }
 
 export async function POST(req: Request, ctx: any) {
@@ -109,7 +116,7 @@ export async function POST(req: Request, ctx: any) {
     }, { allowModeration: true });
   }
 
-  void notifyAvatarOutcome({ email: user.email, name: user.name, id: userId }, action);
+  notifyAvatarOutcome({ email: user.email, name: user.name, id: userId }, action);
 
   return NextResponse.json({ ok: true }, { status: 200 });
 }

@@ -10,6 +10,7 @@ const PUBLIC_ROUTES = new Set([
   "/register",
   "/forgot-password",
   "/reset-password",
+  "/terms"
 ]);
 
 const PUBLIC_API_PREFIXES = [

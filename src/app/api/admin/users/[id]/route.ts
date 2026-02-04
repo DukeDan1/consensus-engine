@@ -10,6 +10,10 @@ import Fact from "@/app/models/facts";
 import Vote from "@/app/models/vote";
 import { deleteEvidenceFilesForDocuments } from "@/app/services/evidenceCleanupService";
 import { updateUserProfileById } from "@/app/services/userProfileService";
+import { sendEmail } from "@/app/services/emailService";
+import { renderEmail } from "@/app/emails/renderEmail";
+import AccountSuspensionEmail from "@/app/emails/templates/AccountSuspensionEmail";
+import AccountDeletedEmail from "@/app/emails/templates/AccountDeletedEmail";
 
 async function requireAdmin() {
   const session = await getServerSession();
@@ -23,6 +27,16 @@ async function requireAdmin() {
   }
 
   return { session };
+}
+
+function queueEmail(task: () => Promise<void>) {
+  void (async () => {
+    try {
+      await task();
+    } catch (err) {
+      console.error("Queued email failed", err);
+    }
+  })();
 }
 
 export async function PATCH(req: Request, ctx: any) {
@@ -86,10 +100,25 @@ export async function PATCH(req: Request, ctx: any) {
     }
 
     const updated = await User.findByIdAndUpdate(userId, update, { new: true })
-      .select({ _id: 1 })
+      .select({ _id: 1, email: 1, name: 1 })
       .lean();
     if (!updated) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Send suspension notification email
+    if (updated.email) {
+      const userName = updated.name || "User";
+      const action = suspended ? "suspended" : "unsuspended";
+      const subject = suspended
+        ? "Your Consensus Engine account has been suspended"
+        : "Your Consensus Engine account has been reinstated";
+      queueEmail(async () => {
+        const { html, text } = await renderEmail(
+          AccountSuspensionEmail({ name: userName, action })
+        );
+        await sendEmail(updated.email as string, subject, html, text);
+      });
     }
   }
 
@@ -133,10 +162,14 @@ export async function DELETE(_req: Request, ctx: any) {
   const adminResult = await requireAdmin();
   if (adminResult.error) return adminResult.error;
 
-  const targetUser = await User.findById(userId).select({ _id: 1 }).lean();
+  const targetUser = await User.findById(userId).select({ _id: 1, email: 1, name: 1 }).lean();
   if (!targetUser) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
+
+  // Store email info before deletion
+  const userEmail = targetUser.email;
+  const userName = targetUser.name || "User";
 
   try {
     const [argumentsByUser, commentsByUser] = await Promise.all([
@@ -202,6 +235,16 @@ export async function DELETE(_req: Request, ctx: any) {
     ]);
 
     await User.findByIdAndDelete(targetUser._id).exec();
+
+    // Send deletion notification email
+    if (userEmail) {
+      queueEmail(async () => {
+        const { html, text } = await renderEmail(
+          AccountDeletedEmail({ name: userName, deletedBy: "admin" })
+        );
+        await sendEmail(userEmail, "Your Consensus Engine account has been deleted", html, text);
+      });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {

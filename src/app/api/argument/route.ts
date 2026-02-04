@@ -33,6 +33,16 @@ type Body = {
     evidence?: EvidenceItemInput[];
 };
 
+function queueEmail(task: () => Promise<void>, label: string) {
+    void (async () => {
+        try {
+            await task();
+        } catch (err) {
+            console.error(label, err);
+        }
+    })();
+}
+
 export async function POST(req: Request) {
     await dbConnect();
 
@@ -522,12 +532,14 @@ export async function PATCH(req: Request) {
                 const argumentUrl = `${baseUrl}/topics/${topicId}#argument-${targetId}`;
                 const name = author.name?.trim() || "there";
                 const subject = "Your post has been approved";
-                const { html, text } = await renderEmail(PostApprovedEmail({
-                    name,
-                    postUrl: argumentUrl,
-                    label: "post",
-                }));
-                await sendEmail(author.email, subject, html, text);
+                queueEmail(async () => {
+                    const { html, text } = await renderEmail(PostApprovedEmail({
+                        name,
+                        postUrl: argumentUrl,
+                        label: "post",
+                    }));
+                    await sendEmail(author.email, subject, html, text);
+                }, "Failed to send post approval email");
             }
         } catch (err) {
             console.error("Failed to send post approval email", err);

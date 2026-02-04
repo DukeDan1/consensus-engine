@@ -94,8 +94,12 @@ export default function RegisterForm() {
                     >
                         {loading ? <i className="fas fa-spinner fa-spin"></i> : "Create account"}
                     </button>
+                    <p className="text-center small text-muted mb-0 mt-1">
+                        By pressing Register, I agree to the{" "}
+                        <Link href="/terms">Privacy Policy &amp; Terms of Service</Link>.
+                    </p>
                 </form>
-                {err && <div className="alert alert-danger mt-5" role="alert">{err}</div>}
+                {err && <div className="alert alert-danger mt-3" role="alert">{err}</div>}
                 <p className="text-center mt-3">Already have an account? <Link href="/login">Log in</Link></p>
             </div>
         </div>

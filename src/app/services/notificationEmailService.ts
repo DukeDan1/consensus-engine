@@ -27,6 +27,16 @@ function getDisplayName(user: { name?: string | null; nickname?: string | null }
   return user.name?.trim() || user.nickname?.trim() || "there";
 }
 
+function queueEmail(task: () => Promise<void>, label: string) {
+  void (async () => {
+    try {
+      await task();
+    } catch (err) {
+      console.error(label, err);
+    }
+  })();
+}
+
 export async function sendNotificationEmails(options: NotificationEmailOptions): Promise<string[]> {
   const uniqueIds = Array.from(new Set(options.recipientIds.filter(Boolean)));
   if (!uniqueIds.length) return [];
@@ -43,11 +53,11 @@ export async function sendNotificationEmails(options: NotificationEmailOptions):
 
   if (!recipients.length) return [];
 
-  await Promise.all(
-    recipients.map(async (recipient) => {
-      if (!recipient?.email) return;
-      const name = getDisplayName(recipient);
-      const appUrl = getBaseUrlFromActionUrl(options.actionUrl);
+  recipients.forEach((recipient) => {
+    if (!recipient?.email) return;
+    const name = getDisplayName(recipient);
+    const appUrl = getBaseUrlFromActionUrl(options.actionUrl);
+    queueEmail(async () => {
       const { html, text } = await renderEmail(ActivityNotificationEmail({
         name,
         message: options.message,
@@ -56,9 +66,9 @@ export async function sendNotificationEmails(options: NotificationEmailOptions):
         preview: options.preview,
         appUrl,
       }));
-      await sendEmail(recipient.email, options.subject, html, text);
-    })
-  );
+      await sendEmail(recipient.email as string, options.subject, html, text);
+    }, "Failed to send notification email");
+  });
 
   return recipients
     .map((recipient) => recipient?._id?.toString?.() ?? "")
