@@ -23,7 +23,10 @@ export async function getAIAnalysisForArgument(argumentText: string, topicName: 
         input: [
             {
                 role: "developer",
-                content: `The argument is made in the context of the topic: "${topicName}".`
+                content:
+                    `The argument is made in the context of the topic: "${topicName}".` +
+                    " If the argument appears factual or makes specific verifiable claims, use the web search tool to verify." +
+                    " Only mark something as factual when it can be supported by reliable sources. Always use the `analyse_argument` function to analyse the argument, whether or not you choose to use web search."
             },
             {
                 role: "user",
@@ -33,12 +36,10 @@ export async function getAIAnalysisForArgument(argumentText: string, topicName: 
         model: routed.model,
         safety_identifier: userId ? String(userId) : "system",
         ...(routed.provider === "grok" ? {} : { reasoning: { effort: "low" } }),
-        tool_choice: {
-            type: "function",
-            name: "analyse_argument"
-        },
+        tool_choice: "required",
         store: true,
         tools: [
+            { type: "web_search" },
             {
                 type: "function",
                 name: "analyse_argument",
@@ -52,7 +53,7 @@ export async function getAIAnalysisForArgument(argumentText: string, topicName: 
                         },
                         factualPart: {
                             type: "string",
-                            description: "The factual part of the argument, if applicable. Empty string if not applicable. Reword the argument to be purely factual."
+                            description: "The factual part of the argument, if applicable. Empty string if not applicable. Reword the argument to be purely factual. If there are no facts in the argument, return an empty string."
                         },
                         side: {
                             type: "string",

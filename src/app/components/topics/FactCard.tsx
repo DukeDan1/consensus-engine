@@ -6,17 +6,22 @@ type FactCardProps = {
     fact: {
         id: string;
         text: string;
-        sourceArgument: string;
+        sourceArgument?: string;
+        sourceComment?: string;
         createdAt?: string;
     };
     topicId: string;
 };
 
 export default function FactCard({ fact, topicId }: FactCardProps) {
-    const hasSource = Boolean(fact.sourceArgument);
-    const argumentHref = hasSource
-        ? `/topics/${encodeURIComponent(topicId)}#argument-${fact.sourceArgument}`
-        : undefined;
+    const hasCommentSource = Boolean(fact.sourceComment);
+    const hasArgumentSource = Boolean(fact.sourceArgument);
+    const sourceHref = hasCommentSource
+        ? `/topics/${encodeURIComponent(topicId)}#comment-${fact.sourceComment}`
+        : hasArgumentSource
+            ? `/topics/${encodeURIComponent(topicId)}#argument-${fact.sourceArgument}`
+            : undefined;
+    const sourceLabel = hasCommentSource ? "View source comment" : "View source argument";
 
     return (
         <li key={fact.id} className="list-group-item">
@@ -24,12 +29,12 @@ export default function FactCard({ fact, topicId }: FactCardProps) {
                 <div style={{ maxWidth: "80%" }}>
                     <strong>Fact:</strong> {fact.text}
                     <div className="small mt-1">
-                        {argumentHref ? (
-                            <Link href={argumentHref} className="btn btn-link p-0 align-baseline">
-                                View source argument
+                        {sourceHref ? (
+                            <Link href={sourceHref} className="btn btn-link p-0 align-baseline">
+                                {sourceLabel}
                             </Link>
                         ) : (
-                            <span className="text-muted">Source argument unavailable</span>
+                            <span className="text-muted">Source unavailable</span>
                         )}
                     </div>
                 </div>

@@ -25,7 +25,7 @@ export async function GET(_request: NextRequest, ctx: any) {
         const facts = await Fact.find({ topic: topicObjectId })
             .sort({ createdAt: -1 })
             .limit(200)
-            .select({ text: 1, sourceArgument: 1, createdAt: 1 })
+            .select({ text: 1, sourceArgument: 1, sourceComment: 1, createdAt: 1 })
             .lean();
 
         return NextResponse.json({
@@ -34,6 +34,7 @@ export async function GET(_request: NextRequest, ctx: any) {
                 id: fact._id?.toString?.() ?? "",
                 text: fact.text,
                 sourceArgument: fact.sourceArgument?.toString?.() ?? "",
+                sourceComment: fact.sourceComment?.toString?.() ?? "",
                 createdAt: fact.createdAt,
             })),
         });

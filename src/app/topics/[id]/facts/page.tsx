@@ -9,7 +9,8 @@ type FactsResponse = {
     facts: Array<{
         id: string;
         text: string;
-        sourceArgument: string;
+        sourceArgument?: string;
+        sourceComment?: string;
         createdAt?: string;
     }>;
 };
