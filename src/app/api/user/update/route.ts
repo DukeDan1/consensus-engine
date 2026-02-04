@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/app/lib/mongoose"; // your mongoose connector
 import { updateUserProfileByEmail } from "@/app/services/userProfileService";
+import { getAuthSession } from "@/app/services/authSessionService";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   await dbConnect();
-  const session = await getServerSession();
-  if (!session?.user?.email) {
+  const session = await getAuthSession(req);
+  if (!session?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     }
   }
   const user = await updateUserProfileByEmail(
-    session.user.email,
+    session.email,
     body,
     hasAvatarModeration ? { allowModeration: true } : undefined
   );

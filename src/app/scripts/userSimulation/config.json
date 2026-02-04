@@ -1,0 +1,6 @@
+{
+    "appUrl": "http://localhost:3000",
+    "baseEmailAddress": "danieltshields@yahoo.com",
+    "numUsers": 10,
+    "concurrency": 10
+}

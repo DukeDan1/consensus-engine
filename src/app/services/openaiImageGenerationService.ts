@@ -1,9 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { routeResponsesClient } from './aiRoutingService';
 
 type Gender = "male" | "female";
 
@@ -27,6 +23,29 @@ type HairColor =
   | "auburn"
   | "grey"
   | "white";
+
+export const genderOptions = ["male", "female"] as Gender[];
+export const hairColorOptions = [
+  "black",
+  "dark brown",
+  "brown",
+  "light brown",
+  "blonde",
+  "red",
+  "auburn",
+  "grey",
+  "white",
+] as HairColor[];
+export const ethnicityOptions = [
+  "East Asian (light to medium skin tone)",
+  "South Asian (medium to deep skin tone)",
+  "Black (deep skin tone)",
+  "White (light skin tone)",
+  "Middle Eastern (medium skin tone)",
+  "Latino (light to medium skin tone)",
+  "Southeast Asian (medium skin tone)",
+  "North African (medium to deep skin tone)",
+] as EthnicitySkin[];
 
 export type ProfilePromptArgs = {
   gender: Gender;                // male | female
@@ -118,13 +137,22 @@ export function buildPhotorealisticProfilePrompt({
 
 export async function generateProfileImage(promptArgs: ProfilePromptArgs, userId?: string): Promise<string> {
     const prompt = buildPhotorealisticProfilePrompt(promptArgs);
-    const response = await openai.images.generate({
-        model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-1.5",
+    const routed = await routeResponsesClient({
+      text: prompt,
+      openAiModel: process.env.OPENAI_IMAGE_MODEL || "gpt-image-1.5",
+      grokModel: process.env.GROK_IMAGE_MODEL || "grok-imagine-image",
+    });
+    if (!routed) {
+      throw new Error("OpenAI client not configured for image generation");
+    }
+
+    const response = await routed.client.images.generate({
+        model: routed.model,
         prompt: prompt,
         n: 1,
-        size: "1024x1024",
         quality: "low",
         user: userId ? String(userId) : "system",
+        ...(routed.provider === 'grok' ? { response_format: "b64_json" } : { size: "1024x1024" }),
     });
     return response?.data?.[0]?.b64_json || "";
 }

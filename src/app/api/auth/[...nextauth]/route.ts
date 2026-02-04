@@ -10,6 +10,7 @@ import { hashPassword, comparePassword } from '@/app/services/passwordService';
 import { dbConnect } from '@/app/lib/mongoose';
 import User from '@/app/models/user';
 import { getSignedReadUrlFromUrl } from '@/app/services/gcsService';
+import { recordLogin } from '../login/route';
 
 // Extend the Session user type to include 'id'
 declare module 'next-auth' {
@@ -49,7 +50,7 @@ const handler = NextAuth({
         password: { label: 'Password', type: 'password' },
         gdprConsent: { label: 'GDPR Consent', type: 'checkbox' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         const { email, password, gdprConsent } = credentials!;
         await dbConnect();
 
@@ -73,6 +74,9 @@ const handler = NextAuth({
         if (user.isSuspended) {
           throw new Error('AccountSuspended');
         }
+
+        const ip = req?.headers?.get?.("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+        void recordLogin(user.email, ip);
 
         return {
           id: user._id.toString(),
