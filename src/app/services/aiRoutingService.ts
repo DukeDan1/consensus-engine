@@ -36,8 +36,8 @@ async function isFlaggedByModeration(text: string): Promise<boolean> {
     });
     return Boolean(moderation.results?.[0]?.flagged);
   } catch (err) {
-    console.warn("Moderation routing check failed; defaulting to OpenAI.", err);
-    return false;
+    console.warn("Moderation routing check failed; defaulting to Grok.", err);
+    return true;
   }
 }
 

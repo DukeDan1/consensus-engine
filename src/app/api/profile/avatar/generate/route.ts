@@ -1,40 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { generateProfileImage } from "@/app/services/openaiImageGenerationService";
 import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
-
-const genderOptions = ["male", "female"] as const;
-const hairColorOptions = [
-  "black",
-  "dark brown",
-  "brown",
-  "light brown",
-  "blonde",
-  "red",
-  "auburn",
-  "grey",
-  "white",
-] as const;
-const ethnicityOptions = [
-  "East Asian (light to medium skin tone)",
-  "South Asian (medium to deep skin tone)",
-  "Black (deep skin tone)",
-  "White (light skin tone)",
-  "Middle Eastern (medium skin tone)",
-  "Latino (light to medium skin tone)",
-  "Southeast Asian (medium skin tone)",
-  "North African (medium to deep skin tone)",
-] as const;
+import { genderOptions, hairColorOptions, ethnicityOptions } from "@/app/services/openaiImageGenerationService";
+import { getAuthSession } from "@/app/services/authSessionService";
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession();
-  if (!session?.user?.email) {
+  const session = await getAuthSession(request);
+  if (!session?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   await dbConnect();
-  const user = await User.findOne({ email: session.user.email }).select({ _id: 1 }).lean();
-  const userId = user?._id?.toString?.() ?? session.user.id ?? session.user.email;
+  const user = await User.findOne({ email: session.email }).select({ _id: 1 }).lean();
+  const userId = user?._id?.toString?.() ?? session.id ?? session.email;
 
   const payload = await request.json().catch(() => ({}));
   const gender = payload?.gender;

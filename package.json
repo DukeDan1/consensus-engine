@@ -13,7 +13,8 @@
     "populate": "tsx src/app/scripts/populate.ts",
     "generate-embeddings": "tsx src/app/scripts/generate-embeddings.ts",
     "generate-data": "tsx src/app/scripts/generate-data.ts",
-    "set-admin": "tsx src/app/scripts/setAdmin.ts"
+    "set-admin": "tsx src/app/scripts/setAdmin.ts",
+    "user-simulation-create-users": "tsx src/app/scripts/userSimulation/createUsers.ts"
   },
   "dependencies": {
     "@azure/communication-email": "^1.1.0",
@@ -31,6 +32,7 @@
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
     "email-validator": "^2.0.4",
+    "generate-password": "^1.7.1",
     "mongodb": "^5.9.2",
     "mongoose": "^9.0.0",
     "next": "^16.1.4",
