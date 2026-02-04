@@ -172,7 +172,8 @@ export type TopicApiResponse = {
   facts?: Array<{
     id: string;
     text: string;
-    sourceArgument: string; // argument id fact was derived from
+    sourceArgument?: string; // argument id fact was derived from
+    sourceComment?: string; // comment id fact was derived from
     createdAt?: string;
   }>;
   meta: {

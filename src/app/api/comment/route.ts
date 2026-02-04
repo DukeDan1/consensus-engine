@@ -24,6 +24,8 @@ import { hasTopicModeratorRole, maybeAutoPromoteModerator } from "@/app/services
 import { notifyModeratorStatusChange } from "@/app/services/moderatorNotificationService";
 import { factCheckEvidenceItems } from "@/app/services/evidenceFactCheckService";
 import { factCheckPostContent } from "@/app/services/contentFactCheckService";
+import { getAIAnalysisForArgument } from "@/app/services/openaiService";
+import Fact from "@/app/models/facts";
 
 type Body = {
     argumentId: string;
@@ -173,6 +175,8 @@ export async function POST(req: Request) {
         }
 
         const backgroundTask = (async () => {
+            let analysis: Awaited<ReturnType<typeof getAIAnalysisForArgument>> | null = null;
+
             try {
                 const classifications = await classifyTextToOntology(trimmed, { topK: 12, safetyIdentifier: user._id.toString() }).catch((err) => {
                     console.error("Comment classification failed", err);
@@ -184,6 +188,28 @@ export async function POST(req: Request) {
                 }
             } catch (err) {
                 console.error("Async comment classification failed", err);
+            }
+
+            try {
+                const topicObjId = topicId ? new mongoose.Types.ObjectId(topicId) : null;
+                if (topicObjId) {
+                    const topicTitle = await Topic.findById(topicObjId).select({ title: 1 }).lean();
+                    analysis = await getAIAnalysisForArgument(trimmed, topicTitle?.title ?? "", user._id.toString());
+                    if (analysis?.isFact && analysis?.factualPart) {
+                        const existing = await Fact.findOne({ sourceComment: created._id }).lean();
+                        if (!existing) {
+                            await Fact.create({
+                                linkedArguments: [],
+                                linkedComments: [created._id],
+                                topic: topicObjId,
+                                text: analysis.factualPart,
+                                sourceComment: created._id,
+                            });
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Comment fact extraction failed", created._id, err);
             }
 
             if (safeEvidence.length) {

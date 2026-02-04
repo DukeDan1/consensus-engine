@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { timeAgo } from "@/app/lib/commonFunctions";
 import ConfirmModal from "@/app/components/ui/ConfirmModal";
+import CollapsibleText from "@/app/components/CollapsibleText";
 
 type VisibilityInfo = {
   status?: string;
@@ -486,7 +487,12 @@ export default function ModerationQueue({
                         </button>
                       </div>
                     </div>
-                    <p className="mt-2 mb-1">{snippet(argument.body, 260)}</p>
+                    <CollapsibleText
+                      text={argument.body}
+                      limit={500}
+                      id={`moderation-argument-${argument.id}`}
+                      className="mt-2 mb-1"
+                    />
                     {visibility?.reason && <div className="small text-muted">Reason: {visibility.reason}</div>}
                     {visibility?.spamLikelihood !== undefined && (
                       <div className="small text-muted">Spam likelihood: {visibility.spamLikelihood}</div>
@@ -548,7 +554,12 @@ export default function ModerationQueue({
                         </button>
                       </div>
                     </div>
-                    <p className="mt-2 mb-1">{snippet(comment.body, 220)}</p>
+                    <CollapsibleText
+                      text={comment.body}
+                      limit={500}
+                      id={`moderation-comment-${comment.id}`}
+                      className="mt-2 mb-1"
+                    />
                     {visibility?.reason && <div className="small text-muted">Reason: {visibility.reason}</div>}
                     {visibility?.spamLikelihood !== undefined && (
                       <div className="small text-muted">Spam likelihood: {visibility.spamLikelihood}</div>

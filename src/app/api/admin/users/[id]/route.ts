@@ -147,6 +147,7 @@ export async function DELETE(_req: Request, ctx: any) {
     await deleteEvidenceFilesForDocuments([...(argumentsByUser ?? []), ...(commentsByUser ?? [])]);
 
     const argumentIds = (argumentsByUser ?? []).map((arg: any) => arg._id);
+    const commentIds = (commentsByUser ?? []).map((comment: any) => comment._id);
 
     await Promise.all([
       Comment.deleteMany({ createdBy: targetUser._id }).exec(),
@@ -154,8 +155,13 @@ export async function DELETE(_req: Request, ctx: any) {
       Topic.updateMany({ createdBy: targetUser._id }, { isActive: false }).exec(),
     ]);
 
-    if (argumentIds.length) {
-      await Fact.deleteMany({ sourceArgument: { $in: argumentIds } }).exec();
+    if (argumentIds.length || commentIds.length) {
+      await Fact.deleteMany({
+        $or: [
+          ...(argumentIds.length ? [{ sourceArgument: { $in: argumentIds } }] : []),
+          ...(commentIds.length ? [{ sourceComment: { $in: commentIds } }] : []),
+        ],
+      }).exec();
     }
 
     const votes = await Vote.find({ user: targetUser._id })

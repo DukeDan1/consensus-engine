@@ -459,7 +459,7 @@ export async function GET(
   const facts = await Fact.find({ topic: topic._id })
     .sort({ createdAt: -1 })
     .limit(100)
-    .select({ text: 1, sourceArgument: 1, createdAt: 1 })
+    .select({ text: 1, sourceArgument: 1, sourceComment: 1, createdAt: 1 })
     .lean();
 
   const response = {
@@ -538,6 +538,7 @@ export async function GET(
       id: f._id,
       text: f.text,
       sourceArgument: f.sourceArgument?.toString?.() || "",
+      sourceComment: f.sourceComment?.toString?.() || "",
       createdAt: f.createdAt,
     })),
     meta: {

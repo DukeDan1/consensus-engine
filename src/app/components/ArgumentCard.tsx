@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
 import { TopicApiResponse } from "@/app/types/topicApiResponse";
 import AddNewCommentComponent from "@/app/components/AddNewCommentComponent";
+import CollapsibleText from "@/app/components/CollapsibleText";
 import { timeAgo } from "@/app/lib/commonFunctions";
 import ConfirmModal from "@/app/components/ui/ConfirmModal";
 import UserIdentity from "@/app/components/users/UserIdentity";
@@ -757,7 +758,12 @@ export default function ArgumentCard({
                             </div>
                         )}
                         <ContentFactCheckNotice factCheck={(argument as any).contentFactCheck} />
-                        <p className="mb-2 mt-2" style={{ whiteSpace: "pre-wrap" }}>{argument.body}</p>
+                        <CollapsibleText
+                            text={argument.body}
+                            limit={500}
+                            id={`argument-body-${argument.id}`}
+                            className="mb-2 mt-2"
+                        />
                         <EvidenceList evidence={(argument as any).evidence} />
                         {/* Ontology tags removed as not needed */}
 
@@ -896,7 +902,12 @@ export default function ArgumentCard({
                                                 <div className="ps-2 mb-2 mt-2">
                                                     <ContentFactCheckNotice factCheck={(c as any).contentFactCheck} compact />
                                                 </div>
-                                                <div className="ps-2 mb-2" style={{ whiteSpace: "pre-wrap" }}>{c.body}</div>
+                                                <CollapsibleText
+                                                    text={c.body}
+                                                    limit={500}
+                                                    id={`comment-body-${c.id}`}
+                                                    className="ps-2 mb-2"
+                                                />
                                                 <div className="ps-2 mb-2">
                                                     <EvidenceList evidence={(c as any).evidence} />
                                                 </div>
