@@ -22,7 +22,7 @@ const FactSchema = new Schema<IFact>({
 
 FactSchema.index({ topic: 1, createdAt: -1 });
 
-FactSchema.pre("validate", function (this: IFact) {
+FactSchema.pre("validate", function () {
     if (!this.sourceArgument && !this.sourceComment) {
         throw new Error("Fact must reference a source argument or source comment.");
     }
