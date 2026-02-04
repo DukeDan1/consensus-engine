@@ -70,6 +70,8 @@ const mockHasTopicModeratorRole = vi.hoisted(() => vi.fn());
 const mockMaybeAutoPromoteModerator = vi.hoisted(() => vi.fn());
 const mockMaybeDemoteModeratorForTopic = vi.hoisted(() => vi.fn());
 const mockNotifyModeratorStatusChange = vi.hoisted(() => vi.fn());
+const mockIssueBearerToken = vi.hoisted(() => vi.fn());
+const mockGetAuthTokenFromRequest = vi.hoisted(() => vi.fn());
 let capturedNextAuthOptions: any = undefined;
 
 vi.mock('mongoose', () => {
@@ -135,10 +137,25 @@ vi.mock('@/app/services/topicModeratorService', () => ({
   maybeDemoteModeratorForTopic: mockMaybeDemoteModeratorForTopic,
 }));
 vi.mock('@/app/services/moderatorNotificationService', () => ({ notifyModeratorStatusChange: mockNotifyModeratorStatusChange }));
-vi.mock('@/app/services/openaiImageGenerationService', () => ({ generateProfileImage: mockGenerateProfileImage }));
+vi.mock('@/app/services/openaiImageGenerationService', () => ({
+  generateProfileImage: mockGenerateProfileImage,
+  genderOptions: ['male', 'female'],
+  hairColorOptions: ['black', 'dark brown', 'brown', 'light brown', 'blonde', 'red', 'auburn', 'grey', 'white'],
+  ethnicityOptions: [
+    'East Asian (light to medium skin tone)',
+    'South Asian (medium to deep skin tone)',
+    'Black (deep skin tone)',
+    'White (light skin tone)',
+    'Middle Eastern (medium skin tone)',
+    'Latino (light to medium skin tone)',
+    'Southeast Asian (medium skin tone)',
+    'North African (medium to deep skin tone)',
+  ],
+}));
 vi.mock('@/app/lib/backgroundTasks', () => ({ trackBackgroundTask: mockTrackBackgroundTask }));
 vi.mock('@/app/services/authService', () => ({ findUserByEmailOrPhone: mockFindUserByEmailOrPhone, createUser: mockCreateUser }));
 vi.mock('@/app/services/passwordService', () => ({ hashPassword: mockHashPassword, comparePassword: mockComparePassword }));
+vi.mock('@/app/services/authTokenService', () => ({ issueBearerToken: mockIssueBearerToken, getAuthTokenFromRequest: mockGetAuthTokenFromRequest, AUTH_TOKEN_MAX_AGE_SECONDS: 30 * 24 * 60 * 60 }));
 vi.mock('@next-auth/mongodb-adapter', () => ({ MongoDBAdapter: mockMongoDbAdapter }));
 vi.mock('@/app/lib/mongodbClient', () => ({ getConnectedMongoClient: mockGetConnectedMongoClient }));
 vi.mock('next-auth/providers/credentials', () => ({ __esModule: true, default: mockCredentialsProvider }));
@@ -994,12 +1011,22 @@ describe('POST /api/auth/login', () => {
 
   it('logs successful request and updates history', async () => {
     const save = vi.fn().mockResolvedValue(undefined);
+    mockFindUserByEmailOrPhone.mockResolvedValue({
+      _id: { toString: () => 'user1' },
+      email: 'login@test.com',
+      name: 'Test User',
+      passwordHash: 'hashedpw',
+      loginHistory: [],
+      save,
+    });
+    mockComparePassword.mockResolvedValue(true);
     mockUserFindOne.mockResolvedValue({ loginHistory: [], save });
+    mockIssueBearerToken.mockResolvedValue('test-token');
 
     const req = new Request('http://localhost/api/auth/login', {
       method: 'POST',
       headers: new Headers({ 'x-forwarded-for': '1.1.1.1' }),
-      body: JSON.stringify({ email: 'login@test.com' })
+      body: JSON.stringify({ email: 'login@test.com', password: 'password123' })
     });
 
     const res = await authLoginPost(req as any);
@@ -1007,8 +1034,9 @@ describe('POST /api/auth/login', () => {
 
     expect(res.status).toBe(200);
     expect(json.success).toBe(true);
-    expect(mockUserFindOne).toHaveBeenCalledWith({ email: 'login@test.com' });
-    expect(save).toHaveBeenCalled();
+    expect(json.token).toBe('test-token');
+    expect(mockFindUserByEmailOrPhone).toHaveBeenCalledWith('login@test.com');
+    expect(mockComparePassword).toHaveBeenCalledWith('password123', 'hashedpw');
   });
 });
 

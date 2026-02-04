@@ -193,7 +193,7 @@ describe("aiRoutingService", () => {
       expect(mockModerationCreate).not.toHaveBeenCalled();
     });
 
-    it("falls back to OpenAI when moderation check fails", async () => {
+    it("falls back to Grok when moderation check fails", async () => {
       mockModerationCreate.mockRejectedValueOnce(new Error("API error"));
 
       const { routeResponsesClient } = await loadModule({
@@ -204,7 +204,7 @@ describe("aiRoutingService", () => {
 
       const result = await routeResponsesClient({ text: "Some text" });
 
-      expect(result?.provider).toBe("openai");
+      expect(result?.provider).toBe("grok");
     });
 
     it("handles empty moderation results gracefully", async () => {
