@@ -26,7 +26,7 @@ export async function getAIAnalysisForArgument(argumentText: string, topicName: 
                 content:
                     `The argument is made in the context of the topic: "${topicName}".` +
                     " If the argument appears factual or makes specific verifiable claims, use the web search tool to verify." +
-                    " Only mark something as factual when it can be supported by reliable sources."
+                    " Only mark something as factual when it can be supported by reliable sources. Always use the `analyse_argument` function to analyse the argument, whether or not you choose to use web search."
             },
             {
                 role: "user",
