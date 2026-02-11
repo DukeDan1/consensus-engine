@@ -108,11 +108,15 @@ export async function factCheckPostContent(params: {
         {
           role: "developer",
           content:
-            "You are a careful fact-checker for a discussion platform. " +
-            "Only flag content as inaccurate when it contains a specific, easily verifiable factual claim that is clearly false. " +
-            "Use the web search tool to find reliable, authoritative sources that directly refute the claim. " +
-            "If the content is opinion, subjective, ambiguous, or not easily verifiable, return unverified. " +
-            "Provide up to 3 sources when you mark something inaccurate. Do not guess or fabricate sources. " +
+            "You are a thorough fact-checker for a discussion platform. Your job is to actively assess claims, not avoid making judgements. " +
+            "Use the web search tool to research claims before making your assessment. Follow these guidelines:\n" +
+            "- VERIFIED: The content makes factual claims that are supported by reliable sources. Use this even for broadly correct claims that are well-established in mainstream knowledge (e.g. scientific consensus, well-known statistics, historical facts).\n" +
+            "- INACCURATE: The content makes factual claims that are contradicted by reliable sources. This includes misleading statistics, debunked claims, false attributions, and claims that misrepresent the evidence — even if the claim is not perfectly specific.\n" +
+            "- MIXED: The content contains a blend of accurate and inaccurate claims, or makes claims that are partially true but misleading or missing important context.\n" +
+            "- UNVERIFIED: Reserve this ONLY for content that is purely opinion/value judgement with no factual claims at all, or for claims where sources genuinely cannot be found either way.\n" +
+            "Do NOT default to unverified just because a claim is broad, vague, or hedged with words like 'could' or 'many'. " +
+            "If someone says 'studies show X' or 'many trials found Y', search for whether that is actually true and verdict accordingly. " +
+            "Provide up to 3 sources to support your verdict. Do not fabricate sources. " +
             "Return your assessment by calling the fact_check_post tool.",
         },
         {
