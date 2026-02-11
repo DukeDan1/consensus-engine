@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthSession } from "@/app/services/authSessionService";
 import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
@@ -15,15 +15,15 @@ async function signAvatar(url?: string | null) {
   return getSignedReadUrlFromUrl(url).catch(() => url);
 }
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   await dbConnect();
 
-  const session = await getServerSession();
-  if (!session?.user?.email) {
+  const authSession = await getAuthSession(req);
+  if (!authSession?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const user = await User.findOne({ email: session.user.email }).select({ _id: 1 }).lean();
+  const user = await User.findOne({ email: authSession.email }).select({ _id: 1 }).lean();
   if (!user?._id) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
@@ -106,15 +106,15 @@ export async function GET(req: Request) {
   return NextResponse.json({ notifications: results }, { status: 200 });
 }
 
-export async function PATCH(req: Request) {
+export async function PATCH(req: NextRequest) {
   await dbConnect();
 
-  const session = await getServerSession();
-  if (!session?.user?.email) {
+  const authSession = await getAuthSession(req);
+  if (!authSession?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const user = await User.findOne({ email: session.user.email }).select({ _id: 1 }).lean();
+  const user = await User.findOne({ email: authSession.email }).select({ _id: 1 }).lean();
   if (!user?._id) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }

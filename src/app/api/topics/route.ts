@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { dbConnect } from "@/app/lib/mongoose";
 import Topic from "@/app/models/topic";
 import User from "@/app/models/user";
-import { getServerSession } from "next-auth";
+import { getAuthSession } from "@/app/services/authSessionService";
 import { trackBackgroundTask } from "@/app/lib/backgroundTasks";
 import { classifyTextToOntology, classificationToAssignments } from "@/app/services/ontologyClassificationService";
 import { moderateUserGeneratedText, moderationToVisibility } from "@/app/services/moderationService";
@@ -318,12 +318,12 @@ export async function GET(request: NextRequest) {
 // POST /api/topics
 export async function POST(request: NextRequest) {
   await dbConnect();
-  const session = await getServerSession();
-  if (!session?.user?.email) {
+  const authSession = await getAuthSession(request);
+  if (!authSession?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const creator = await User.findOne({ email: session.user.email }).exec();
+  const creator = await User.findOne({ email: authSession.email }).exec();
   if (!creator) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }

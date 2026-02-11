@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthSession } from "@/app/services/authSessionService";
 import { dbConnect } from "@/app/lib/mongoose";
 import Vote from "@/app/models/vote";
 import Argument from "@/app/models/argument";
@@ -17,15 +17,15 @@ type Body = {
     value: 1 | -1;
 };
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     await dbConnect();
 
-    const session = await getServerSession();
-    if (!session?.user?.email) {
+    const authSession = await getAuthSession(req);
+    if (!authSession?.email) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await User.findOne({ email: session.user.email }).exec();
+    const user = await User.findOne({ email: authSession.email }).exec();
     if (!user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

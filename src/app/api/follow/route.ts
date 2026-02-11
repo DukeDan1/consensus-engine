@@ -1,19 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
-import { getServerSession } from "next-auth";
+import { getAuthSession } from "@/app/services/authSessionService";
 import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
 import UserFollow from "@/app/models/userFollow";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   await dbConnect();
 
-  const session = await getServerSession();
-  if (!session?.user?.email) {
+  const authSession = await getAuthSession(req);
+  if (!authSession?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const viewer = await User.findOne({ email: session.user.email }).select({ _id: 1 }).lean();
+  const viewer = await User.findOne({ email: authSession.email }).select({ _id: 1 }).lean();
   if (!viewer?._id) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
@@ -43,15 +43,15 @@ export async function GET(req: Request) {
   return NextResponse.json({ following: Boolean(existing) }, { status: 200 });
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   await dbConnect();
 
-  const session = await getServerSession();
-  if (!session?.user?.email) {
+  const authSession = await getAuthSession(req);
+  if (!authSession?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const viewer = await User.findOne({ email: session.user.email }).select({ _id: 1 }).lean();
+  const viewer = await User.findOne({ email: authSession.email }).select({ _id: 1 }).lean();
   if (!viewer?._id) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
