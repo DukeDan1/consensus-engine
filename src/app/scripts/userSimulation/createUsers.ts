@@ -70,8 +70,75 @@ function ensureUniqueUsername(base: string, existing: Set<string>): string {
     return candidate;
 }
 
+// ────────────────────────── Diversity Steering ──────────────────────────
+// Cultural-region pool used to nudge each generated user toward a different
+// background.  The pool is shuffled once per simulation run and regions are
+// assigned round-robin so every batch gets maximum spread.
+
+const CULTURAL_REGIONS = [
+    "Japanese", "Korean", "Chinese", "Vietnamese", "Thai",
+    "Indian (Hindi-speaking)", "Indian (Tamil-speaking)", "Pakistani", "Bangladeshi", "Sri Lankan",
+    "Nigerian", "Kenyan", "Ethiopian", "South African", "Ghanaian", "Senegalese",
+    "Mexican", "Colombian", "Brazilian", "Argentine", "Peruvian", "Chilean",
+    "German", "French", "Italian", "Polish", "Dutch", "Swedish", "Greek", "Irish", "Scottish",
+    "Russian", "Ukrainian", "Turkish", "Iranian", "Egyptian", "Lebanese",
+    "Filipino", "Indonesian", "Malaysian",
+    "Australian", "Canadian (Quebecois)", "Jamaican", "Trinidadian",
+    "Native American", "Maori (New Zealand)", "Aboriginal Australian",
+    "Arab (Gulf region)", "Israeli", "Kurdish",
+    "African-American", "British (English)", "American (Southern US)", "American (Midwest)",
+];
+
+function shuffleArray<T>(arr: T[]): T[] {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+}
+
+const shuffledRegions = shuffleArray(CULTURAL_REGIONS);
+let regionIndex = 0;
+
+function nextRegion(): string {
+    const region = shuffledRegions[regionIndex % shuffledRegions.length];
+    regionIndex++;
+    return region;
+}
+
+// Track generated demographics to give the AI explicit "avoid" instructions
+const generatedNames: string[] = [];
+const generatedGenders: string[] = [];
+
+function buildDiversityContext(): string {
+    const parts: string[] = [];
+    if (generatedNames.length > 0) {
+        parts.push(`Names already used (DO NOT repeat or use similar names): ${generatedNames.join(", ")}`);
+    }
+    const genderCounts: Record<string, number> = {};
+    for (const g of generatedGenders) {
+        genderCounts[g] = (genderCounts[g] || 0) + 1;
+    }
+    const most = Object.entries(genderCounts).sort((a, b) => b[1] - a[1])[0];
+    if (most && most[1] >= 2) {
+        const others = genderOptions.filter((g: string) => g !== most[0]);
+        parts.push(`Gender balance: "${most[0]}" has been generated ${most[1]} time(s) already — strongly prefer one of: ${others.join(", ")}`);
+    }
+    return parts.join("\n");
+}
+
 async function generateUser(existingUsernames: Set<string>): Promise<GeneratedUserProfile> {
-    const prompt = `Generate a simulated user profile for a web application.`;
+    const region = nextRegion();
+    const diversityContext = buildDiversityContext();
+    const prompt = [
+        `Generate a simulated user profile for a web application.`,
+        `This user should have a name and background typical of someone from a ${region} cultural background.`,
+        `Use an authentic first name common in that culture — DO NOT default to generic Western names like Maria, John, etc.`,
+        `Vary age widely (18-85). Mix genders evenly across the simulation.`,
+        diversityContext,
+    ].filter(Boolean).join("\n");
+
     const routed = await routeResponsesClient({
         text: prompt,
         openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
@@ -84,7 +151,12 @@ async function generateUser(existingUsernames: Set<string>): Promise<GeneratedUs
         input: [
             {
                 role: "system",
-                content: "You are a helpful assistant that generates realistic but fictional user profiles for testing purposes.",
+                content: [
+                    "You are a helpful assistant that generates realistic but fictional user profiles for testing purposes.",
+                    "CRITICAL: Each profile must be unique and culturally diverse.",
+                    "Use authentic names from the specified cultural background — not anglicised or generic versions.",
+                    "Vary age, gender, hair color, and ethnicity. Never repeat a name or produce near-duplicates.",
+                ].join(" "),
             },
             {
                 role: "user",
@@ -147,6 +219,9 @@ async function generateUser(existingUsernames: Set<string>): Promise<GeneratedUs
         if (item.type === "function_call" && item.name === "generate_user_profile") {
             const parsed = parseFunctionCallArguments<GeneratedUserProfile>(item.arguments);
             const username = ensureUniqueUsername(parsed.username, existingUsernames);
+            // Track for diversity steering
+            generatedNames.push(parsed.name);
+            generatedGenders.push(parsed.gender);
             return { ...parsed, username };
         }
     }
@@ -265,7 +340,7 @@ async function processUser(
     const label = `[User ${index + 1}/${total}]`;
     console.log(`\n${label} Generating profile...`);
     const profile = await generateUser(existingUsernames);
-    console.log(`${label} Generated username: ${profile.username}`);
+    console.log(`${label} Generated: ${profile.name} (${profile.gender}, ${profile.ethnicitySkin}) → @${profile.username}`);
     const email = buildEmailFromBase(profile.username);
     const password = generatePassword({
         length: 16,

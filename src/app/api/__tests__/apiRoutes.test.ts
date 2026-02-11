@@ -100,6 +100,14 @@ vi.mock('mongoose', () => {
 
 vi.mock('@/app/lib/mongoose', () => ({ dbConnect: mockDbConnect }));
 vi.mock('next-auth', () => ({ getServerSession: mockGetServerSession }));
+vi.mock('@/app/services/authSessionService', () => ({
+  getAuthSession: vi.fn(async () => {
+    // Delegate to mockGetServerSession so existing test setups work unchanged
+    const session = await mockGetServerSession();
+    if (!session?.user?.email) return { email: null, id: null, token: null };
+    return { email: session.user.email, id: session.user.id ?? null, token: null };
+  }),
+}));
 vi.mock('@/app/models/user', () => ({ __esModule: true, default: { findOne: mockUserFindOne, find: mockUserFind, findById: mockUserFindById, findOneAndUpdate: mockUserFindOneAndUpdate } }));
 vi.mock('@/app/models/argument', () => ({ __esModule: true, default: { create: mockArgumentCreate, findByIdAndUpdate: mockArgumentFindByIdAndUpdate, find: mockArgumentFind, findById: mockArgumentFindById, aggregate: mockArgumentAggregate }, ArgumentSide: { for: 'for', against: 'against', neutral: 'neutral' } }));
 vi.mock('@/app/models/topic', () => ({ __esModule: true, default: { countDocuments: mockTopicCountDocuments, findOne: mockTopicFindOne, findById: mockTopicFindById, find: mockTopicFind, create: mockTopicCreate, findByIdAndUpdate: mockTopicFindByIdAndUpdate } }));

@@ -7,7 +7,7 @@ import Comment from "@/app/models/comment";
 import Fact from "@/app/models/facts";
 import User from "@/app/models/user";
 import { getSignedReadUrlFromUrl } from "@/app/services/gcsService";
-import { getServerSession } from "next-auth";
+import { getAuthSession } from "@/app/services/authSessionService";
 import NotificationSubscription from "@/app/models/notificationSubscription";
 import UserFollow from "@/app/models/userFollow";
 import { hasTopicModeratorRole } from "@/app/services/topicModeratorService";
@@ -128,11 +128,11 @@ export async function GET(
     mongoose.model("User", User.schema);
   }
 
-  const session = await getServerSession();
+  const authSession = await getAuthSession(request);
   let isAdmin = false;
   let viewerId: string | null = null;
-  if (session?.user?.email) {
-    const viewer = await User.findOne({ email: session.user.email }).select({ _id: 1, isAdmin: 1 }).lean();
+  if (authSession?.email) {
+    const viewer = await User.findOne({ email: authSession.email }).select({ _id: 1, isAdmin: 1 }).lean();
     isAdmin = !!viewer?.isAdmin;
     viewerId = viewer?._id?.toString?.() ?? null;
   }
@@ -554,7 +554,7 @@ export async function GET(
   return NextResponse.json(response, { status: 200 });
 }
 
-export async function DELETE(_request: NextRequest, ctx: any) {
+export async function DELETE(request: NextRequest, ctx: any) {
   const resolvedCtx = await Promise.resolve(ctx.params);
   const id = resolvedCtx.id as string;
 
@@ -564,12 +564,12 @@ export async function DELETE(_request: NextRequest, ctx: any) {
 
   await dbConnect();
 
-  const session = await getServerSession();
-  if (!session?.user?.email) {
+  const authSession = await getAuthSession(request);
+  if (!authSession?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const user = await User.findOne({ email: session.user.email }).select({ isAdmin: 1 }).lean();
+  const user = await User.findOne({ email: authSession.email }).select({ isAdmin: 1 }).lean();
   if (!user?.isAdmin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -593,12 +593,12 @@ export async function PATCH(request: NextRequest, ctx: any) {
 
   await dbConnect();
 
-  const session = await getServerSession();
-  if (!session?.user?.email) {
+  const authSession = await getAuthSession(request);
+  if (!authSession?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const user = await User.findOne({ email: session.user.email }).select({ isAdmin: 1 }).lean();
+  const user = await User.findOne({ email: authSession.email }).select({ isAdmin: 1 }).lean();
   if (!user?.isAdmin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }

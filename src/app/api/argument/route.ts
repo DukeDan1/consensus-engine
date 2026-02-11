@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthSession } from "@/app/services/authSessionService";
 import { dbConnect } from "@/app/lib/mongoose";
 import Argument, { ArgumentSide } from "@/app/models/argument";
 import Topic from "@/app/models/topic";
@@ -33,15 +33,15 @@ type Body = {
     evidence?: EvidenceItemInput[];
 };
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     await dbConnect();
 
-    const session = await getServerSession();
-    if (!session?.user?.email) {
+    const authSession = await getAuthSession(req);
+    if (!authSession?.email) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await User.findOne({ email: session.user.email }).exec();
+    const user = await User.findOne({ email: authSession.email }).exec();
     if (!user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -395,15 +395,15 @@ export async function POST(req: Request) {
     }
 }
 
-export async function DELETE(req: Request) {
+export async function DELETE(req: NextRequest) {
     await dbConnect();
 
-    const session = await getServerSession();
-    if (!session?.user?.email) {
+    const authSession = await getAuthSession(req);
+    if (!authSession?.email) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await User.findOne({ email: session.user.email }).select({ _id: 1, isAdmin: 1 }).lean();
+    const user = await User.findOne({ email: authSession.email }).select({ _id: 1, isAdmin: 1 }).lean();
     if (!user?._id) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
@@ -448,15 +448,15 @@ export async function DELETE(req: Request) {
     }
 }
 
-export async function PATCH(req: Request) {
+export async function PATCH(req: NextRequest) {
     await dbConnect();
 
-    const session = await getServerSession();
-    if (!session?.user?.email) {
+    const authSession = await getAuthSession(req);
+    if (!authSession?.email) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await User.findOne({ email: session.user.email }).select({ _id: 1, isAdmin: 1 }).lean();
+    const user = await User.findOne({ email: authSession.email }).select({ _id: 1, isAdmin: 1 }).lean();
     if (!user?._id) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

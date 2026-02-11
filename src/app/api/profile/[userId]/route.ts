@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
-import { getServerSession } from "next-auth";
+import { getAuthSession } from "@/app/services/authSessionService";
 import { dbConnect } from "@/app/lib/mongoose";
 import User from "@/app/models/user";
 import Argument from "@/app/models/argument";
@@ -148,10 +148,10 @@ export async function GET(request: NextRequest, ctx: any) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const session = await getServerSession();
+    const authSession = await getAuthSession(request);
     let viewerUser: { _id?: mongoose.Types.ObjectId; isAdmin?: boolean } | null = null;
-    if (session?.user?.email) {
-        viewerUser = await User.findOne({ email: session.user.email }).select({ _id: 1, isAdmin: 1 }).lean();
+    if (authSession?.email) {
+        viewerUser = await User.findOne({ email: authSession.email }).select({ _id: 1, isAdmin: 1 }).lean();
     }
 
     const viewerId = viewerUser?._id?.toString?.();
