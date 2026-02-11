@@ -7,6 +7,7 @@ type RoutedClient = {
 };
 
 const useGrokBackup = (process.env.USE_GROK_AS_BACKUP ?? "").toLowerCase() === "true";
+const forceGrokProvider = (process.env.FORCE_GROK_PROVIDER ?? "").toLowerCase() === "true";
 const grokBaseUrl = process.env.GROK_BASE_URL || "https://api.x.ai/v1";
 
 let openaiClient: OpenAI | null = null;
@@ -47,6 +48,14 @@ export async function routeResponsesClient(params: {
   grokModel?: string;
   userId?: string;
 }): Promise<RoutedClient | null> {
+  const grokModel = params.grokModel || process.env.GROK_RESPONSES_MODEL || "grok-4-1-fast-non-reasoning";
+  if (forceGrokProvider) {
+    const grok = getGrokClient();
+    if (!grok) return null;
+
+    return { client: grok, model: grokModel, provider: "grok" };
+  }
+
   const openai = getOpenAIClient();
   if (!openai) return null;
 
@@ -65,7 +74,6 @@ export async function routeResponsesClient(params: {
     return { client: openai, model: openAiModel, provider: "openai" };
   }
 
-  const grokModel = params.grokModel || process.env.GROK_RESPONSES_MODEL || "grok-4-1-fast-non-reasoning";
   console.info("Routing request to Grok due to OpenAI moderation flag.", {
     model: grokModel,
     userId: params.userId ? String(params.userId) : "system",

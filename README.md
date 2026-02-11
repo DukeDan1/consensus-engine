@@ -13,7 +13,7 @@ The project builds an online consensus management platform that structures debat
 ## Tech stack
 - Next.js (App Router) + React + TypeScript
 - MongoDB with Mongoose for persistence
-- OpenAI API for AI-assisted moderation and summarisation
+- OpenAI and xAI (Grok) APIs for AI-assisted moderation and summarisation
 - Vitest for unit tests, ESLint for linting
 - Bootstrap/Bootswatch UI, NextAuth-based authentication, Azure Communication Email for outbound email
 
@@ -24,7 +24,10 @@ The project builds an online consensus management platform that structures debat
 	- `MONGODB_URI` — MongoDB connection string
 	- `OPENAI_API_KEY` — OpenAI key for AI features
 	- `AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING` — required if you want email functionality. Emails are sent out when a user registers or requests a password reset. See Microsoft Azure Communication Services docs for setup.
-	- Optional: `OPENAI_RESPONSES_MODEL` to override the default model
+	- Optional: `GROK_API_KEY` to enable Grok routing
+	- Optional: `FORCE_GROK_PROVIDER=true` to force all AI responses through Grok
+	- Optional: `OPENAI_RESPONSES_MODEL` to override the default OpenAI responses model
+	- Optional: `GROK_RESPONSES_MODEL` to override the default Grok responses model
 - `GOOGLE_STORAGE_BUCKET_NAME` and `GOOGLE_SERVICE_ACCOUNT_KEY` if you want to enable Google Cloud Storage for file uploads. Without this, the file upload functionality will not work. Set up a Google Cloud project, create a storage bucket, and generate a service account key JSON file for authentication. Ensure that the service account has appropriate permissions to access the storage bucket and populate the environment variable `GOOGLE_SERVICE_ACCOUNT_KEY` with the content of the JSON key file.
 - `IMAGE_PROCESSING_ENABLED` (optional; set to `false` to skip image processing on upload).
 - `IMAGE_OUTPUT_PREFIX`, `IMAGE_THUMB_PREFIX`, `IMAGE_ORIGINAL_PREFIX`, `IMAGE_ORIGINAL_THUMB_PREFIX` (optional overrides for image storage prefixes).
@@ -127,7 +130,10 @@ This will:
 ## Environment variables
 - `MONGODB_URI`: MongoDB connection string for application data.
 - `OPENAI_API_KEY`: OpenAI API key enabling AI summarisation, moderation, and embeddings.
-- `OPENAI_RESPONSES_MODEL` (optional): Override the default model used for AI responses (defaults to `gpt-5.2`).
+- `OPENAI_RESPONSES_MODEL` (optional): Override the default model used for OpenAI responses (defaults to `gpt-5.2`).
+- `GROK_API_KEY` (optional): xAI API key used when routing AI requests to Grok.
+- `GROK_RESPONSES_MODEL` (optional): Override the default model used for Grok responses (defaults to `grok-4-1-fast-non-reasoning`).
+- `FORCE_GROK_PROVIDER` (optional): Set to `true` to send all AI response requests to Grok instead of OpenAI.
 - `AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING`: Azure Communication Services connection string for sending email.
 - `NEXTAUTH_SECRET`: Secret used by NextAuth for signing/encrypting auth tokens.
 - `NEXTAUTH_URL`: Base URL for NextAuth callbacks (e.g., `http://localhost:3000`).

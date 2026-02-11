@@ -5,7 +5,7 @@ End-to-end simulation tooling that creates realistic users, populates the platfo
 ## Prerequisites
 
 - The app must be running locally (default `http://localhost:3000`)
-- Environment variables configured in `.env`: `OPENAI_API_KEY` (required), plus optionally `GROK_API_KEY`, `USE_GROK_AS_BACKUP`, `OPENAI_RESPONSES_MODEL`, `GROK_RESPONSES_MODEL`
+- Environment variables configured in `.env`: `OPENAI_API_KEY` (required unless forcing Grok), plus optionally `GROK_API_KEY`, `USE_GROK_AS_BACKUP`, `FORCE_GROK_PROVIDER`, `OPENAI_RESPONSES_MODEL`, `GROK_RESPONSES_MODEL`
 - MongoDB connected and accessible
 
 ## Configuration

@@ -20,6 +20,7 @@ async function loadModule(env?: Record<string, string | undefined>): Promise<Rou
   delete process.env.GROK_API_KEY;
   delete process.env.GROK_BASE_URL;
   delete process.env.USE_GROK_AS_BACKUP;
+  delete process.env.FORCE_GROK_PROVIDER;
   delete process.env.OPENAI_RESPONSES_MODEL;
   delete process.env.GROK_RESPONSES_MODEL;
 
@@ -45,6 +46,7 @@ describe("aiRoutingService", () => {
     delete process.env.GROK_API_KEY;
     delete process.env.GROK_BASE_URL;
     delete process.env.USE_GROK_AS_BACKUP;
+    delete process.env.FORCE_GROK_PROVIDER;
     delete process.env.OPENAI_RESPONSES_MODEL;
     delete process.env.GROK_RESPONSES_MODEL;
   });
@@ -58,6 +60,30 @@ describe("aiRoutingService", () => {
       expect(result).toBeNull();
     });
 
+    it("routes all requests to Grok when FORCE_GROK_PROVIDER is enabled", async () => {
+      const { routeResponsesClient } = await loadModule({
+        GROK_API_KEY: "test-grok-key",
+        FORCE_GROK_PROVIDER: "true",
+      });
+
+      const result = await routeResponsesClient({ text: "Any content" });
+
+      expect(result?.provider).toBe("grok");
+      expect(result?.model).toBe("grok-4-1-fast-non-reasoning");
+      expect(mockModerationCreate).not.toHaveBeenCalled();
+    });
+
+    it("returns null when FORCE_GROK_PROVIDER is enabled but Grok key is missing", async () => {
+      const { routeResponsesClient } = await loadModule({
+        OPENAI_API_KEY: "test-openai-key",
+        FORCE_GROK_PROVIDER: "true",
+      });
+
+      const result = await routeResponsesClient({ text: "Any content" });
+
+      expect(result).toBeNull();
+      expect(mockModerationCreate).not.toHaveBeenCalled();
+    });
     it("returns OpenAI client when only OpenAI key is set", async () => {
       const { routeResponsesClient } = await loadModule({
         OPENAI_API_KEY: "test-openai-key",
