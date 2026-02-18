@@ -1,6 +1,6 @@
 import type mongoose from 'mongoose';
 import { normaliseTrustScore, scoreToTier, shouldApplyStrictPostingRules, type TrustTier } from '@/app/services/trustService';
-import { routeResponsesClient } from '@/app/services/aiRoutingService';
+import { routeResponsesClient, Provider } from '@/app/services/aiRoutingService';
 
 export type ModerationDecision = 'allow' | 'review' | 'block';
 export type ModerationSeverity = 'low' | 'medium' | 'high' | 'critical';
@@ -18,7 +18,7 @@ export type ModerationResult = {
   shortReason: string;
   recommendedTrustDelta: number; // -25..+25
   model?: string;
-  provider?: 'openai' | 'grok' | 'heuristic' | 'disabled';
+  provider?: Provider | 'heuristic' | 'disabled';
 };
 
 const moderationEnabled = (process.env.MODERATION_ENABLED ?? 'true').toLowerCase() !== 'false';

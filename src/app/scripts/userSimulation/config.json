@@ -1,6 +1,6 @@
 {
-    "appUrl": "https://ce.dukedan.uk",
+    "appUrl": "http://localhost:3000",
     "baseEmailAddress": "danieltshields@yahoo.com",
     "numUsers": 25,
-    "concurrency": 10
+    "concurrency": 50
 }
