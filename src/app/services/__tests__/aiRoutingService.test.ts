@@ -362,6 +362,128 @@ describe("aiRoutingService", () => {
       // openrouter skipped (no key) → openai skipped (flagged) → grok
       expect(result?.provider).toBe("grok");
     });
+
+    // ── ignoreEnvironmentDefaults ──
+
+    it("ignores env model overrides when ignoreEnvironmentDefaults is true", async () => {
+      const { routeResponsesClient } = await loadModule({
+        OPENAI_API_KEY: "test-openai-key",
+        OPENAI_RESPONSES_MODEL: "gpt-4-turbo-custom",
+      });
+
+      const result = await routeResponsesClient({
+        text: "Hello",
+        ignoreEnvironmentDefaults: true,
+      });
+
+      expect(result?.provider).toBe("openai");
+      // Should use hardcoded fallback, not the env var
+      expect(result?.model).toBe("gpt-5.2");
+    });
+
+    it("ignores FORCED_AI_PROVIDER env var when ignoreEnvironmentDefaults is true", async () => {
+      mockModerationCreate.mockResolvedValueOnce({ results: [{ flagged: false }] });
+
+      const { routeResponsesClient } = await loadModule({
+        OPENAI_API_KEY: "test-openai-key",
+        GROK_API_KEY: "test-grok-key",
+        FORCED_AI_PROVIDER: "grok",
+        FORCED_AI_MODEL: "grok-forced",
+      });
+
+      const result = await routeResponsesClient({
+        text: "Hello",
+        ignoreEnvironmentDefaults: true,
+      });
+
+      // Should follow default openai→grok→openrouter order, not forced grok
+      expect(result?.provider).toBe("openai");
+      expect(result?.model).toBe("gpt-5.2");
+    });
+
+    it("still honours param-level forcedDefaultModelAndProvider when ignoreEnvironmentDefaults is true", async () => {
+      const { routeResponsesClient } = await loadModule({
+        OPENAI_API_KEY: "test-openai-key",
+        GROK_API_KEY: "test-grok-key",
+        FORCED_AI_PROVIDER: "openai",
+        FORCED_AI_MODEL: "env-model",
+      });
+
+      const result = await routeResponsesClient({
+        text: "Hello",
+        ignoreEnvironmentDefaults: true,
+        forcedDefaultModelAndProvider: { model: "grok-custom", provider: "grok" },
+      });
+
+      // Param-level forced provider should still be respected
+      expect(result?.provider).toBe("grok");
+      expect(result?.model).toBe("grok-custom");
+    });
+
+    it("uses env model overrides when ignoreEnvironmentDefaults is false", async () => {
+      const { routeResponsesClient } = await loadModule({
+        OPENAI_API_KEY: "test-openai-key",
+        OPENAI_RESPONSES_MODEL: "gpt-4-turbo-custom",
+      });
+
+      const result = await routeResponsesClient({
+        text: "Hello",
+        ignoreEnvironmentDefaults: false,
+      });
+
+      expect(result?.provider).toBe("openai");
+      expect(result?.model).toBe("gpt-4-turbo-custom");
+    });
+
+    it("defaults ignoreEnvironmentDefaults to false when omitted", async () => {
+      const { routeResponsesClient } = await loadModule({
+        GROK_API_KEY: "test-grok-key",
+        FORCED_AI_PROVIDER: "grok",
+        FORCED_AI_MODEL: "grok-env-forced",
+      });
+
+      const result = await routeResponsesClient({ text: "Hello" });
+
+      // Env forced provider should still apply when flag is omitted
+      expect(result?.provider).toBe("grok");
+      expect(result?.model).toBe("grok-env-forced");
+    });
+
+    it("ignores env model for Grok fallback when ignoreEnvironmentDefaults is true", async () => {
+      mockModerationCreate.mockResolvedValueOnce({ results: [{ flagged: true }] });
+
+      const { routeResponsesClient } = await loadModule({
+        OPENAI_API_KEY: "test-openai-key",
+        GROK_API_KEY: "test-grok-key",
+        GROK_RESPONSES_MODEL: "grok-env-custom",
+      });
+
+      const result = await routeResponsesClient({
+        text: "Flagged content",
+        ignoreEnvironmentDefaults: true,
+      });
+
+      expect(result?.provider).toBe("grok");
+      // Should use hardcoded fallback, not env var
+      expect(result?.model).toBe("grok-4-1-fast-non-reasoning");
+    });
+
+    it("per-call model override still works when ignoreEnvironmentDefaults is true", async () => {
+      const { routeResponsesClient } = await loadModule({
+        OPENAI_API_KEY: "test-openai-key",
+        OPENAI_RESPONSES_MODEL: "should-be-ignored",
+      });
+
+      const result = await routeResponsesClient({
+        text: "Hello",
+        openAiModel: "gpt-4o-mini",
+        ignoreEnvironmentDefaults: true,
+      });
+
+      expect(result?.provider).toBe("openai");
+      // Per-call param takes priority over both env and fallback
+      expect(result?.model).toBe("gpt-4o-mini");
+    });
   });
 
   describe("executeWithFallback", () => {
@@ -511,6 +633,105 @@ describe("aiRoutingService", () => {
 
       expect(result).toEqual({ id: "resp-openai" });
       expect(mockModerationCreate).not.toHaveBeenCalled();
+    });
+
+    // ── ignoreEnvironmentDefaults ──
+
+    it("ignores FORCED_AI_PROVIDER when ignoreEnvironmentDefaults is true", async () => {
+      mockModerationCreate.mockResolvedValueOnce({ results: [{ flagged: false }] });
+
+      const { executeWithFallback } = await loadModule({
+        OPENAI_API_KEY: "test-openai-key",
+        GROK_API_KEY: "test-grok-key",
+        FORCED_AI_PROVIDER: "grok",
+        FORCED_AI_MODEL: "grok-forced",
+      });
+
+      const fn = vi.fn().mockResolvedValueOnce({ id: "resp-openai" });
+
+      const result = await executeWithFallback(
+        { text: "Hello", ignoreEnvironmentDefaults: true },
+        fn,
+      );
+
+      // Should route to OpenAI (default order), not env-forced grok
+      expect(result).toEqual({ id: "resp-openai" });
+      expect(fn.mock.calls[0][0].provider).toBe("openai");
+      expect(fn.mock.calls[0][0].model).toBe("gpt-5.2");
+    });
+
+    it("uses hardcoded fallback models when ignoreEnvironmentDefaults is true", async () => {
+      mockModerationCreate.mockResolvedValueOnce({ results: [{ flagged: true }] });
+
+      const { executeWithFallback } = await loadModule({
+        OPENAI_API_KEY: "test-openai-key",
+        GROK_API_KEY: "test-grok-key",
+        GROK_RESPONSES_MODEL: "grok-custom-env",
+      });
+
+      const fn = vi.fn().mockResolvedValueOnce({ id: "resp-grok" });
+
+      const result = await executeWithFallback(
+        { text: "Flagged", ignoreEnvironmentDefaults: true },
+        fn,
+      );
+
+      expect(result).toEqual({ id: "resp-grok" });
+      // Model should be the hardcoded fallback, not env override
+      expect(fn.mock.calls[0][0].provider).toBe("grok");
+      expect(fn.mock.calls[0][0].model).toBe("grok-4-1-fast-non-reasoning");
+    });
+
+    it("still honours param-level forced provider when ignoreEnvironmentDefaults is true", async () => {
+      const { executeWithFallback } = await loadModule({
+        OPENAI_API_KEY: "test-openai-key",
+        GROK_API_KEY: "test-grok-key",
+        FORCED_AI_PROVIDER: "openai",
+      });
+
+      const fn = vi.fn().mockResolvedValueOnce({ id: "resp-grok" });
+
+      const result = await executeWithFallback(
+        {
+          text: "Hello",
+          ignoreEnvironmentDefaults: true,
+          forcedDefaultModelAndProvider: { model: "grok-param", provider: "grok" },
+        },
+        fn,
+      );
+
+      expect(result).toEqual({ id: "resp-grok" });
+      expect(fn.mock.calls[0][0].provider).toBe("grok");
+      expect(fn.mock.calls[0][0].model).toBe("grok-param");
+    });
+
+    it("retries with fallback using hardcoded models when ignoreEnvironmentDefaults is true", async () => {
+      mockModerationCreate.mockResolvedValueOnce({ results: [{ flagged: false }] });
+
+      const { executeWithFallback } = await loadModule({
+        OPENAI_API_KEY: "test-openai-key",
+        GROK_API_KEY: "test-grok-key",
+        OPENAI_RESPONSES_MODEL: "custom-openai",
+        GROK_RESPONSES_MODEL: "custom-grok",
+      });
+
+      const fn = vi
+        .fn()
+        .mockRejectedValueOnce(new Error("OpenAI fail"))
+        .mockResolvedValueOnce({ id: "resp-grok" });
+
+      const result = await executeWithFallback(
+        { text: "Hello", ignoreEnvironmentDefaults: true },
+        fn,
+      );
+
+      expect(result).toEqual({ id: "resp-grok" });
+      // First call: OpenAI with hardcoded fallback
+      expect(fn.mock.calls[0][0].provider).toBe("openai");
+      expect(fn.mock.calls[0][0].model).toBe("gpt-5.2");
+      // Second call: Grok with hardcoded fallback
+      expect(fn.mock.calls[1][0].provider).toBe("grok");
+      expect(fn.mock.calls[1][0].model).toBe("grok-4-1-fast-non-reasoning");
     });
   });
 });
