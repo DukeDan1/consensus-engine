@@ -23,7 +23,6 @@ const ENV_KEYS = [
   "OPENROUTER_RESPONSES_MODEL",
   "FORCED_AI_PROVIDER",
   "FORCED_AI_MODEL",
-  "USE_GROK_AS_BACKUP",
 ];
 
 function clearEnv() {
