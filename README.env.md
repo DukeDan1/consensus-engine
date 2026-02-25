@@ -139,8 +139,9 @@ Note: this does **not** retry on request failure — you only get the first elig
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `AZURE_COMMUNICATION_CONNECTION_STRING` | For emails | — | Azure Communication Services connection string. Required to send transactional emails (password reset, account notifications). |
+| `AZURE_COMMUNICATION_SERVICE_CONNECTION_STRING` | For emails | — | Azure Communication Services connection string. Required to send transactional emails (password reset, account notifications). |
 | `EMAIL_SENDER_ADDRESS` | No | `DoNotReply@m.dukedan.uk` | "From" address used for outgoing emails. |
+| `DISABLE_SENDING_EMAILS` | No | `false` | When set to `true`, prevents actual emails from being sent (useful for local development and testing). |
 
 ## ☁️ Google Cloud Storage
 
