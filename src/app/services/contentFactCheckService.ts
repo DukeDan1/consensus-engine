@@ -85,6 +85,7 @@ export async function factCheckPostContent(params: {
     openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
     grokModel: process.env.GROK_RESPONSES_MODEL,
     userId: params.userId,
+    ignoreEnvironmentDefaults: false,
   });
   if (!routed) {
     return buildFallbackResult("Fact checking unavailable.", "disabled");

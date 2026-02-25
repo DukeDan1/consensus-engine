@@ -214,8 +214,8 @@ async function loginUser(user: SavedUser): Promise<AuthenticatedUser | null> {
 // ────────────────────────── AI Content Generation ──────────────────────────
 
 type GeneratedTopic = { title: string; description: string };
-type GeneratedArgument = { body: string; side: "for" | "against" | "neutral" };
-type GeneratedComment = { body: string };
+type GeneratedArgument = { body: string; side: "for" | "against" | "neutral"; evidence?: Array<{ url: string; kind: "link" }> };
+type GeneratedComment = { body: string; evidence?: Array<{ url: string; kind: "link" }> };
 
 function parseFunctionCallArgs<T>(rawArgs: unknown): T {
     if (typeof rawArgs === "string") return JSON.parse(rawArgs) as T;
@@ -228,6 +228,11 @@ async function generateTopics(count: number): Promise<GeneratedTopic[]> {
         text: "Generate discussion topics for a public deliberation platform",
         openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
         grokModel: process.env.GROK_RESPONSES_MODEL,
+        forcedDefaultModelAndProvider: {
+            model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
+            provider: "grok"
+        },
+        ignoreEnvironmentDefaults: false,
     });
     if (!routed) throw new Error("AI client not configured");
 
@@ -276,111 +281,6 @@ async function generateTopics(count: number): Promise<GeneratedTopic[]> {
     throw new Error("No topics returned by model");
 }
 
-async function generateArgumentsForTopic(topicTitle: string, topicDescription: string, count: number): Promise<GeneratedArgument[]> {
-    const routed = await routeResponsesClient({
-        text: `Generate arguments for topic: ${topicTitle}`,
-        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
-        grokModel: process.env.GROK_RESPONSES_MODEL,
-    });
-    if (!routed) throw new Error("AI client not configured");
-
-    const response = await routed.client.responses.create({
-        input: [
-            { role: "system", content: "You are a diverse group of citizens contributing arguments to a public debate platform. Write arguments from different perspectives — some well-reasoned with evidence, some passionate opinions, some short and informal, some detailed and academic. Vary quality and length deliberately. Include a mix of factual claims (some correct, some dubious) and pure opinions." },
-            { role: "user", content: `Topic: "${topicTitle}"\nDescription: ${topicDescription}\n\nWrite ${count} different arguments. Mix "for", "against", and "neutral" sides. Vary argument quality: some should be excellent, some mediocre, some low-effort. Each body should be 1-5 sentences (20-500 chars). Some should contain specific factual claims that can be fact-checked.` },
-        ],
-        tools: [{
-            type: "function",
-            name: "submit_arguments",
-            description: "Submit the generated arguments",
-            parameters: {
-                type: "object",
-                properties: {
-                    arguments: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                body: { type: "string", description: "The argument text" },
-                                side: { type: "string", enum: ["for", "against", "neutral"], description: "Which side of the debate" },
-                            },
-                            required: ["body", "side"],
-                            additionalProperties: false,
-                        },
-                    },
-                },
-                required: ["arguments"],
-                additionalProperties: false,
-            },
-            strict: true,
-        }],
-        model: routed.model,
-        safety_identifier: "user-simulation",
-        ...(routed.provider === "grok" ? {} : { reasoning: { effort: "low" } }),
-        store: true,
-    });
-
-    for (const item of response.output || []) {
-        if (item.type === "function_call" && item.name === "submit_arguments") {
-            const parsed = parseFunctionCallArgs<{ arguments: GeneratedArgument[] }>(item.arguments);
-            return parsed.arguments;
-        }
-    }
-    throw new Error("No arguments returned by model");
-}
-
-async function generateCommentsForArgument(argumentBody: string, topicTitle: string, count: number): Promise<GeneratedComment[]> {
-    const routed = await routeResponsesClient({
-        text: `Generate comments for argument about: ${topicTitle}`,
-        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
-        grokModel: process.env.GROK_RESPONSES_MODEL,
-    });
-    if (!routed) throw new Error("AI client not configured");
-
-    const response = await routed.client.responses.create({
-        input: [
-            { role: "system", content: "You are different users commenting on an argument in a public debate. Write varied comments — some agreeing, some disagreeing, some adding nuance, some asking questions, some short reactions. Vary quality and length. Some should add factual claims." },
-            { role: "user", content: `Topic: "${topicTitle}"\nArgument: "${argumentBody}"\n\nWrite ${count} different comments. Each should be 1-3 sentences (10-300 chars). Make them feel natural and varied.` },
-        ],
-        tools: [{
-            type: "function",
-            name: "submit_comments",
-            description: "Submit the generated comments",
-            parameters: {
-                type: "object",
-                properties: {
-                    comments: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                body: { type: "string", description: "The comment text" },
-                            },
-                            required: ["body"],
-                            additionalProperties: false,
-                        },
-                    },
-                },
-                required: ["comments"],
-                additionalProperties: false,
-            },
-            strict: true,
-        }],
-        model: routed.model,
-        safety_identifier: "user-simulation",
-        ...(routed.provider === "grok" ? {} : { reasoning: { effort: "low" } }),
-        store: true,
-    });
-
-    for (const item of response.output || []) {
-        if (item.type === "function_call" && item.name === "submit_comments") {
-            const parsed = parseFunctionCallArgs<{ comments: GeneratedComment[] }>(item.arguments);
-            return parsed.comments;
-        }
-    }
-    throw new Error("No comments returned by model");
-}
-
 // ────────────────────────── API Actions ──────────────────────────
 
 async function createTopic(user: AuthenticatedUser, topic: GeneratedTopic): Promise<CreatedTopic | null> {
@@ -407,7 +307,12 @@ async function createArgument(user: AuthenticatedUser, topicId: string, arg: Gen
         const res = await fetch(`${APP_URL}/api/argument`, {
             method: "POST",
             headers: buildAuthHeaders(user.token, { "Content-Type": "application/json" }),
-            body: JSON.stringify({ topicId, body: arg.body, side: arg.side }),
+            body: JSON.stringify({
+                topicId,
+                body: arg.body,
+                side: arg.side,
+                ...(arg.evidence && arg.evidence.length > 0 ? { evidence: arg.evidence } : {}),
+            }),
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
@@ -426,7 +331,11 @@ async function createComment(user: AuthenticatedUser, argumentId: string, commen
         const res = await fetch(`${APP_URL}/api/comment`, {
             method: "POST",
             headers: buildAuthHeaders(user.token, { "Content-Type": "application/json" }),
-            body: JSON.stringify({ argumentId, body: comment.body }),
+            body: JSON.stringify({
+                argumentId,
+                body: comment.body,
+                ...(comment.evidence && comment.evidence.length > 0 ? { evidence: comment.evidence } : {}),
+            }),
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
@@ -572,6 +481,11 @@ async function generateAiSummary(report: AiSystemReport, evaluations: AiEvaluati
         text: "Evaluate AI system effectiveness",
         openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
         grokModel: process.env.GROK_RESPONSES_MODEL,
+        forcedDefaultModelAndProvider: {
+            model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
+            provider: "grok"
+        },
+        ignoreEnvironmentDefaults: false,
     });
     if (!routed) return "(AI summary unavailable — no client configured)";
 
@@ -635,55 +549,348 @@ Keep the response under 800 words.`,
 
 // ────────────────────────── Content Simulation Pipeline ──────────────────────────
 
-const TOPICS_PER_SIMULATION = 3;
-const ARGUMENTS_PER_TOPIC = 10;
-const COMMENTS_PER_ARGUMENT = 15;
-const NOISE_ARGUMENTS_PER_TOPIC = 2;
-const NOISE_COMMENTS_PER_TOPIC = 4;
-const AI_PROCESSING_WAIT_MS = 8000;
-const VOTE_PROBABILITY = 0.6;
+const TOPICS_PER_SIMULATION = (config as any).topicsPerSimulation ?? 3;
+const ARGUMENTS_PER_TOPIC = (config as any).argumentsPerTopic ?? 10;
+const COMMENTS_PER_ARGUMENT = (config as any).commentsPerArgument ?? 15;
+const AI_PROCESSING_WAIT_MS = (config as any).aiProcessingWaitMs ?? 8000;
+const VOTE_PROBABILITY = (config as any).voteProbability ?? 0.6;
 
-// ────────────────────────── Noise / Spam Templates ──────────────────────────
-// Hard-coded adversarial content — bypasses AI generation so the moderation
-// system sees truly low-quality / spammy / toxic text it was never primed for.
+// Content distribution percentages (from config)
+const DIST = {
+    noise:              ((config as any).contentDistribution?.noise ?? 0.20),
+    highQualityFacts:   ((config as any).contentDistribution?.highQualityFacts ?? 0.20),
+    highQualityEvidence:((config as any).contentDistribution?.highQualityEvidence ?? 0.15),
+    troll:              ((config as any).contentDistribution?.troll ?? 0.05),
+    mildAbusive:        ((config as any).contentDistribution?.mildAbusive ?? 0.02),
+    highlyOffensive:    ((config as any).contentDistribution?.highlyOffensive ?? 0.01),
+    mixedTrueFalse:     ((config as any).contentDistribution?.mixedTrueFalse ?? 0.05),
+    purelyFalse:        ((config as any).contentDistribution?.purelyFalse ?? 0.05),
+    average:            ((config as any).contentDistribution?.average ?? 0.27),
+};
 
-const NOISE_ARGUMENTS: GeneratedArgument[] = [
-    // Spam / advertising
-    { body: "💰💰💰 I made $5,000 in one week working from home! Click here to learn how ➡️ bit.ly/totallynotascam 💰💰💰", side: "for" },
-    { body: "Buy cheap Rolexes at www.fakewatches.biz — FREE SHIPPING!! Use code DEBATE2025 for 20% off!!!", side: "against" },
-    // Trolling / nonsense
-    { body: "lol u r all so dumb none of this matters go touch grass 🤡🤡🤡", side: "against" },
-    { body: "FIRST!!!! haha beat you all to it. anyway this topic is boring who cares", side: "neutral" },
-    // All-caps shouting
-    { body: "THIS IS THE WORST TAKE I HAVE EVER SEEN AND ANYONE WHO AGREES IS AN ABSOLUTE MORON WITH ZERO CRITICAL THINKING SKILLS", side: "against" },
-    // Gibberish / keyboard spam
-    { body: "asdfghjkl;qwertyuiop zxcvbnm,./asdf jkl; qwer tyui opzx cvbn", side: "for" },
-    // Conspiracy / misinformation
-    { body: "The government is putting microchips in the water supply to control our thoughts. I have PROOF from my cousin who works at the water plant. Wake up sheeple!", side: "against" },
-    // Completely off-topic
-    { body: "Does anyone know a good recipe for banana bread? My grandma used to make it but I lost the recipe. Thanks!", side: "neutral" },
-    // Repetitive / low-effort
-    { body: "I agree. I agree. I agree. I agree. I agree. I agree. I agree. I agree. I agree. I agree.", side: "for" },
-    // Self-promotion
-    { body: "Great topic! BTW check out my YouTube channel @DebateKing2025 where I break down all these issues. Like and subscribe!!! 🔔🔔🔔", side: "for" },
-    // False authority claim
-    { body: "As a Harvard professor with 30 years of experience (trust me), this is absolutely incorrect. I have published 500 papers on this exact topic. You're all wrong.", side: "against" },
-    // Hateful / toxic
-    { body: "Everyone on the other side of this debate is a complete waste of oxygen. This country would be better off without their so-called 'opinions'.", side: "against" },
-];
+type ContentCategory = keyof typeof DIST;
 
-const NOISE_COMMENTS: GeneratedComment[] = [
-    { body: "💰 Make $3000/day from home! DM me for details! 💰" },
-    { body: "lmaooo this argument is trash 🗑️🗑️🗑️ delete ur account" },
-    { body: "Visit my website www.best-deals-online.biz for amazing discounts!!!" },
-    { body: "aaaaaaaaaaaaaaaaaaa bbbbbbb ccccc ddddddd eeeee ffffff gggggg" },
-    { body: "Copy paste this comment 10 times for good luck 🍀🍀🍀" },
-    { body: "WHO EVEN READS THESE COMMENTS ANYMORE JUST CLOSE THE INTERNET" },
-    { body: "ur wrong ur wrong ur wrong ur wrong ur wrong ur wrong" },
-    { body: "Check out my SoundCloud 🎵🎵🎵 link in bio" },
-    { body: "Nobody asked. Nobody cares. Ratio. L + cope + seethe." },
-    { body: "I heard from a very reliable source that this entire platform is run by lizard people." },
-];
+function pickContentCategory(): ContentCategory {
+    const r = Math.random();
+    let cumulative = 0;
+    for (const [key, pct] of Object.entries(DIST) as [ContentCategory, number][]) {
+        cumulative += pct;
+        if (r < cumulative) return key;
+    }
+    return "average";
+}
+
+// Manual topics from config
+const MANUAL_TOPICS: GeneratedTopic[] = ((config as any).manualTopics || []).filter(
+    (t: any) => t && typeof t.title === "string" && t.title.trim()
+).map((t: any) => ({ title: t.title.trim(), description: (t.description || "").trim() }));
+
+// ────────────────────────── Evidence URL Generation ──────────────────────────
+
+async function generateEvidenceUrls(topicTitle: string, argumentBody: string, count: number = 2): Promise<Array<{ url: string; kind: "link" }>> {
+    const routed = await routeResponsesClient({
+        text: `Find evidence URLs for: ${topicTitle}`,
+        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+        grokModel: process.env.GROK_RESPONSES_MODEL,
+        forcedDefaultModelAndProvider: {
+            model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
+            provider: "grok"
+        },
+        ignoreEnvironmentDefaults: false,
+    });
+    if (!routed) return [];
+
+    try {
+        const response = await routed.client.responses.create({
+            input: [
+                { role: "system", content: "You are a research assistant. Use the web search tool to find real, credible evidence URLs related to the given argument and topic. Find real news articles, academic papers, or official reports. Return only working URLs from reputable sources like BBC, Reuters, AP News, The Guardian, NYT, WHO, CDC, government sites, or academic journals." },
+                { role: "user", content: `Topic: "${topicTitle}"\nArgument: "${argumentBody}"\n\nSearch the web and find ${count} real, credible source URLs that relate to this argument. Use the web_search tool first, then submit the URLs.` },
+            ],
+            tools: [
+                { type: "web_search" },
+                {
+                    type: "function",
+                    name: "submit_evidence_urls",
+                    description: "Submit found evidence URLs",
+                    parameters: {
+                        type: "object",
+                        properties: {
+                            urls: {
+                                type: "array",
+                                items: {
+                                    type: "object",
+                                    properties: {
+                                        url: { type: "string", description: "The full URL of the evidence source" },
+                                    },
+                                    required: ["url"],
+                                    additionalProperties: false,
+                                },
+                            },
+                        },
+                        required: ["urls"],
+                        additionalProperties: false,
+                    },
+                    strict: true,
+                }
+            ],
+            model: routed.model,
+            safety_identifier: "user-simulation",
+            ...(routed.provider === "grok" ? {} : { reasoning: { effort: "low" } }),
+            tool_choice: "required",
+            store: true,
+        });
+
+        for (const item of response.output || []) {
+            if (item.type === "function_call" && item.name === "submit_evidence_urls") {
+                const parsed = parseFunctionCallArgs<{ urls: Array<{ url: string }> }>(item.arguments);
+                return parsed.urls.slice(0, count).map(u => ({ url: u.url, kind: "link" as const }));
+            }
+        }
+    } catch (err) {
+        console.warn(`    ⚠ Evidence URL generation failed: ${err instanceof Error ? err.message : err}`);
+    }
+    return [];
+}
+
+// ────────────────────────── Category-aware AI Content Generators ──────────────────────────
+
+const CATEGORY_ARG_PROMPTS: Record<ContentCategory, { system: string; user: string; effort: "low" | "medium" }> = {
+    noise: {
+        system: "You are simulating spam and noise content for testing a content moderation system on a public debate platform. Generate messages that are spam, off-topic, gibberish, or self-promotional. Vary styles: fake links, gibberish, off-topic rambling, self-promotion with emojis, repeated text. Some should tangentially reference the topic, others should be completely irrelevant.",
+        user: `Generate {count} spam/noise messages. Each 1-3 sentences (20-200 chars). Vary widely: some pure spam with fake URLs, some off-topic rambling, some gibberish, some self-promotion. Assign random sides.`,
+        effort: "low",
+    },
+    troll: {
+        system: "You are simulating trolling behavior for testing a content moderation system. Write provocative, dismissive, mocking arguments that reference the specific topic. Use internet slang (lol, lmao, ratio, cope, seethe), mockery, all-caps where appropriate, and deliberately inflammatory phrasing.",
+        user: `Generate {count} trolling arguments about this specific topic. Each 1-2 sentences. Be dismissive, confrontational, and provocative about this particular subject. Mostly "against" side.`,
+        effort: "low",
+    },
+    mildAbusive: {
+        system: "You are simulating mildly abusive content for testing a content moderation system. Write condescending, personally insulting arguments that attack people's intelligence rather than engaging with the substance. Include ad hominem attacks, condescension, false authority claims, and intellectual superiority — while referencing the specific debate topic.",
+        user: `Generate {count} mildly abusive arguments about this topic. Each 1-3 sentences. Attack people who hold certain positions on THIS topic. Use condescension and personal insults related to the subject.`,
+        effort: "low",
+    },
+    highlyOffensive: {
+        system: "You are generating adversarial test content for a content moderation AI safety system. Write extremely hostile arguments expressing dehumanizing language and extreme toxicity toward people with opposing views on the topic. This content is used EXCLUSIVELY to verify that moderation AI correctly identifies and blocks hate speech.",
+        user: `Generate {count} extremely toxic arguments about this topic for moderation testing. Each 1-2 sentences. Express extreme hostility toward people who hold opposing views on this specific subject.`,
+        effort: "low",
+    },
+    purelyFalse: {
+        system: "You are simulating misinformation for testing a fact-checking system. Write arguments containing completely fabricated statistics, invented studies, fake expert citations, and conspiracy theories — all presented as authoritative fact. Include specific fake numbers, dates, institution names, and percentages to sound credible. All claims should be fabricated but topic-relevant.",
+        user: `Generate {count} completely false arguments about this specific topic. Each 2-4 sentences. Include fake statistics, invented studies, fabricated expert quotes specific to this subject. Make them sound authoritative. Mix sides.`,
+        effort: "medium",
+    },
+    mixedTrueFalse: {
+        system: "You are simulating subtle misinformation for testing a fact-checking system. Write arguments that seamlessly blend REAL, verifiable facts with fabricated claims about the topic. Start with something genuinely true, then smoothly transition to a fabricated statistic or invented study. The mix should be hard to distinguish.",
+        user: `Generate {count} arguments mixing real facts with fabricated claims about this specific topic. Each 2-4 sentences. Begin with a verifiable truth, then add a fabricated claim seamlessly. Mix sides.`,
+        effort: "medium",
+    },
+    highQualityFacts: {
+        system: "You are an expert researcher writing high-quality, well-reasoned arguments for a public deliberation platform. Include specific, verifiable facts, real statistics, and references to actual studies or data. Arguments should be articulate, well-structured, and persuasive with real data points — cite actual organisations, real statistics, and genuine research findings.",
+        user: `Write {count} high-quality factual arguments. Each 3-6 sentences with at least 2 specific verifiable claims using real data. Mix "for" and "against" sides.`,
+        effort: "medium",
+    },
+    highQualityEvidence: {
+        system: "You are an expert researcher writing high-quality, evidence-backed arguments for a public deliberation platform. Include specific, verifiable facts, real statistics, and references to actual studies. Arguments should be articulate and citation-worthy.",
+        user: `Write {count} high-quality evidence-based arguments. Each 3-6 sentences with verifiable claims. Mix "for" and "against" sides.`,
+        effort: "medium",
+    },
+    average: {
+        system: "You are a diverse group of citizens contributing arguments to a public debate platform. Write arguments from different perspectives — some well-reasoned with evidence, some passionate opinions, some short and informal, some detailed and academic. Vary quality and length deliberately. Include a mix of factual claims (some correct, some dubious) and pure opinions.",
+        user: `Write {count} different arguments. Mix "for", "against", and "neutral" sides. Vary argument quality: some excellent, some mediocre, some low-effort. Each 1-5 sentences (20-500 chars). Some should contain specific factual claims.`,
+        effort: "low",
+    },
+};
+
+const CATEGORY_COMMENT_PROMPTS: Record<ContentCategory, { system: string; user: string }> = {
+    noise: {
+        system: "You are simulating spam/noise comments for testing a content moderation system. Generate replies that are spam, off-topic, gibberish, or self-promotional.",
+        user: `Generate {count} spam/noise comment replies. Each 1-2 sentences. Some reference the argument tangentially, others are pure spam with fake URLs or gibberish.`,
+    },
+    troll: {
+        system: "You are simulating trolling comments for testing a content moderation system. Write dismissive, mocking, provocative replies that reference the specific argument.",
+        user: `Generate {count} trolling comment replies about this argument. Each 1-2 sentences. Be dismissive and confrontational about the specific point being made.`,
+    },
+    mildAbusive: {
+        system: "You are simulating mildly abusive comments for testing a content moderation system. Write condescending replies that insult the commenter's intelligence while referencing the argument.",
+        user: `Generate {count} mildly abusive comment replies. Each 1-2 sentences. Attack the poster's intelligence while referencing the specific argument content.`,
+    },
+    highlyOffensive: {
+        system: "You are generating adversarial test comments for a content moderation AI safety system. Write extremely hostile replies for moderation testing purposes only.",
+        user: `Generate {count} extremely toxic comment replies for moderation testing. Each 1-2 sentences. Express extreme hostility toward the argument poster.`,
+    },
+    purelyFalse: {
+        system: "You are simulating misinformation comments for testing a fact-checking system. Write replies containing completely fabricated facts presented as corrections or additions to the argument.",
+        user: `Generate {count} comments with fabricated facts. Each 1-2 sentences. Present fake statistics or invented studies as if correcting or adding to the argument above.`,
+    },
+    mixedTrueFalse: {
+        system: "You are simulating subtle misinformation comments for testing a fact-checking system. Write replies that blend a real fact with a fabricated claim, referencing the argument.",
+        user: `Generate {count} comments mixing real facts with fabricated claims. Each 1-2 sentences. Start with something true then slip in a fabrication.`,
+    },
+    highQualityFacts: {
+        system: "You are a knowledgeable participant commenting on a public debate. Write thoughtful, well-informed replies that add factual depth to the discussion.",
+        user: `Generate {count} high-quality factual comments. Each 1-3 sentences with specific verifiable claims that add depth to the argument above.`,
+    },
+    highQualityEvidence: {
+        system: "You are a knowledgeable participant commenting on a public debate. Write thoughtful, evidence-oriented replies referencing the argument.",
+        user: `Generate {count} high-quality comments. Each 1-3 sentences adding well-reasoned perspective to the argument above.`,
+    },
+    average: {
+        system: "You are different users commenting on an argument in a public debate. Write varied comments — some agreeing, some disagreeing, some adding nuance, some asking questions, some short reactions. Vary quality and length. Some should add factual claims.",
+        user: `Write {count} different comments. Each 1-3 sentences (10-300 chars). Make them feel natural and varied.`,
+    },
+};
+
+async function generateCategoryArguments(
+    category: ContentCategory,
+    topicTitle: string,
+    topicDescription: string,
+    count: number,
+): Promise<GeneratedArgument[]> {
+    const prompts = CATEGORY_ARG_PROMPTS[category];
+
+    const routed = await routeResponsesClient({
+        text: `Generate ${category} arguments for: ${topicTitle}`,
+        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+        grokModel: process.env.GROK_RESPONSES_MODEL,
+        forcedDefaultModelAndProvider: {
+            model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
+            provider: "grok"
+        },
+        ignoreEnvironmentDefaults: false,
+    });
+    if (!routed) throw new Error("AI client not configured");
+
+    const userContent = `Topic: "${topicTitle}"\nDescription: ${topicDescription}\n\n${prompts.user.replace(/\{count\}/g, String(count))}`;
+
+    const response = await routed.client.responses.create({
+        input: [
+            { role: "system", content: prompts.system },
+            { role: "user", content: userContent },
+        ],
+        tools: [{
+            type: "function",
+            name: "submit_arguments",
+            description: "Submit the generated arguments",
+            parameters: {
+                type: "object",
+                properties: {
+                    arguments: {
+                        type: "array",
+                        items: {
+                            type: "object",
+                            properties: {
+                                body: { type: "string", description: "The argument text" },
+                                side: { type: "string", enum: ["for", "against", "neutral"], description: "Which side" },
+                            },
+                            required: ["body", "side"],
+                            additionalProperties: false,
+                        },
+                    },
+                },
+                required: ["arguments"],
+                additionalProperties: false,
+            },
+            strict: true,
+        }],
+        model: routed.model,
+        safety_identifier: "user-simulation",
+        ...(routed.provider === "grok" ? {} : { reasoning: { effort: prompts.effort } }),
+        store: true,
+    });
+
+    for (const item of response.output || []) {
+        if (item.type === "function_call" && item.name === "submit_arguments") {
+            const parsed = parseFunctionCallArgs<{ arguments: GeneratedArgument[] }>(item.arguments);
+            let results = parsed.arguments || [];
+
+            // For highQualityEvidence, attach real evidence URLs via web search
+            if (category === "highQualityEvidence") {
+                for (let i = 0; i < results.length; i++) {
+                    try {
+                        console.log(`    🔍 Finding evidence for argument ${i + 1}/${results.length}...`);
+                        const evidence = await generateEvidenceUrls(topicTitle, results[i].body, 2);
+                        if (evidence.length > 0) {
+                            results[i] = { ...results[i], evidence };
+                            console.log(`    📎 Found ${evidence.length} evidence URLs`);
+                        }
+                    } catch {
+                        // Evidence is optional, continue without it
+                    }
+                }
+            }
+
+            return results;
+        }
+    }
+    throw new Error(`No ${category} arguments returned by model`);
+}
+
+async function generateCategoryComments(
+    category: ContentCategory,
+    argumentBody: string,
+    topicTitle: string,
+    count: number,
+): Promise<GeneratedComment[]> {
+    const prompts = CATEGORY_COMMENT_PROMPTS[category];
+
+    const routed = await routeResponsesClient({
+        text: `Generate ${category} comments about: ${topicTitle}`,
+        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+        grokModel: process.env.GROK_RESPONSES_MODEL,
+        forcedDefaultModelAndProvider: {
+            model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
+            provider: "grok"
+        },
+        ignoreEnvironmentDefaults: false,
+    });
+    if (!routed) throw new Error("AI client not configured");
+
+    const userContent = `Topic: "${topicTitle}"\nArgument: "${argumentBody}"\n\n${prompts.user.replace(/\{count\}/g, String(count))}`;
+
+    const response = await routed.client.responses.create({
+        input: [
+            { role: "system", content: prompts.system },
+            { role: "user", content: userContent },
+        ],
+        tools: [{
+            type: "function",
+            name: "submit_comments",
+            description: "Submit the generated comments",
+            parameters: {
+                type: "object",
+                properties: {
+                    comments: {
+                        type: "array",
+                        items: {
+                            type: "object",
+                            properties: {
+                                body: { type: "string", description: "The comment text" },
+                            },
+                            required: ["body"],
+                            additionalProperties: false,
+                        },
+                    },
+                },
+                required: ["comments"],
+                additionalProperties: false,
+            },
+            strict: true,
+        }],
+        model: routed.model,
+        safety_identifier: "user-simulation",
+        ...(routed.provider === "grok" ? {} : { reasoning: { effort: "low" } }),
+        store: true,
+    });
+
+    for (const item of response.output || []) {
+        if (item.type === "function_call" && item.name === "submit_comments") {
+            const parsed = parseFunctionCallArgs<{ comments: GeneratedComment[] }>(item.arguments);
+            return parsed.comments || [];
+        }
+    }
+    throw new Error(`No ${category} comments returned by model`);
+}
 
 async function runContentSimulation(users: AuthenticatedUser[]): Promise<{
     topics: CreatedTopic[];
@@ -698,20 +905,25 @@ async function runContentSimulation(users: AuthenticatedUser[]): Promise<{
     const votes: CastVote[] = [];
     const errors: string[] = [];
 
-    // ── Step 1: Generate & create topics ──
+    // ── Step 1: Create topics (manual or AI-generated) ──
     console.log(`\n╔══════════════════════════════════════════════╗`);
-    console.log(`║  Phase 1: Creating ${TOPICS_PER_SIMULATION} topics                    ║`);
+    console.log(`║  Phase 1: Creating topics                    ║`);
     console.log(`╚══════════════════════════════════════════════╝`);
 
     let generatedTopics: GeneratedTopic[];
-    try {
-        generatedTopics = await generateTopics(TOPICS_PER_SIMULATION);
-        console.log(`  ✓ AI generated ${generatedTopics.length} topics`);
-    } catch (err) {
-        const msg = `Topic generation failed: ${err instanceof Error ? err.message : err}`;
-        console.error(`  ✗ ${msg}`);
-        errors.push(msg);
-        return { topics, args, comments, votes, errors };
+    if (MANUAL_TOPICS.length > 0) {
+        generatedTopics = MANUAL_TOPICS;
+        console.log(`  ✓ Using ${generatedTopics.length} manually configured topics`);
+    } else {
+        try {
+            generatedTopics = await generateTopics(TOPICS_PER_SIMULATION);
+            console.log(`  ✓ AI generated ${generatedTopics.length} topics`);
+        } catch (err) {
+            const msg = `Topic generation failed: ${err instanceof Error ? err.message : err}`;
+            console.error(`  ✗ ${msg}`);
+            errors.push(msg);
+            return { topics, args, comments, votes, errors };
+        }
     }
 
     for (const [i, genTopic] of generatedTopics.entries()) {
@@ -729,83 +941,82 @@ async function runContentSimulation(users: AuthenticatedUser[]): Promise<{
         return { topics, args, comments, votes, errors };
     }
 
-    // ── Step 2: Generate & create arguments ──
+    // ── Step 2: Generate arguments using content distribution ──
     console.log(`\n╔══════════════════════════════════════════════╗`);
-    console.log(`║  Phase 2: Creating arguments                 ║`);
+    console.log(`║  Phase 2: Creating arguments (distributed)   ║`);
     console.log(`╚══════════════════════════════════════════════╝`);
+
+    const contentCategoryLabels: Record<ContentCategory, string> = {
+        noise: "🚨 NOISE",
+        highQualityFacts: "⭐ HIGH-QUALITY FACTS",
+        highQualityEvidence: "📎 HIGH-QUALITY + EVIDENCE",
+        troll: "🤡 TROLL",
+        mildAbusive: "😡 MILD ABUSIVE",
+        highlyOffensive: "☠️  HIGHLY OFFENSIVE",
+        mixedTrueFalse: "⚖️  MIXED TRUE/FALSE",
+        purelyFalse: "❌ PURELY FALSE",
+        average: "📝 AVERAGE",
+    };
 
     for (const topic of topics) {
         console.log(`\n  Topic: "${snippet(topic.title, 60)}"`);
-        let generatedArgs: GeneratedArgument[];
-        try {
-            generatedArgs = await generateArgumentsForTopic(topic.title, topic.description || "", ARGUMENTS_PER_TOPIC);
-            console.log(`  ✓ AI generated ${generatedArgs.length} arguments`);
-        } catch (err) {
-            const msg = `Argument generation failed for "${topic.title}": ${err instanceof Error ? err.message : err}`;
-            console.warn(`  ⚠ ${msg}`);
-            errors.push(msg);
-            continue;
+
+        // Determine content categories for each argument slot
+        const argCategories: ContentCategory[] = [];
+        for (let i = 0; i < ARGUMENTS_PER_TOPIC; i++) {
+            argCategories.push(pickContentCategory());
         }
 
-        const argTasks = generatedArgs.map((genArg, i) => {
+        // Group by category for efficient batch AI generation
+        const categoryCounts = new Map<ContentCategory, number>();
+        for (const cat of argCategories) {
+            categoryCounts.set(cat, (categoryCounts.get(cat) || 0) + 1);
+        }
+        console.log(`  Distribution: ${[...categoryCounts.entries()].map(([k, v]) => `${k}=${v}`).join(", ")}`);
+
+        // Batch-generate arguments per category (one AI call per category)
+        const generatedByCategory = new Map<ContentCategory, GeneratedArgument[]>();
+        for (const [category, count] of categoryCounts) {
+            const label = contentCategoryLabels[category];
+            try {
+                console.log(`    Generating ${count}× ${label} arguments via AI...`);
+                const genArgs = await generateCategoryArguments(category, topic.title, topic.description || "", count);
+                generatedByCategory.set(category, genArgs);
+                console.log(`    ✓ Got ${genArgs.length} ${label} arguments`);
+            } catch (err) {
+                const msg = `${label} argument generation failed: ${err instanceof Error ? err.message : err}`;
+                console.warn(`    ⚠ ${msg}`);
+                errors.push(msg);
+                generatedByCategory.set(category, []);
+            }
+        }
+
+        // Post arguments in original randomised order
+        const categoryIdx = new Map<ContentCategory, number>();
+        for (const [i, category] of argCategories.entries()) {
+            const idx = categoryIdx.get(category) || 0;
+            const pool = generatedByCategory.get(category) || [];
+            const genArg = pool[idx] || { body: "This topic deserves more discussion.", side: "neutral" as const };
+            categoryIdx.set(category, idx + 1);
+
             const user = pick(users);
-            console.log(`    [${i + 1}/${generatedArgs.length}] ${user.username} (${genArg.side}): "${snippet(genArg.body, 60)}"`);
-            return () => createArgument(user, topic.id, genArg);
-        });
-        const createdArgs = await runBatched(argTasks, CONCURRENCY);
-        for (const created of createdArgs) {
-            if (created) args.push(created);
+            const label = contentCategoryLabels[category];
+            console.log(`    [${i + 1}/${ARGUMENTS_PER_TOPIC}] ${label} | ${user.username} (${genArg.side}): "${snippet(genArg.body, 60)}"${genArg.evidence?.length ? ` [${genArg.evidence.length} evidence links]` : ""}`);
+
+            try {
+                const created = await createArgument(user, topic.id, genArg);
+                if (created) args.push(created);
+            } catch (err) {
+                const msg = `Argument post failed: ${err instanceof Error ? err.message : err}`;
+                console.warn(`    ⚠ ${msg}`);
+                errors.push(msg);
+            }
         }
     }
 
-    // ── Step 3: Inject noise / spam arguments ──
+    // ── Step 3: Generate comments using content distribution ──
     console.log(`\n╔══════════════════════════════════════════════╗`);
-    console.log(`║  Phase 3: Injecting noise & spam content     ║`);
-    console.log(`╚══════════════════════════════════════════════╝`);
-
-    let noiseArgCount = 0;
-    let noiseCommentCount = 0;
-    const shuffledNoiseArgs = shuffle(NOISE_ARGUMENTS);
-    const shuffledNoiseComments = shuffle(NOISE_COMMENTS);
-
-    for (const topic of topics) {
-        // Pick N random noise arguments for this topic
-        const noiseForTopic = shuffledNoiseArgs.splice(0, NOISE_ARGUMENTS_PER_TOPIC);
-        if (noiseForTopic.length === 0) break; // ran out of templates
-
-        console.log(`\n  Topic: "${snippet(topic.title, 60)}"`);
-        const noiseArgTasks = noiseForTopic.map((noiseArg) => {
-            const user = pick(users);
-            console.log(`    🚨 ${user.username} posting noise (${noiseArg.side}): "${snippet(noiseArg.body, 60)}"`);
-            return () => createArgument(user, topic.id, noiseArg);
-        });
-        const noiseResults = await runBatched(noiseArgTasks, CONCURRENCY);
-        for (const created of noiseResults) {
-            if (created) { args.push(created); noiseArgCount++; }
-        }
-
-        // Attach noise comments to random arguments on this topic
-        const topicArgs = args.filter((a) => a.topicId === topic.id);
-        const noiseCommentsForTopic = shuffledNoiseComments.splice(0, NOISE_COMMENTS_PER_TOPIC);
-        const noiseCommentTasks = noiseCommentsForTopic
-            .filter(() => topicArgs.length > 0)
-            .map((noiseComment) => {
-                const targetArg = pick(topicArgs);
-                const user = pick(users);
-                console.log(`    🚨 ${user.username} posting noise comment: "${snippet(noiseComment.body, 60)}"`);
-                return () => createComment(user, targetArg.id, noiseComment);
-            });
-        const noiseCommentResults = await runBatched(noiseCommentTasks, CONCURRENCY);
-        for (const created of noiseCommentResults) {
-            if (created) { comments.push(created); noiseCommentCount++; }
-        }
-    }
-
-    console.log(`\n  ✓ Injected ${noiseArgCount} noise arguments and ${noiseCommentCount} noise comments`);
-
-    // ── Step 4: Generate & create comments ──
-    console.log(`\n╔══════════════════════════════════════════════╗`);
-    console.log(`║  Phase 4: Creating comments                  ║`);
+    console.log(`║  Phase 3: Creating comments (distributed)    ║`);
     console.log(`╚══════════════════════════════════════════════╝`);
 
     const argsByTopic = new Map<string, CreatedArgument[]>();
@@ -822,18 +1033,40 @@ async function runContentSimulation(users: AuthenticatedUser[]): Promise<{
         console.log(`\n  Topic: "${snippet(topic.title, 60)}" (${topicArgs.length} arguments)`);
 
         for (const arg of topicArgs) {
-            let generatedComments: GeneratedComment[];
-            try {
-                generatedComments = await generateCommentsForArgument(arg.body, topic.title, COMMENTS_PER_ARGUMENT);
-            } catch (err) {
-                errors.push(`Comment generation failed: ${err instanceof Error ? err.message : err}`);
-                continue;
+            const commentCategories: ContentCategory[] = [];
+            for (let i = 0; i < COMMENTS_PER_ARGUMENT; i++) {
+                commentCategories.push(pickContentCategory());
             }
 
-            const commentTasks = generatedComments.map((genComment) => {
+            // Group by category for efficient batch AI generation
+            const commentCategoryCounts = new Map<ContentCategory, number>();
+            for (const cat of commentCategories) {
+                commentCategoryCounts.set(cat, (commentCategoryCounts.get(cat) || 0) + 1);
+            }
+
+            // Batch-generate comments per category (one AI call per category)
+            const generatedCommentsByCategory = new Map<ContentCategory, GeneratedComment[]>();
+            for (const [category, count] of commentCategoryCounts) {
+                try {
+                    const genComments = await generateCategoryComments(category, arg.body, topic.title, count);
+                    generatedCommentsByCategory.set(category, genComments);
+                } catch (err) {
+                    errors.push(`${category} comment generation failed: ${err instanceof Error ? err.message : err}`);
+                    generatedCommentsByCategory.set(category, []);
+                }
+            }
+
+            // Post comments in original randomised order
+            const commentCategoryIdx = new Map<ContentCategory, number>();
+            const commentTasks = commentCategories.map((category) => {
                 const user = pick(users);
+                const idx = commentCategoryIdx.get(category) || 0;
+                const pool = generatedCommentsByCategory.get(category) || [];
+                const genComment = pool[idx] || { body: "Interesting perspective on this." };
+                commentCategoryIdx.set(category, idx + 1);
                 return () => createComment(user, arg.id, genComment);
             });
+
             const createdComments = await runBatched(commentTasks, CONCURRENCY);
             for (const created of createdComments) {
                 if (created) comments.push(created);
@@ -842,9 +1075,9 @@ async function runContentSimulation(users: AuthenticatedUser[]): Promise<{
         }
     }
 
-    // ── Step 5: Cast votes ──
+    // ── Step 4: Cast votes ──
     console.log(`\n╔══════════════════════════════════════════════╗`);
-    console.log(`║  Phase 5: Casting votes                      ║`);
+    console.log(`║  Phase 4: Casting votes                      ║`);
     console.log(`╚══════════════════════════════════════════════╝`);
 
     const shuffledUsers = shuffle(users);
@@ -894,13 +1127,13 @@ async function runEvaluation(
     users: AuthenticatedUser[],
 ): Promise<{ evaluations: AiEvaluation[]; report: AiSystemReport; summary: string }> {
     console.log(`\n╔══════════════════════════════════════════════╗`);
-    console.log(`║  Phase 6: Waiting for AI processing          ║`);
+    console.log(`║  Phase 5: Waiting for AI processing          ║`);
     console.log(`╚══════════════════════════════════════════════╝`);
     console.log(`  Waiting ${AI_PROCESSING_WAIT_MS / 1000}s for background AI tasks (moderation, ontology, fact-checking)...`);
     await sleep(AI_PROCESSING_WAIT_MS);
 
     console.log(`\n╔══════════════════════════════════════════════╗`);
-    console.log(`║  Phase 7: Evaluating AI systems              ║`);
+    console.log(`║  Phase 6: Evaluating AI systems              ║`);
     console.log(`╚══════════════════════════════════════════════╝`);
 
     const evaluations: AiEvaluation[] = [];
@@ -1002,6 +1235,9 @@ async function main() {
     console.log(`════════════════════════════════════════════════`);
     console.log(` Users file: ${resolvedPath}`);
     console.log(` App URL:    ${APP_URL}`);
+    console.log(` Topics:     ${MANUAL_TOPICS.length > 0 ? `${MANUAL_TOPICS.length} manual` : `${TOPICS_PER_SIMULATION} AI-generated`}`);
+    console.log(` Args/topic: ${ARGUMENTS_PER_TOPIC}  |  Comments/arg: ${COMMENTS_PER_ARGUMENT}`);
+    console.log(` Distribution: noise=${DIST.noise*100}% hqFacts=${DIST.highQualityFacts*100}% hqEvidence=${DIST.highQualityEvidence*100}% troll=${DIST.troll*100}% mildAbuse=${DIST.mildAbusive*100}% offensive=${DIST.highlyOffensive*100}% mixedTF=${DIST.mixedTrueFalse*100}% false=${DIST.purelyFalse*100}% avg=${DIST.average*100}%`);
     console.log(`════════════════════════════════════════════════\n`);
 
     // Load saved users

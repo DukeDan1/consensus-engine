@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "react-toastify";
@@ -80,6 +80,60 @@ function getVisibilityLabel(status?: string) {
     if (status === "blocked") return "Blocked";
     if (status === "noise") return "Low visibility";
     return "Hidden";
+}
+
+function formatPercent(value?: number | null, divisor = 1) {
+    if (typeof value !== "number" || Number.isNaN(value)) return null;
+    return `${Math.round((value / divisor) * 100)}%`;
+}
+
+function hasContentFactCheckDetails(factCheck: any): boolean {
+    if (!factCheck) return false;
+    if (factCheck.verdict) return true;
+    if (typeof factCheck.confidence === "number") return true;
+    if (factCheck.summary) return true;
+    if (factCheck.model) return true;
+    if (factCheck.checkedAt) return true;
+    return Array.isArray(factCheck.sources) && factCheck.sources.length > 0;
+}
+
+function hasEvidenceAnalysis(item: any): boolean {
+    if (!item) return false;
+    if (item.blurred) return true;
+    if (Array.isArray(item.blurReasons) && item.blurReasons.length > 0) return true;
+    const fc = item.factCheck;
+    if (!fc) return false;
+    return !!(fc.verdict || fc.summary || fc.model || typeof fc.qualityScore === "number" || typeof fc.confidence === "number" || fc.checkedAt);
+}
+
+function ModeratorAnalysisPanel({
+    className,
+    title = "View analysis",
+    children,
+}: {
+    className?: string;
+    title?: string;
+    children: ReactNode;
+}) {
+    const [open, setOpen] = useState(false);
+    return (
+        <div className={className}>
+            <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm"
+                onClick={() => setOpen((prev) => !prev)}
+                aria-expanded={open}
+            >
+                <i className="fa-solid fa-microscope me-1" aria-hidden="true"></i>
+                {open ? "Hide analysis" : title}
+            </button>
+            {open && (
+                <div className="mt-2 p-2 border rounded bg-light-subtle small">
+                    {children}
+                </div>
+            )}
+        </div>
+    );
 }
 
 function FactCheckBadge({ factCheck }: { factCheck?: any }) {
@@ -198,7 +252,15 @@ function RelativeTime({ value }: { value?: string | Date | null }) {
     );
 }
 
-function EvidenceImageItem({ item, label }: { item: any; label: string }) {
+function EvidenceImageItem({
+    item,
+    label,
+    moderatorMode = false,
+}: {
+    item: any;
+    label: string;
+    moderatorMode?: boolean;
+}) {
     const [showDetails, setShowDetails] = useState(false);
     const url = item?.url;
     const previewUrl = item?.previewUrl || url;
@@ -280,11 +342,36 @@ function EvidenceImageItem({ item, label }: { item: any; label: string }) {
                     <FactCheckBadge factCheck={item?.factCheck} />
                 </div>
             ) : null}
+            {moderatorMode && hasEvidenceAnalysis(item) && (
+                <ModeratorAnalysisPanel className="mt-2" title="View evidence analysis">
+                    <div className="d-flex flex-column gap-1">
+                        <div><span className="fw-semibold">Type:</span> Image evidence</div>
+                        {typeof item?.blurred === "boolean" && <div><span className="fw-semibold">Blurred:</span> {item.blurred ? "Yes" : "No"}</div>}
+                        {Array.isArray(item?.blurReasons) && item.blurReasons.length > 0 && (
+                            <div>
+                                <div className="fw-semibold">Blur reasons</div>
+                                <ul className="mb-1 ps-3">
+                                    {item.blurReasons.map((reason: string, idx: number) => <li key={`${reason}-${idx}`}>{reason}</li>)}
+                                </ul>
+                            </div>
+                        )}
+                        {item?.factCheck?.verdict && <div><span className="fw-semibold">Fact check:</span> {String(item.factCheck.verdict)}</div>}
+                        {typeof item?.factCheck?.qualityScore === "number" && (
+                            <div><span className="fw-semibold">Evidence quality:</span> {Math.round(item.factCheck.qualityScore)}/100</div>
+                        )}
+                        {typeof item?.factCheck?.confidence === "number" && (
+                            <div><span className="fw-semibold">Confidence:</span> {formatPercent(item.factCheck.confidence, 1)}</div>
+                        )}
+                        {item?.factCheck?.summary && <div><span className="fw-semibold">Summary:</span> {String(item.factCheck.summary)}</div>}
+                        {item?.factCheck?.model && <div><span className="fw-semibold">Model:</span> {String(item.factCheck.model)}</div>}
+                    </div>
+                </ModeratorAnalysisPanel>
+            )}
         </div>
     );
 }
 
-function EvidenceList({ evidence }: { evidence?: any[] }) {
+function EvidenceList({ evidence, moderatorMode = false }: { evidence?: any[]; moderatorMode?: boolean }) {
     if (!evidence || !evidence.length) return null;
     return (
         <div className="mt-2">
@@ -296,21 +383,39 @@ function EvidenceList({ evidence }: { evidence?: any[] }) {
                     const isImage = (item?.contentType || "").startsWith("image/");
                     const label = item?.label || item?.fileName || url;
                     if (isImage) {
-                        return <EvidenceImageItem key={`${url}-${idx}`} item={item} label={label} />;
+                        return <EvidenceImageItem key={`${url}-${idx}`} item={item} label={label} moderatorMode={moderatorMode} />;
                     }
                     return (
-                        <div key={`${url}-${idx}`} className="d-flex align-items-center gap-1 w-100">
-                            <a
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="badge text-bg-secondary text-decoration-none"
-                                title={label}
-                            >
-                                <i className="fa-solid fa-paperclip me-1" aria-hidden="true"></i>
-                                {label?.slice(0, 40)}
-                            </a>
-                            <FactCheckBadge factCheck={item?.factCheck} />
+                        <div key={`${url}-${idx}`} className="w-100">
+                            <div className="d-flex align-items-center gap-1 w-100">
+                                <a
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="badge text-bg-secondary text-decoration-none"
+                                    title={label}
+                                >
+                                    <i className="fa-solid fa-paperclip me-1" aria-hidden="true"></i>
+                                    {label?.slice(0, 40)}
+                                </a>
+                                <FactCheckBadge factCheck={item?.factCheck} />
+                            </div>
+                            {moderatorMode && hasEvidenceAnalysis(item) && (
+                                <ModeratorAnalysisPanel className="mt-1" title="View evidence analysis">
+                                    <div className="d-flex flex-column gap-1">
+                                        <div><span className="fw-semibold">Type:</span> {item?.kind === "file" ? "File" : "Link"}</div>
+                                        {item?.factCheck?.verdict && <div><span className="fw-semibold">Fact check:</span> {String(item.factCheck.verdict)}</div>}
+                                        {typeof item?.factCheck?.qualityScore === "number" && (
+                                            <div><span className="fw-semibold">Evidence quality:</span> {Math.round(item.factCheck.qualityScore)}/100</div>
+                                        )}
+                                        {typeof item?.factCheck?.confidence === "number" && (
+                                            <div><span className="fw-semibold">Confidence:</span> {formatPercent(item.factCheck.confidence, 1)}</div>
+                                        )}
+                                        {item?.factCheck?.summary && <div><span className="fw-semibold">Summary:</span> {String(item.factCheck.summary)}</div>}
+                                        {item?.factCheck?.model && <div><span className="fw-semibold">Model:</span> {String(item.factCheck.model)}</div>}
+                                    </div>
+                                </ModeratorAnalysisPanel>
+                            )}
                         </div>
                     );
                 })}
@@ -575,6 +680,19 @@ export default function ArgumentCard({
     const canRestoreArgument = canModerate && !argumentRemoved && argumentStatus && argumentStatus !== "visible" && !isArgumentNoise;
     const canToggleArgumentNoise = canModerate && !argumentRemoved && (argumentStatus === "visible" || isArgumentNoise);
     const showArgumentStatus = moderatorMode && (argumentRemoved || !!argumentStatusLabel);
+    const hasArgumentAnalysis =
+        !!(argument as any).aiAnalysis ||
+        hasContentFactCheckDetails((argument as any).contentFactCheck) ||
+        !!(argument as any).aiModerationProvider ||
+        !!(argument as any).aiModerationModel ||
+        !!argumentVisibility?.reason ||
+        (Array.isArray(argumentVisibility?.categories) && argumentVisibility.categories.length > 0) ||
+        typeof argumentVisibility?.spamLikelihood === "number" ||
+        typeof argumentVisibility?.trollingLikelihood === "number" ||
+        typeof argumentVisibility?.offTopicLikelihood === "number" ||
+        typeof argumentVisibility?.illegalOrHarmfulLikelihood === "number" ||
+        typeof argumentVisibility?.quality === "number" ||
+        Array.isArray((argument as any).evidence) && (argument as any).evidence.some((item: any) => hasEvidenceAnalysis(item));
     const isArgumentPending = Boolean((argument as any).pending);
     const visibleComments = commentStates.filter((comment) => {
         const commenterId = resolveUserSummary(comment.createdBy).id;
@@ -758,13 +876,75 @@ export default function ArgumentCard({
                             </div>
                         )}
                         <ContentFactCheckNotice factCheck={(argument as any).contentFactCheck} />
+                        {moderatorMode && hasArgumentAnalysis && (
+                            <ModeratorAnalysisPanel className="mb-2" title="View post analysis">
+                                {(argument as any).aiAnalysis && (
+                                    <div className="mb-2">
+                                        <div className="fw-semibold">AI content analysis</div>
+                                        <div>Is factual: {(argument as any).aiAnalysis?.isFact ? "Yes" : "No"}</div>
+                                        <div>Is opinion: {(argument as any).aiAnalysis?.isOpinion ? "Yes" : "No"}</div>
+                                        {(argument as any).aiAnalysis?.justification && (
+                                            <div>Justification: {String((argument as any).aiAnalysis.justification)}</div>
+                                        )}
+                                        {(argument as any).aiAnalysis?.aiSummary && (
+                                            <div>AI summary: {String((argument as any).aiAnalysis.aiSummary)}</div>
+                                        )}
+                                    </div>
+                                )}
+                                {hasContentFactCheckDetails((argument as any).contentFactCheck) && (
+                                    <div className="mb-2">
+                                        <div className="fw-semibold">Post fact-check</div>
+                                        {(argument as any).contentFactCheck?.verdict && <div>Verdict: {String((argument as any).contentFactCheck.verdict)}</div>}
+                                        {typeof (argument as any).contentFactCheck?.confidence === "number" && (
+                                            <div>Confidence: {formatPercent((argument as any).contentFactCheck.confidence, 1)}</div>
+                                        )}
+                                        {(argument as any).contentFactCheck?.summary && <div>Summary: {String((argument as any).contentFactCheck.summary)}</div>}
+                                        {(argument as any).contentFactCheck?.model && <div>Model: {String((argument as any).contentFactCheck.model)}</div>}
+                                        {Array.isArray((argument as any).contentFactCheck?.sources) && (argument as any).contentFactCheck.sources.length > 0 && (
+                                            <div>
+                                                <div className="fw-semibold">Sources</div>
+                                                <ul className="mb-1 ps-3">
+                                                    {(argument as any).contentFactCheck.sources.map((source: any, idx: number) => (
+                                                        <li key={`${source?.url || "source"}-${idx}`}>
+                                                            {source?.url ? (
+                                                                <a href={source.url} target="_blank" rel="noopener noreferrer">{source?.title || source.url}</a>
+                                                            ) : (
+                                                                <span>{source?.title || "Source"}</span>
+                                                            )}
+                                                            {source?.snippet ? <span className="text-muted"> - {source.snippet}</span> : null}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                <div>
+                                    <div className="fw-semibold">Moderation signals</div>
+                                    {argumentStatus && <div>Status: {argumentStatus}</div>}
+                                    {argumentVisibility?.reason && <div>Reason: {argumentVisibility.reason}</div>}
+                                    {Array.isArray(argumentVisibility?.categories) && argumentVisibility.categories.length > 0 && (
+                                        <div>Categories: {argumentVisibility.categories.join(", ")}</div>
+                                    )}
+                                    {typeof argumentVisibility?.quality === "number" && <div>Quality score: {Math.round(argumentVisibility.quality)}/100</div>}
+                                    {typeof argumentVisibility?.spamLikelihood === "number" && <div>Spam likelihood: {Math.round(argumentVisibility.spamLikelihood)}%</div>}
+                                    {typeof argumentVisibility?.trollingLikelihood === "number" && <div>Trolling likelihood: {Math.round(argumentVisibility.trollingLikelihood)}%</div>}
+                                    {typeof argumentVisibility?.offTopicLikelihood === "number" && <div>Off-topic likelihood: {Math.round(argumentVisibility.offTopicLikelihood)}%</div>}
+                                    {typeof argumentVisibility?.illegalOrHarmfulLikelihood === "number" && (
+                                        <div>Illegal/harmful likelihood: {Math.round(argumentVisibility.illegalOrHarmfulLikelihood)}%</div>
+                                    )}
+                                    {(argument as any).aiModerationProvider && <div>Provider: {String((argument as any).aiModerationProvider)}</div>}
+                                    {(argument as any).aiModerationModel && <div>Model: {String((argument as any).aiModerationModel)}</div>}
+                                </div>
+                            </ModeratorAnalysisPanel>
+                        )}
                         <CollapsibleText
                             text={argument.body}
                             limit={500}
                             id={`argument-body-${argument.id}`}
                             className="mb-2 mt-2"
                         />
-                        <EvidenceList evidence={(argument as any).evidence} />
+                        <EvidenceList evidence={(argument as any).evidence} moderatorMode={moderatorMode} />
                         {/* Ontology tags removed as not needed */}
 
                         {/* Comments */}
@@ -783,6 +963,18 @@ export default function ArgumentCard({
                                         const commentRemoved = c.isRemoved;
                                         const showCommentStatus = moderatorMode && (commentRemoved || !!commentStatusLabel);
                                         const isCommentNoise = commentStatus === "noise";
+                                        const hasCommentAnalysis =
+                                            hasContentFactCheckDetails((c as any).contentFactCheck) ||
+                                            !!(c as any).aiModerationProvider ||
+                                            !!(c as any).aiModerationModel ||
+                                            !!c.visibility?.reason ||
+                                            (Array.isArray(c.visibility?.categories) && c.visibility.categories.length > 0) ||
+                                            typeof c.visibility?.spamLikelihood === "number" ||
+                                            typeof c.visibility?.trollingLikelihood === "number" ||
+                                            typeof c.visibility?.offTopicLikelihood === "number" ||
+                                            typeof c.visibility?.illegalOrHarmfulLikelihood === "number" ||
+                                            typeof c.visibility?.quality === "number" ||
+                                            (Array.isArray((c as any).evidence) && (c as any).evidence.some((item: any) => hasEvidenceAnalysis(item)));
                                         const canRestoreComment = canModerate && !commentRemoved && commentStatus && commentStatus !== "visible" && !isCommentNoise;
                                         const canToggleCommentNoise = canModerate && !commentRemoved && (commentStatus === "visible" || isCommentNoise);
                                         const commenterIsModerator = getIsModerator(commenter.id, commenter.isModerator);
@@ -902,6 +1094,40 @@ export default function ArgumentCard({
                                                 <div className="ps-2 mb-2 mt-2">
                                                     <ContentFactCheckNotice factCheck={(c as any).contentFactCheck} compact />
                                                 </div>
+                                                {moderatorMode && hasCommentAnalysis && (
+                                                    <div className="ps-2 mb-2">
+                                                        <ModeratorAnalysisPanel title="View comment analysis">
+                                                            {hasContentFactCheckDetails((c as any).contentFactCheck) && (
+                                                                <div className="mb-2">
+                                                                    <div className="fw-semibold">Comment fact-check</div>
+                                                                    {(c as any).contentFactCheck?.verdict && <div>Verdict: {String((c as any).contentFactCheck.verdict)}</div>}
+                                                                    {typeof (c as any).contentFactCheck?.confidence === "number" && (
+                                                                        <div>Confidence: {formatPercent((c as any).contentFactCheck.confidence, 1)}</div>
+                                                                    )}
+                                                                    {(c as any).contentFactCheck?.summary && <div>Summary: {String((c as any).contentFactCheck.summary)}</div>}
+                                                                    {(c as any).contentFactCheck?.model && <div>Model: {String((c as any).contentFactCheck.model)}</div>}
+                                                                </div>
+                                                            )}
+                                                            <div>
+                                                                <div className="fw-semibold">Moderation signals</div>
+                                                                {commentStatus && <div>Status: {commentStatus}</div>}
+                                                                {c.visibility?.reason && <div>Reason: {c.visibility.reason}</div>}
+                                                                {Array.isArray(c.visibility?.categories) && c.visibility.categories.length > 0 && (
+                                                                    <div>Categories: {c.visibility.categories.join(", ")}</div>
+                                                                )}
+                                                                {typeof c.visibility?.quality === "number" && <div>Quality score: {Math.round(c.visibility.quality)}/100</div>}
+                                                                {typeof c.visibility?.spamLikelihood === "number" && <div>Spam likelihood: {Math.round(c.visibility.spamLikelihood)}%</div>}
+                                                                {typeof c.visibility?.trollingLikelihood === "number" && <div>Trolling likelihood: {Math.round(c.visibility.trollingLikelihood)}%</div>}
+                                                                {typeof c.visibility?.offTopicLikelihood === "number" && <div>Off-topic likelihood: {Math.round(c.visibility.offTopicLikelihood)}%</div>}
+                                                                {typeof c.visibility?.illegalOrHarmfulLikelihood === "number" && (
+                                                                    <div>Illegal/harmful likelihood: {Math.round(c.visibility.illegalOrHarmfulLikelihood)}%</div>
+                                                                )}
+                                                                {(c as any).aiModerationProvider && <div>Provider: {String((c as any).aiModerationProvider)}</div>}
+                                                                {(c as any).aiModerationModel && <div>Model: {String((c as any).aiModerationModel)}</div>}
+                                                            </div>
+                                                        </ModeratorAnalysisPanel>
+                                                    </div>
+                                                )}
                                                 <CollapsibleText
                                                     text={c.body}
                                                     limit={500}
@@ -909,7 +1135,7 @@ export default function ArgumentCard({
                                                     className="ps-2 mb-2"
                                                 />
                                                 <div className="ps-2 mb-2">
-                                                    <EvidenceList evidence={(c as any).evidence} />
+                                                    <EvidenceList evidence={(c as any).evidence} moderatorMode={moderatorMode} />
                                                 </div>
                                                 {/* Ontology tags removed as not needed */}
                                             </li>

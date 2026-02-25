@@ -42,6 +42,8 @@ npm run user-simulation-create-users
 
 Loads saved users, generates discussion content, and evaluates every AI system on the platform.
 
+It is highly recommended to set the `DISABLE_SENDING_EMAILS` env var to `true` before running this script, to avoid sending large volumes of emails during user creation.
+
 ```bash
 npm run user-simulation-content -- simulation_<timestamp>.json
 ```

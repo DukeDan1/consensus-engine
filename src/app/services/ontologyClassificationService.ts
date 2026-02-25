@@ -11,7 +11,6 @@
 
 import fs from "node:fs/promises";
 import path from "node:path";
-import OpenAI from "openai";
 import { cleanOntologyLabel } from "@/app/lib/ontologyUtils";
 import { routeResponsesClient } from "@/app/services/aiRoutingService";
 
@@ -23,7 +22,7 @@ const DEFAULT_RESPONSES_MODEL = process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2";
 const ONTOLOGY_PATH = path.resolve(process.cwd(), "ontology_categories.json");
 const EMBEDDINGS_PATH = path.resolve(process.cwd(), "ontology_embeddings.json");
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
 
 export type OntologyCategory = {
   id: string;
@@ -174,7 +173,11 @@ async function loadOntologyFromFile(): Promise<OntologyCategory[]> {
 }
 
 async function embedBatch(texts: string[], model = DEFAULT_EMBED_MODEL): Promise<number[][]> {
-  const res = await openai.embeddings.create({ model, input: texts });
+  const routed = await routeResponsesClient({ text: texts.join("\n"), openAiModel: model, openRouterModel: "openai/" + model, ignoreEnvironmentDefaults: true });
+  if (!routed) {
+    return [];
+  }
+  const res = await routed.client.embeddings.create({ model: routed.model, input: texts });
   return res.data.map((r) => r.embedding as unknown as number[]);
 }
 
@@ -287,7 +290,11 @@ async function ensureReady(): Promise<void> {
 }
 
 async function embedQuery(text: string, model = DEFAULT_EMBED_MODEL): Promise<number[]> {
-  const res = await openai.embeddings.create({ model, input: [text] });
+  const routed = await routeResponsesClient({ text, openAiModel: model, openRouterModel: "openai/"+DEFAULT_EMBED_MODEL, ignoreEnvironmentDefaults: true });
+  if (!routed) {
+    return [];
+  }
+  const res = await routed.client.embeddings.create({ model: routed.model, input: [text] });
   const vec = res.data[0].embedding as unknown as number[];
   return normaliseVec(vec);
 }
@@ -356,6 +363,7 @@ export async function classifyTextToOntology(
     openAiModel: responsesModel,
     grokModel: process.env.GROK_RESPONSES_MODEL,
     userId: options.safetyIdentifier,
+    ignoreEnvironmentDefaults: false,
   });
   if (!routed) {
     throw new Error("OpenAI client not configured");

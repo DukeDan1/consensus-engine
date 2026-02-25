@@ -75,19 +75,47 @@ function ensureUniqueUsername(base: string, existing: Set<string>): string {
 // background.  The pool is shuffled once per simulation run and regions are
 // assigned round-robin so every batch gets maximum spread.
 
-const CULTURAL_REGIONS = [
+const ENGLISH_SPEAKING_REGIONS = [
+    "American (Northeast)", "American (Southern US)", "American (Midwest)", "American (West Coast)",
+    "American (Pacific Northwest)", "American (New England)", "American (Texas)",
+    "British (English)", "British (Welsh)", "British (Northern English)",
+    "Scottish", "Irish",
+    "Australian", "Canadian (English-speaking)", "New Zealander",
+    "African-American", "American (Suburban)", "American (Rural)",
+];
+
+const OTHER_REGIONS = [
     "Japanese", "Korean", "Chinese", "Vietnamese", "Thai",
     "Indian (Hindi-speaking)", "Indian (Tamil-speaking)", "Pakistani", "Bangladeshi", "Sri Lankan",
     "Nigerian", "Kenyan", "Ethiopian", "South African", "Ghanaian", "Senegalese",
     "Mexican", "Colombian", "Brazilian", "Argentine", "Peruvian", "Chilean",
-    "German", "French", "Italian", "Polish", "Dutch", "Swedish", "Greek", "Irish", "Scottish",
+    "German", "French", "Italian", "Polish", "Dutch", "Swedish", "Greek",
     "Russian", "Ukrainian", "Turkish", "Iranian", "Egyptian", "Lebanese",
     "Filipino", "Indonesian", "Malaysian",
-    "Australian", "Canadian (Quebecois)", "Jamaican", "Trinidadian",
+    "Canadian (Quebecois)", "Jamaican", "Trinidadian",
     "Native American", "Maori (New Zealand)", "Aboriginal Australian",
     "Arab (Gulf region)", "Israeli", "Kurdish",
-    "African-American", "British (English)", "American (Southern US)", "American (Midwest)",
 ];
+
+// Build a weighted pool: englishSpeakingWeight proportion from English-speaking,
+// the rest from other regions. Default 55% English-speaking.
+const ENGLISH_WEIGHT = (config as any).englishSpeakingWeight ?? 0.55;
+
+function buildWeightedRegionPool(poolSize: number): string[] {
+    const englishCount = Math.round(poolSize * ENGLISH_WEIGHT);
+    const otherCount = poolSize - englishCount;
+    const pool: string[] = [];
+    for (let i = 0; i < englishCount; i++) {
+        pool.push(ENGLISH_SPEAKING_REGIONS[i % ENGLISH_SPEAKING_REGIONS.length]);
+    }
+    for (let i = 0; i < otherCount; i++) {
+        pool.push(OTHER_REGIONS[i % OTHER_REGIONS.length]);
+    }
+    return shuffleArray(pool);
+}
+
+// Build a pool large enough for the configured number of users
+const regionPool = buildWeightedRegionPool(Math.max((config as any).numUsers * 2, 100));
 
 function shuffleArray<T>(arr: T[]): T[] {
     const copy = [...arr];
@@ -98,7 +126,7 @@ function shuffleArray<T>(arr: T[]): T[] {
     return copy;
 }
 
-const shuffledRegions = shuffleArray(CULTURAL_REGIONS);
+const shuffledRegions = regionPool;
 let regionIndex = 0;
 
 function nextRegion(): string {
@@ -135,7 +163,7 @@ async function generateUser(existingUsernames: Set<string>): Promise<GeneratedUs
         `Generate a simulated user profile for a web application.`,
         `This user should have a name and background typical of someone from a ${region} cultural background.`,
         `Use an authentic first name common in that culture — DO NOT default to generic Western names like Maria, John, etc.`,
-        `Vary age widely (18-85). Mix genders evenly across the simulation.`,
+        `Age should skew younger: ~40% aged 18-25, ~25% aged 26-35, ~20% aged 36-50, ~15% aged 51-85. Mix genders evenly across the simulation.`,
         diversityContext,
     ].filter(Boolean).join("\n");
 
@@ -143,6 +171,7 @@ async function generateUser(existingUsernames: Set<string>): Promise<GeneratedUs
         text: prompt,
         openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
         grokModel: process.env.GROK_RESPONSES_MODEL,
+        ignoreEnvironmentDefaults: false,
     });
     if (!routed) {
         throw new Error("OpenAI client not configured");
@@ -177,7 +206,7 @@ async function generateUser(existingUsernames: Set<string>): Promise<GeneratedUs
                         },
                         age: {
                             type: "integer",
-                            description: "Age of the user, between 18 and 85.",
+                            description: "Age of the user, between 18 and 85. Skew younger: most users should be 18-35, fewer should be older.",
                         },
                         name: {
                             type: "string",
