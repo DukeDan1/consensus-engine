@@ -662,7 +662,7 @@ const CATEGORY_ARG_PROMPTS: Record<ContentCategory, { system: string; user: stri
     },
     troll: {
         system: "You are simulating trolling behavior for testing a content moderation system. Write provocative, dismissive, mocking arguments that reference the specific topic. Use internet slang (lol, lmao, ratio, cope, seethe), mockery, all-caps where appropriate, and deliberately inflammatory phrasing.",
-        user: `Generate {count} trolling arguments about this specific topic. Each 1-2 sentences. Be dismissive, confrontational, and provocative about this particular subject. Mostly \"against\" side.`,
+        user: `Generate {count} trolling arguments about this specific topic. Each 1-2 sentences. Be dismissive, confrontational, and provocative about this particular subject. Mostly "against" side.`,
         effort: "low",
     },
     mildAbusive: {
@@ -687,17 +687,17 @@ const CATEGORY_ARG_PROMPTS: Record<ContentCategory, { system: string; user: stri
     },
     highQualityFacts: {
         system: "You are an expert researcher writing high-quality, well-reasoned arguments for a public deliberation platform. Include specific, verifiable facts, real statistics, and references to actual studies or data. Arguments should be articulate, well-structured, and persuasive with real data points — cite actual organisations, real statistics, and genuine research findings.",
-        user: `Write {count} high-quality factual arguments. Each 3-6 sentences with at least 2 specific verifiable claims using real data. Mix \"for\" and \"against\" sides.`,
+        user: `Write {count} high-quality factual arguments. Each 3-6 sentences with at least 2 specific verifiable claims using real data. Mix "for" and "against" sides.`,
         effort: "medium",
     },
     highQualityEvidence: {
         system: "You are an expert researcher writing high-quality, evidence-backed arguments for a public deliberation platform. Include specific, verifiable facts, real statistics, and references to actual studies. Arguments should be articulate and citation-worthy.",
-        user: `Write {count} high-quality evidence-based arguments. Each 3-6 sentences with verifiable claims. Mix \"for\" and \"against\" sides.`,
+        user: `Write {count} high-quality evidence-based arguments. Each 3-6 sentences with verifiable claims. Mix "for" and "against" sides.`,
         effort: "medium",
     },
     average: {
         system: "You are a diverse group of citizens contributing arguments to a public debate platform. Write arguments from different perspectives — some well-reasoned with evidence, some passionate opinions, some short and informal, some detailed and academic. Vary quality and length deliberately. Include a mix of factual claims (some correct, some dubious) and pure opinions.",
-        user: `Write {count} different arguments. Mix \"for\", \"against\", and \"neutral\" sides. Vary argument quality: some excellent, some mediocre, some low-effort. Each 1-5 sentences (20-500 chars). Some should contain specific factual claims.`,
+        user: `Write {count} different arguments. Mix "for", "against", and "neutral" sides. Vary argument quality: some excellent, some mediocre, some low-effort. Each 1-5 sentences (20-500 chars). Some should contain specific factual claims.`,
         effort: "low",
     },
 };

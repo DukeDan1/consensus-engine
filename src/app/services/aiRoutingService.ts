@@ -343,7 +343,7 @@ export async function routeResponsesClient(params: RoutingParams): Promise<Route
  */
 export async function executeWithFallback<T>(
   params: RoutingParams,
-  fn: (routed: RoutedClient) => Promise<T>,
+  fn: (_routed: RoutedClient) => Promise<T>,
 ): Promise<T> {
   const candidates = buildCandidates(params);
   if (candidates.length === 0) {
