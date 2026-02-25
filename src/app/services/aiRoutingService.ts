@@ -287,11 +287,11 @@ export async function routeResponsesClient(params: RoutingParams): Promise<Route
   const candidates = buildCandidates(params);
   if (candidates.length === 0) return null;
 
-  // Try each candidate; OpenAI must pass moderation
+  // Try each candidate; OpenAI must pass moderation (only when fallbacks exist)
   for (let i = 0; i < candidates.length; i++) {
     const candidate = candidates[i];
 
-    if (candidate.provider === "openai") {
+    if (candidate.provider === "openai" && candidates.length > 1) {
       const flagged = await isFlaggedByModeration(params.text);
       if (flagged) {
         console.info("Skipping OpenAI due to moderation flag, trying next provider.", {
@@ -356,7 +356,8 @@ export async function executeWithFallback<T>(
     const candidate = candidates[i];
 
     // OpenAI moderation gate (same logic as routeResponsesClient)
-    if (candidate.provider === "openai") {
+    // Skip moderation when OpenAI is the only candidate — nowhere to fall back to
+    if (candidate.provider === "openai" && candidates.length > 1) {
       const flagged = await isFlaggedByModeration(params.text);
       if (flagged) {
         console.info("Skipping OpenAI due to moderation flag, trying next provider.", {
