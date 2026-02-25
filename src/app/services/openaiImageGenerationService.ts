@@ -142,6 +142,7 @@ export async function generateProfileImage(promptArgs: ProfilePromptArgs, userId
       openAiModel: process.env.OPENAI_IMAGE_MODEL || "gpt-image-1.5",
       grokModel: process.env.GROK_IMAGE_MODEL || "grok-imagine-image",
       userId,
+      ignoreEnvironmentDefaults: true,
     });
     if (!routed) {
       throw new Error("OpenAI client not configured for image generation");

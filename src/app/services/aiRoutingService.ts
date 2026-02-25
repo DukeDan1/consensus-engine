@@ -111,6 +111,7 @@ const DEFAULT_MODELS: Record<Provider, { envKey: string; fallback: string }> = {
 function getDefaultModel(
   provider: Provider,
   overrides?: { openAiModel?: string; grokModel?: string; openRouterModel?: string },
+  ignoreEnvironmentDefaults = false,
 ): string {
   // Per-call overrides take priority
   if (overrides) {
@@ -119,6 +120,8 @@ function getDefaultModel(
     if (provider === "openrouter" && overrides.openRouterModel) return overrides.openRouterModel;
   }
   const { envKey, fallback } = DEFAULT_MODELS[provider];
+  // When ignoreEnvironmentDefaults is true, skip the env var and use the hardcoded fallback
+  if (ignoreEnvironmentDefaults) return fallback;
   return process.env[envKey] || fallback;
 }
 
@@ -165,9 +168,13 @@ function isValidProvider(value: unknown): value is Provider {
  */
 function getForcedDefault(
   paramLevel?: { model: string; provider: Provider },
+  ignoreEnvironmentDefaults = false,
 ): { model?: string; provider: Provider } | null {
   // Param-level override takes priority over env-level
   if (paramLevel) return paramLevel;
+
+  // When ignoreEnvironmentDefaults is true, skip env-level forced provider
+  if (ignoreEnvironmentDefaults) return null;
 
   const envProvider = process.env.FORCED_AI_PROVIDER?.toLowerCase();
   if (envProvider && isValidProvider(envProvider)) {
@@ -213,6 +220,15 @@ export type RoutingParams = {
   forcedDefaultModelAndProvider?: { model: string; provider: Provider };
   /** Logged alongside routing decisions for debugging. */
   userId?: string;
+  /**
+   * When `true`, environment variables for provider/model defaults
+   * (`FORCED_AI_PROVIDER`, `FORCED_AI_MODEL`, `*_RESPONSES_MODEL`) are
+   * ignored — only per-call overrides and hardcoded fallbacks are used.
+   * Set to `true` for embeddings and image-generation calls so they
+   * always follow the openai→grok→openrouter pattern.
+   * @default false
+   */
+  ignoreEnvironmentDefaults?: boolean;
 };
 
 /**
@@ -220,7 +236,8 @@ export type RoutingParams = {
  * settings, API key availability, and per-call model overrides.
  */
 function buildCandidates(params: RoutingParams): Candidate[] {
-  const forced = getForcedDefault(params.forcedDefaultModelAndProvider);
+  const ignore = params.ignoreEnvironmentDefaults ?? false;
+  const forced = getForcedDefault(params.forcedDefaultModelAndProvider, ignore);
   const providerOrder = buildProviderOrder(forced?.provider);
 
   const candidates: Candidate[] = [];
@@ -230,7 +247,7 @@ function buildCandidates(params: RoutingParams): Candidate[] {
     const model =
       forced?.provider === provider && forced.model
         ? forced.model
-        : getDefaultModel(provider, params);
+        : getDefaultModel(provider, params, ignore);
     candidates.push({ client, model, provider });
   }
   return candidates;

@@ -231,7 +231,8 @@ async function generateTopics(count: number): Promise<GeneratedTopic[]> {
         forcedDefaultModelAndProvider: {
             model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
             provider: "grok"
-        }
+        },
+        ignoreEnvironmentDefaults: false,
     });
     if (!routed) throw new Error("AI client not configured");
 
@@ -483,7 +484,8 @@ async function generateAiSummary(report: AiSystemReport, evaluations: AiEvaluati
         forcedDefaultModelAndProvider: {
             model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
             provider: "grok"
-        }
+        },
+        ignoreEnvironmentDefaults: false,
     });
     if (!routed) return "(AI summary unavailable — no client configured)";
 
@@ -593,7 +595,8 @@ async function generateEvidenceUrls(topicTitle: string, argumentBody: string, co
         forcedDefaultModelAndProvider: {
             model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
             provider: "grok"
-        }
+        },
+        ignoreEnvironmentDefaults: false,
     });
     if (!routed) return [];
 
@@ -753,7 +756,8 @@ async function generateCategoryArguments(
         forcedDefaultModelAndProvider: {
             model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
             provider: "grok"
-        }
+        },
+        ignoreEnvironmentDefaults: false,
     });
     if (!routed) throw new Error("AI client not configured");
 
@@ -837,7 +841,8 @@ async function generateCategoryComments(
         forcedDefaultModelAndProvider: {
             model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
             provider: "grok"
-        }
+        },
+        ignoreEnvironmentDefaults: false,
     });
     if (!routed) throw new Error("AI client not configured");
 

@@ -171,6 +171,7 @@ async function generateUser(existingUsernames: Set<string>): Promise<GeneratedUs
         text: prompt,
         openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
         grokModel: process.env.GROK_RESPONSES_MODEL,
+        ignoreEnvironmentDefaults: false,
     });
     if (!routed) {
         throw new Error("OpenAI client not configured");

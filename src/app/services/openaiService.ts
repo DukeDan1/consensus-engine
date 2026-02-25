@@ -15,6 +15,7 @@ export async function getAIAnalysisForArgument(argumentText: string, topicName: 
         openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
         grokModel: process.env.GROK_RESPONSES_MODEL,
         userId,
+        ignoreEnvironmentDefaults: false,
     });
     if (!routed) {
         throw new Error("OpenAI client not configured");
