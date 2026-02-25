@@ -1,6 +1,15 @@
 import { EmailClient, EmailMessage } from "@azure/communication-email";
 
 export async function sendEmail(to: string, subject: string, htmlContent: string, plainTextContent: string): Promise<any> {
+    if (process.env.DISABLE_SENDING_EMAILS === "true") {
+        return new Promise((resolve) => {
+            resolve({
+                status: "Succeeded",
+                messageId: "test-message-id",
+            });
+        });
+    }
+    
     const message: EmailMessage = {
         senderAddress: process.env.EMAIL_SENDER_ADDRESS || "DoNotReply@m.dukedan.uk",
         content: {

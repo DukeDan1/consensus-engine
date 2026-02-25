@@ -1,6 +1,40 @@
 {
     "appUrl": "http://localhost:3000",
-    "baseEmailAddress": "danieltshields@yahoo.com",
-    "numUsers": 25,
-    "concurrency": 50
+    "baseEmailAddress": "dukedan1pp@gmail.com",
+    "numUsers": 100,
+    "concurrency": 20,
+
+    "topicsPerSimulation": 1,
+    "argumentsPerTopic": 10,
+    "commentsPerArgument": 5,
+    "aiProcessingWaitMs": 8000,
+    "voteProbability": 0.6,
+
+    "manualTopics": [
+    {
+        "title": "Should abortion be legal in all cases?",
+        "description": "This topic explores the debate over reproductive rights, balancing personal autonomy with ethical and legal considerations."
+    },
+    {
+        "title": "Should stricter gun control laws be implemented?",
+        "description": "This discusses the balance between public safety and Second Amendment rights in the context of gun violence and ownership."
+    },
+    {
+        "title": "Is a two-state solution viable for Israel and Palestine?",
+        "description": "This topic explores the feasibility and implications of establishing independent Israeli and Palestinian states, addressing historical, political, and security challenges."
+    }],
+
+    "contentDistribution": {
+        "noise": 0.20,
+        "highQualityFacts": 0.20,
+        "highQualityEvidence": 0.15,
+        "troll": 0.05,
+        "mildAbusive": 0.02,
+        "highlyOffensive": 0.01,
+        "mixedTrueFalse": 0.05,
+        "purelyFalse": 0.05,
+        "average": 0.27
+    },
+
+    "englishSpeakingWeight": 0.8
 }

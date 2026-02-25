@@ -387,6 +387,12 @@ export async function GET(
           contentFactCheck: normaliseContentFactCheck(c.contentFactCheck),
           visibility: c.visibility,
           isRemoved: c.isRemoved ?? false,
+          ...(canSeeModeration
+            ? {
+                aiModerationProvider: (c as any).aiModerationProvider,
+                aiModerationModel: (c as any).aiModerationModel,
+              }
+            : {}),
         });
       }
     }
@@ -530,6 +536,12 @@ export async function GET(
           comments: commentList,
           commentCount: commentList.length,
           aiAnalysis: a.aiAnalysis,
+          ...(canSeeModeration
+            ? {
+                aiModerationProvider: (a as any).aiModerationProvider,
+                aiModerationModel: (a as any).aiModerationModel,
+              }
+            : {}),
           ...(argumentSubscription ? { subscription: argumentSubscription } : {}),
         };
       })

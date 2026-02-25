@@ -91,6 +91,8 @@ export type TopicApiResponse = {
     };
     visibility?: {
       status?: 'visible' | 'hidden' | 'needs_review' | 'blocked' | 'noise';
+      rankPenalty?: number;
+      moderatedAt?: string | Date;
       reason?: string;
       categories?: string[];
       spamLikelihood?: number;
@@ -100,6 +102,8 @@ export type TopicApiResponse = {
       quality?: number;
       model?: string;
     };
+    aiModerationProvider?: string;
+    aiModerationModel?: string;
     isRemoved?: boolean;
     pending?: boolean;
     comments: Array<{
@@ -151,6 +155,8 @@ export type TopicApiResponse = {
       };
       visibility?: {
         status?: 'visible' | 'hidden' | 'needs_review' | 'blocked' | 'noise';
+        rankPenalty?: number;
+        moderatedAt?: string | Date;
         reason?: string;
         categories?: string[];
         spamLikelihood?: number;
@@ -160,6 +166,8 @@ export type TopicApiResponse = {
         quality?: number;
         model?: string;
       };
+      aiModerationProvider?: string;
+      aiModerationModel?: string;
       isRemoved?: boolean;
       pending?: boolean;
     }>;
@@ -167,6 +175,7 @@ export type TopicApiResponse = {
       isFact: boolean;
       isOpinion: boolean;
       justification: string;
+      aiSummary?: string;
     };
   }>;
   facts?: Array<{
