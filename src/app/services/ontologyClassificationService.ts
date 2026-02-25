@@ -173,7 +173,7 @@ async function loadOntologyFromFile(): Promise<OntologyCategory[]> {
 }
 
 async function embedBatch(texts: string[], model = DEFAULT_EMBED_MODEL): Promise<number[][]> {
-  const routed = await routeResponsesClient({ text: texts.join("\n"), openAiModel: model, openRouterModel: "openai/"+DEFAULT_EMBED_MODEL, ignoreEnvironmentDefaults: true });
+  const routed = await routeResponsesClient({ text: texts.join("\n"), openAiModel: model, openRouterModel: "openai/" + model, ignoreEnvironmentDefaults: true });
   if (!routed) {
     return [];
   }
