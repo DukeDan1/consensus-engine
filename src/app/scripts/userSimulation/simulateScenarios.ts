@@ -132,7 +132,7 @@ type EvidenceFactCheck = {
     model?: string;
 };
 
-type AiEvaluation = {
+export type AiEvaluation = {
     topicId: string;
     title: string;
     arguments: Array<{
@@ -156,7 +156,7 @@ type AiEvaluation = {
     }>;
 };
 
-type AiSystemReport = {
+export type AiSystemReport = {
     moderation: {
         total: number;
         visible: number;
@@ -209,16 +209,16 @@ type FullSimulationReport = {
 
 // ────────────────────────── Helpers ──────────────────────────
 
-function snippet(text: string, maxLen = 120): string {
+export function snippet(text: string, maxLen = 120): string {
     if (text.length <= maxLen) return text;
     return text.slice(0, maxLen) + "…";
 }
 
-function pick<T>(arr: T[]): T {
+export function pick<T>(arr: T[]): T {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function shuffle<T>(arr: T[]): T[] {
+export function shuffle<T>(arr: T[]): T[] {
     const copy = [...arr];
     for (let i = copy.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -231,7 +231,7 @@ async function sleep(ms: number): Promise<void> {
     return new Promise((r) => setTimeout(r, ms));
 }
 
-async function runBatched<T>(tasks: (() => Promise<T>)[], batchSize: number): Promise<T[]> {
+export async function runBatched<T>(tasks: (() => Promise<T>)[], batchSize: number): Promise<T[]> {
     const results: T[] = [];
     for (let i = 0; i < tasks.length; i += batchSize) {
         const batch = tasks.slice(i, i + batchSize);
@@ -241,7 +241,7 @@ async function runBatched<T>(tasks: (() => Promise<T>)[], batchSize: number): Pr
     return results;
 }
 
-function parseFunctionCallArgs<T>(rawArgs: unknown): T {
+export function parseFunctionCallArgs<T>(rawArgs: unknown): T {
     if (typeof rawArgs === "string") return JSON.parse(rawArgs) as T;
     if (rawArgs && typeof rawArgs === "object") return rawArgs as T;
     throw new Error("Tool call arguments were empty or invalid");
@@ -264,7 +264,7 @@ async function loginUser(appUrl: string, user: SavedUser): Promise<Authenticated
     }
 }
 
-function buildAuthHeaders(token: string, extra?: Record<string, string>): Record<string, string> {
+export function buildAuthHeaders(token: string, extra?: Record<string, string>): Record<string, string> {
     return { ...(extra || {}), Authorization: `Bearer ${token}` };
 }
 
@@ -697,7 +697,7 @@ async function generateCategoryComments(
 
 // ────────────────────────── AI Evaluation ──────────────────────────
 
-function evaluateAiSystems(
+export function evaluateAiSystems(
     evaluations: AiEvaluation[],
 ): AiSystemReport {
     const report: AiSystemReport = {
@@ -1432,7 +1432,9 @@ async function main() {
     console.log(`${"═".repeat(60)}`);
 }
 
-main().catch((err) => {
-    console.error("Scenario simulation failed:", err);
-    process.exitCode = 1;
-});
+if (!process.env.VITEST) {
+    main().catch((err) => {
+        console.error("Scenario simulation failed:", err);
+        process.exitCode = 1;
+    });
+}

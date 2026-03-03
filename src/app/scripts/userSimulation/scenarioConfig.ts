@@ -233,7 +233,6 @@ export const DEFAULT_SCENARIO_CONFIG: ScenarioSimulationConfig = {
         activePosters: 40,
     },
     ai: {
-        // Google Gemma 3 27B via OpenRouter — NOT used elsewhere in the platform
         model: "google/gemini-3-flash-preview",
         //model: "anthropic/claude-sonnet-4.6",
         provider: "openrouter",
