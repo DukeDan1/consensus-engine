@@ -2,7 +2,7 @@
     "appUrl": "http://localhost:3000",
     "baseEmailAddress": "dukedan1pp@gmail.com",
     "numUsers": 100,
-    "concurrency": 20,
+    "concurrency": 50,
 
     "topicsPerSimulation": 1,
     "argumentsPerTopic": 10,

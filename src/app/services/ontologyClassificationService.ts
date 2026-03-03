@@ -173,11 +173,11 @@ async function loadOntologyFromFile(): Promise<OntologyCategory[]> {
 }
 
 async function embedBatch(texts: string[], model = DEFAULT_EMBED_MODEL): Promise<number[][]> {
-  const routed = await routeResponsesClient({ text: texts.join("\n"), openAiModel: model, openRouterModel: "openai/" + model, ignoreEnvironmentDefaults: true });
+  const routed = await routeResponsesClient({ text: texts.join("\n"), openAiModel: model, openRouterModel: "openai/" + model, ignoreEnvironmentDefaults: true, skipModeration: true });
   if (!routed) {
     return [];
   }
-  const res = await routed.client.embeddings.create({ model: routed.model, input: texts });
+  const res = await routed.client.embeddings.create({ model: "text-embedding-3-large", input: texts });
   return res.data.map((r) => r.embedding as unknown as number[]);
 }
 
@@ -290,7 +290,7 @@ async function ensureReady(): Promise<void> {
 }
 
 async function embedQuery(text: string, model = DEFAULT_EMBED_MODEL): Promise<number[]> {
-  const routed = await routeResponsesClient({ text, openAiModel: model, openRouterModel: "openai/"+DEFAULT_EMBED_MODEL, ignoreEnvironmentDefaults: true });
+  const routed = await routeResponsesClient({ text, openAiModel: model, openRouterModel: "openai/"+DEFAULT_EMBED_MODEL, ignoreEnvironmentDefaults: true, skipModeration: true });
   if (!routed) {
     return [];
   }
@@ -381,7 +381,7 @@ export async function classifyTextToOntology(
       type: "function",
       name: "classify_ontology",
     },
-    store: true,
+    ...(routed.provider !== "openrouter" ? { store: true } : {}),
     tools: [
       {
         type: "function",

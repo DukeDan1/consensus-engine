@@ -229,6 +229,7 @@ export type RoutingParams = {
    * @default false
    */
   ignoreEnvironmentDefaults?: boolean;
+  skipModeration?: boolean; // Skips moderation check, should only be used for embeddings or unmoderated models
 };
 
 /**
@@ -292,7 +293,12 @@ export async function routeResponsesClient(params: RoutingParams): Promise<Route
     const candidate = candidates[i];
 
     if (candidate.provider === "openai" && candidates.length > 1) {
-      const flagged = await isFlaggedByModeration(params.text);
+      let flagged = false;
+
+      if (!params.skipModeration) {
+        flagged = await isFlaggedByModeration(params.text);
+      }
+
       if (flagged) {
         console.info("Skipping OpenAI due to moderation flag, trying next provider.", {
           userId: params.userId ?? "system",
