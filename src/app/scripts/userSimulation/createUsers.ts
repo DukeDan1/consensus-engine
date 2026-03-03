@@ -241,7 +241,7 @@ async function generateUser(existingUsernames: Set<string>): Promise<GeneratedUs
         model: routed.model,
         safety_identifier: "user-simulation",
         ...(routed.provider === "grok" ? {} : { reasoning: { effort: "low" } }),
-        store: true,
+        ...(routed.provider !== "openrouter" ? { store: true } : {}),
     });
 
     for (const item of response.output || []) {

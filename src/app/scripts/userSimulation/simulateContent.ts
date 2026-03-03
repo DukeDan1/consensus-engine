@@ -269,7 +269,7 @@ async function generateTopics(count: number): Promise<GeneratedTopic[]> {
         model: routed.model,
         safety_identifier: "user-simulation",
         ...(routed.provider === "grok" ? {} : { reasoning: { effort: "low" } }),
-        store: true,
+        ...(routed.provider !== "openrouter" ? { store: true } : {}),
     });
 
     for (const item of response.output || []) {
@@ -531,7 +531,7 @@ Keep the response under 800 words.`,
             model: routed.model,
             safety_identifier: "user-simulation",
             ...(routed.provider === "grok" ? {} : { reasoning: { effort: "medium" } }),
-            store: true,
+            ...(routed.provider !== "openrouter" ? { store: true } : {}),
         });
 
         const textOutput = response.output?.find((o: any) => o.type === "message");
@@ -637,7 +637,7 @@ async function generateEvidenceUrls(topicTitle: string, argumentBody: string, co
             safety_identifier: "user-simulation",
             ...(routed.provider === "grok" ? {} : { reasoning: { effort: "low" } }),
             tool_choice: "required",
-            store: true,
+            ...(routed.provider !== "openrouter" ? { store: true } : {}),
         });
 
         for (const item of response.output || []) {
@@ -796,7 +796,7 @@ async function generateCategoryArguments(
         model: routed.model,
         safety_identifier: "user-simulation",
         ...(routed.provider === "grok" ? {} : { reasoning: { effort: prompts.effort } }),
-        store: true,
+        ...(routed.provider !== "openrouter" ? { store: true } : {}),
     });
 
     for (const item of response.output || []) {
@@ -880,7 +880,7 @@ async function generateCategoryComments(
         model: routed.model,
         safety_identifier: "user-simulation",
         ...(routed.provider === "grok" ? {} : { reasoning: { effort: "low" } }),
-        store: true,
+        ...(routed.provider !== "openrouter" ? { store: true } : {}),
     });
 
     for (const item of response.output || []) {
@@ -996,8 +996,17 @@ async function runContentSimulation(users: AuthenticatedUser[]): Promise<{
         for (const [i, category] of argCategories.entries()) {
             const idx = categoryIdx.get(category) || 0;
             const pool = generatedByCategory.get(category) || [];
-            const genArg = pool[idx] || { body: "This topic deserves more discussion.", side: "neutral" as const };
             categoryIdx.set(category, idx + 1);
+
+            if (pool.length === 0) {
+                const label = contentCategoryLabels[category];
+                console.warn(`    [${i + 1}/${ARGUMENTS_PER_TOPIC}] ⚠ Skipping ${label} argument — generation failed, no content available`);
+                errors.push(`Skipped argument slot for category ${category} on topic "${topic.title}" — no generated content`);
+                continue;
+            }
+
+            // Cycle through pool with modulo so all slots use real generated content
+            const genArg = pool[idx % pool.length];
 
             const user = pick(users);
             const label = contentCategoryLabels[category];
@@ -1058,13 +1067,18 @@ async function runContentSimulation(users: AuthenticatedUser[]): Promise<{
 
             // Post comments in original randomised order
             const commentCategoryIdx = new Map<ContentCategory, number>();
-            const commentTasks = commentCategories.map((category) => {
+            const commentTasks = commentCategories.flatMap((category) => {
                 const user = pick(users);
                 const idx = commentCategoryIdx.get(category) || 0;
                 const pool = generatedCommentsByCategory.get(category) || [];
-                const genComment = pool[idx] || { body: "Interesting perspective on this." };
                 commentCategoryIdx.set(category, idx + 1);
-                return () => createComment(user, arg.id, genComment);
+                if (pool.length === 0) {
+                    errors.push(`Skipped comment slot for category ${category} on argument ${arg.id} — no generated content`);
+                    return [];
+                }
+                // Cycle through pool with modulo so all slots use real generated content
+                const genComment = pool[idx % pool.length];
+                return [() => createComment(user, arg.id, genComment)];
             });
 
             const createdComments = await runBatched(commentTasks, CONCURRENCY);

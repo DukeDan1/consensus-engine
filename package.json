@@ -15,7 +15,8 @@
     "generate-data": "tsx src/app/scripts/generate-data.ts",
     "set-admin": "tsx src/app/scripts/setAdmin.ts",
     "user-simulation-create-users": "tsx src/app/scripts/userSimulation/createUsers.ts",
-    "user-simulation-content": "tsx src/app/scripts/userSimulation/simulateContent.ts"
+    "user-simulation-content": "tsx src/app/scripts/userSimulation/simulateContent.ts",
+    "user-simulation-scenarios": "tsx src/app/scripts/userSimulation/simulateScenarios.ts"
   },
   "dependencies": {
     "@azure/communication-email": "^1.1.0",

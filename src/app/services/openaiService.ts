@@ -38,7 +38,7 @@ export async function getAIAnalysisForArgument(argumentText: string, topicName: 
         safety_identifier: userId ? String(userId) : "system",
         ...(routed.provider === "grok" ? {} : { reasoning: { effort: "low" } }),
         tool_choice: "required",
-        store: true,
+        ...(routed.provider !== "openrouter" ? { store: true } : {}),
         tools: [
             { type: "web_search" },
             {
