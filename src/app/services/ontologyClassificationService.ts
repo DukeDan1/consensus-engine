@@ -177,7 +177,7 @@ async function embedBatch(texts: string[], model = DEFAULT_EMBED_MODEL): Promise
   if (!routed) {
     return [];
   }
-  const res = await routed.client.embeddings.create({ model: "text-embedding-3-large", input: texts });
+  const res = await routed.client.embeddings.create({ model: routed.model, input: texts });
   return res.data.map((r) => r.embedding as unknown as number[]);
 }
 
