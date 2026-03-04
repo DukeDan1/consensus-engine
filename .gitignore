@@ -44,3 +44,4 @@ next-env.d.ts
 
 simulation_*.json
 content_simulation_*.json
+scenario_simulation_*.json

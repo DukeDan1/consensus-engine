@@ -12,6 +12,14 @@ type FactsResponse = {
         sourceArgument?: string;
         sourceComment?: string;
         createdAt?: string;
+        upvoteCount?: number;
+        downvoteCount?: number;
+        score?: number;
+        latestReassessment?: {
+            reassessedAt: string;
+            action: string;
+            rationale: string;
+        };
     }>;
 };
 
@@ -19,6 +27,9 @@ type TopicMeta = {
     topic: {
         id: string;
         title: string;
+    };
+    viewer: {
+        canModerate: boolean;
     };
 };
 
@@ -37,7 +48,10 @@ async function fetchTopicTitle(id: string, cookieHeader: string): Promise<TopicM
     const res = await fetch(url, { headers: { "Cache-Control": "no-store", cookie: cookieHeader } }).catch(() => null);
     if (!res) return null;
     const data = await res.json();
-    return { topic: { id: data.topic?.id ?? id, title: data.topic?.title ?? "" } };
+    return {
+        topic: { id: data.topic?.id ?? id, title: data.topic?.title ?? "" },
+        viewer: { canModerate: !!data?.meta?.viewer?.canModerate },
+    };
 }
 
 export default async function TopicFactsPage({ params }: any) {
@@ -51,6 +65,7 @@ export default async function TopicFactsPage({ params }: any) {
     }
 
     const topicId = facts.topicId ?? id;
+    const canModerate = topicMeta.viewer.canModerate;
 
     return (
         <div className="container py-4">
@@ -93,7 +108,7 @@ export default async function TopicFactsPage({ params }: any) {
             ) : (
                 <ul className="list-group">
                     {facts.facts.map((fact) => (
-                        <FactCard key={fact.id} fact={fact} topicId={topicId} />
+                        <FactCard key={fact.id} fact={fact} topicId={topicId} canModerate={canModerate} />
                     ))}
                 </ul>
             )}

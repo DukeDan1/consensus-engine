@@ -200,6 +200,7 @@ export default async function TopicPage({ params, searchParams }: any) {
         arguments={data.arguments}
         facts={data.facts}
         moderatorMode={moderatorMode}
+        canModerate={canModerate}
         viewerId={data.meta.viewer?.id}
       />
 

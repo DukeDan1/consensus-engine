@@ -172,6 +172,7 @@ Note: this does **not** retry on request failure — you only get the first elig
 | `MODERATION_ENABLED` | `true` | Toggle for AI content moderation on user-submitted text. Set to `false` to disable. |
 | `CONTENT_FACT_CHECK_ENABLED` | `true` | Toggle for AI fact-checking on arguments and comments. Set to `false` to disable. |
 | `EVIDENCE_FACT_CHECK_ENABLED` | `true` | Toggle for AI fact-checking on evidence/citation attachments. Set to `false` to disable. |
+| `FACT_RECHECK_ENABLED` | `false` | Toggle for periodic (daily) AI reassessment of facts based on user votes and feedback. Set to `true` to enable. Requires a cron job calling `POST /api/admin/facts-recheck`. |
 
 ## 🐳 Infrastructure (Docker)
 

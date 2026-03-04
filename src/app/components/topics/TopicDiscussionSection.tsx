@@ -12,6 +12,7 @@ type Props = {
   argumentQuery: string;
   commentQuery: string;
   moderatorMode?: boolean;
+  canModerate?: boolean;
   viewerId?: string;
   arguments: TopicApiResponse["arguments"];
   facts?: TopicApiResponse["facts"];
@@ -22,6 +23,7 @@ export default function TopicDiscussionSection({
   argumentQuery,
   commentQuery,
   moderatorMode = false,
+  canModerate = false,
   viewerId,
   arguments: initialArguments,
   facts,
@@ -76,7 +78,7 @@ export default function TopicDiscussionSection({
           </div>
           <ul className="list-group mb-4">
             {facts.slice(0, 3).map((fact) => (
-              <FactCard fact={fact} key={fact.id} topicId={topicId} />
+              <FactCard fact={fact} key={fact.id} topicId={topicId} canModerate={canModerate} />
             ))}
           </ul>
         </div>
