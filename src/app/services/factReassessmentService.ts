@@ -254,11 +254,14 @@ export async function reassessFact(
 
 /**
  * Determines whether a fact has changed enough since its last check
- * to warrant a reassessment.
+ * to warrant a reassessment based on vote deltas only.
  *
  * A fact needs reassessment if:
- * - At least 10 new votes (up + down) since last check, OR
- * - At least 1 new rationale comment since last check
+ * - At least 10 new votes (up + down) since last check
+ *
+ * Note: This function does not evaluate new rationale comments.
+ * Use factNeedsReassessmentWithComments(...) when comment growth
+ * should also trigger reassessment.
  */
 export function factNeedsReassessment(fact: IFact): boolean {
     const currentTotalVotes = (fact.upvoteCount ?? 0) + (fact.downvoteCount ?? 0);
@@ -267,10 +270,6 @@ export function factNeedsReassessment(fact: IFact): boolean {
 
     if (newVotes >= 10) return true;
 
-    // We also need to check for new comments with reasons — this is done by
-    // comparing a stored count of comments at last check time
-    // The caller is expected to provide the current comment count and compare
-    // In the daily check, we count how many vote-reasons exist now vs at last check
     return false;
 }
 
