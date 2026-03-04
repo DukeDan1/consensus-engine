@@ -237,7 +237,7 @@ export const DEFAULT_SCENARIO_CONFIG: ScenarioSimulationConfig = {
         //model: "anthropic/claude-sonnet-4.6",
         provider: "openrouter",
     },
-    concurrency: 20,
+    concurrency: 100,
     argumentsPerTopic: 10,
     commentsPerArgument: 5,
     aiProcessingWaitMs: 10000,

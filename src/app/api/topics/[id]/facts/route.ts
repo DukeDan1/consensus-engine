@@ -22,21 +22,43 @@ export async function GET(_request: NextRequest, ctx: any) {
         if (!topic || topic.isActive === false || (visibilityStatus && ["hidden", "blocked", "needs_review", "noise"].includes(visibilityStatus))) {
             return NextResponse.json({ error: "Topic not found" }, { status: 404 });
         }
-        const facts = await Fact.find({ topic: topicObjectId })
+        const facts = await Fact.find({
+            topic: topicObjectId,
+            $or: [{ status: "active" }, { status: { $exists: false } }]
+        })
             .sort({ createdAt: -1 })
             .limit(200)
-            .select({ text: 1, sourceArgument: 1, sourceComment: 1, createdAt: 1 })
+            .select({
+                text: 1, sourceArgument: 1, sourceComment: 1, createdAt: 1,
+                upvoteCount: 1, downvoteCount: 1, score: 1,
+                reassessmentHistory: { $slice: -1 },
+            })
             .lean();
 
         return NextResponse.json({
             topicId: id,
-            facts: facts.map((fact) => ({
-                id: fact._id?.toString?.() ?? "",
-                text: fact.text,
-                sourceArgument: fact.sourceArgument?.toString?.() ?? "",
-                sourceComment: fact.sourceComment?.toString?.() ?? "",
-                createdAt: fact.createdAt,
-            })),
+            facts: facts.map((fact) => {
+                const latestReassessment = fact.reassessmentHistory?.length
+                    ? fact.reassessmentHistory[fact.reassessmentHistory.length - 1]
+                    : undefined;
+                return {
+                    id: fact._id?.toString?.() ?? "",
+                    text: fact.text,
+                    sourceArgument: fact.sourceArgument?.toString?.() ?? "",
+                    sourceComment: fact.sourceComment?.toString?.() ?? "",
+                    createdAt: fact.createdAt,
+                    upvoteCount: fact.upvoteCount ?? 0,
+                    downvoteCount: fact.downvoteCount ?? 0,
+                    score: fact.score ?? 0,
+                    latestReassessment: latestReassessment
+                        ? {
+                            reassessedAt: (latestReassessment as any).reassessedAt,
+                            action: (latestReassessment as any).action,
+                            rationale: (latestReassessment as any).rationale,
+                        }
+                        : undefined,
+                };
+            }),
         });
     } catch (err) {
         console.error("Failed to fetch facts", err);

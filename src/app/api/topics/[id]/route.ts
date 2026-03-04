@@ -462,10 +462,17 @@ export async function GET(
   }
 
   // Fetch derived facts for this topic (limit reasonable number)
-  const facts = await Fact.find({ topic: topic._id })
+  const facts = await Fact.find({
+    topic: topic._id,
+    $or: [{ status: "active" }, { status: { $exists: false } }]
+  })
     .sort({ createdAt: -1 })
     .limit(100)
-    .select({ text: 1, sourceArgument: 1, sourceComment: 1, createdAt: 1 })
+    .select({
+      text: 1, sourceArgument: 1, sourceComment: 1, createdAt: 1,
+      upvoteCount: 1, downvoteCount: 1, score: 1,
+      reassessmentHistory: { $slice: -1 },
+    })
     .lean();
 
   const response = {
@@ -546,13 +553,28 @@ export async function GET(
         };
       })
     ),
-    facts: facts.map((f) => ({
-      id: f._id,
-      text: f.text,
-      sourceArgument: f.sourceArgument?.toString?.() || "",
-      sourceComment: f.sourceComment?.toString?.() || "",
-      createdAt: f.createdAt,
-    })),
+    facts: facts.map((f) => {
+      const latestReassessment = (f as any).reassessmentHistory?.length
+        ? (f as any).reassessmentHistory[(f as any).reassessmentHistory.length - 1]
+        : undefined;
+      return {
+        id: f._id,
+        text: f.text,
+        sourceArgument: f.sourceArgument?.toString?.() || "",
+        sourceComment: f.sourceComment?.toString?.() || "",
+        createdAt: f.createdAt,
+        upvoteCount: (f as any).upvoteCount ?? 0,
+        downvoteCount: (f as any).downvoteCount ?? 0,
+        score: (f as any).score ?? 0,
+        latestReassessment: latestReassessment
+          ? {
+              reassessedAt: latestReassessment.reassessedAt,
+              action: latestReassessment.action,
+              rationale: latestReassessment.rationale,
+            }
+          : undefined,
+      };
+    }),
     meta: {
       ordering: isRelevant ? "relevant" : "newest",
       returnedArguments: combinedArguments.length,

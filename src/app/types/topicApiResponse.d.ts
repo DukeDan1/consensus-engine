@@ -184,6 +184,14 @@ export type TopicApiResponse = {
     sourceArgument?: string; // argument id fact was derived from
     sourceComment?: string; // comment id fact was derived from
     createdAt?: string;
+    upvoteCount?: number;
+    downvoteCount?: number;
+    score?: number;
+    latestReassessment?: {
+      reassessedAt: string;
+      action: string;
+      rationale: string;
+    };
   }>;
   meta: {
     ordering: "relevant" | "newest";
