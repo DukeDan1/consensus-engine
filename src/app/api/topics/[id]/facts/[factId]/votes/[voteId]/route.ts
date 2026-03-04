@@ -40,9 +40,20 @@ export async function DELETE(req: NextRequest, ctx: any) {
         }
     }
 
+    const topicObjectId = new mongoose.Types.ObjectId(id);
+    const factObjectId = new mongoose.Types.ObjectId(factId);
+
+    // Security check: ensure factId actually belongs to the topic in the URL
+    const fact = await Fact.findOne({ _id: factObjectId, topic: topicObjectId })
+        .select({ _id: 1 })
+        .lean();
+    if (!fact) {
+        return NextResponse.json({ error: "Fact not found" }, { status: 404 });
+    }
+
     const vote = await FactVote.findOne({
         _id: new mongoose.Types.ObjectId(voteId),
-        fact: new mongoose.Types.ObjectId(factId),
+        fact: factObjectId,
     });
     if (!vote) {
         return NextResponse.json({ error: "Vote not found" }, { status: 404 });
@@ -53,7 +64,6 @@ export async function DELETE(req: NextRequest, ctx: any) {
     await vote.save();
 
     // Recount votes to keep cached counts accurate
-    const factObjectId = new mongoose.Types.ObjectId(factId);
     const upCount = await FactVote.countDocuments({ fact: factObjectId, value: 1 }).exec();
     const downCount = await FactVote.countDocuments({ fact: factObjectId, value: -1 }).exec();
     await Fact.findByIdAndUpdate(factObjectId, {
