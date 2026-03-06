@@ -442,7 +442,7 @@ describe("POST /api/topics/:id/facts/:factId (manual reassessment)", () => {
     mockReassessFact.mockResolvedValue({
       action: "kept",
       rationale: "Confirmed accurate",
-      model: "gpt-5.2",
+      model: "gpt-5.4",
     });
 
     const req = makeRequest({}, "POST");

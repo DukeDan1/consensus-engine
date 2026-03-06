@@ -94,7 +94,7 @@ describe('moderationService.moderateUserGeneratedText', () => {
     expect(result.categories).toEqual(['illegal']);
     expect(result.illegalOrHarmfulLikelihood).toBe(80);
     expect(result.shortReason).toBe('bad');
-    expect(result.model).toBe('gpt-5.2');
+    expect(result.model).toBe('gpt-5.4');
     expect(mockResponsesCreate).toHaveBeenCalledTimes(1);
   });
 

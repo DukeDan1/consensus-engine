@@ -74,7 +74,7 @@ describe("aiRoutingService", () => {
 
       expect(result).not.toBeNull();
       expect(result?.provider).toBe("openai");
-      expect(result?.model).toBe("gpt-5.2");
+      expect(result?.model).toBe("gpt-5.4");
     });
 
     it("returns Grok client when only Grok key is set", async () => {
@@ -96,7 +96,7 @@ describe("aiRoutingService", () => {
       const result = await routeResponsesClient({ text: "Hello world" });
 
       expect(result?.provider).toBe("openrouter");
-      expect(result?.model).toBe("openai/gpt-5.2");
+      expect(result?.model).toBe("openai/gpt-5.4");
     });
 
     // ── Model selection ──
@@ -377,7 +377,7 @@ describe("aiRoutingService", () => {
 
       expect(result?.provider).toBe("openai");
       // Should use hardcoded fallback, not the env var
-      expect(result?.model).toBe("gpt-5.2");
+      expect(result?.model).toBe("gpt-5.4");
     });
 
     it("ignores FORCED_AI_PROVIDER env var when ignoreEnvironmentDefaults is true", async () => {
@@ -397,7 +397,7 @@ describe("aiRoutingService", () => {
 
       // Should follow default openai→grok→openrouter order, not forced grok
       expect(result?.provider).toBe("openai");
-      expect(result?.model).toBe("gpt-5.2");
+      expect(result?.model).toBe("gpt-5.4");
     });
 
     it("still honours param-level forcedDefaultModelAndProvider when ignoreEnvironmentDefaults is true", async () => {
@@ -656,7 +656,7 @@ describe("aiRoutingService", () => {
       // Should route to OpenAI (default order), not env-forced grok
       expect(result).toEqual({ id: "resp-openai" });
       expect(fn.mock.calls[0][0].provider).toBe("openai");
-      expect(fn.mock.calls[0][0].model).toBe("gpt-5.2");
+      expect(fn.mock.calls[0][0].model).toBe("gpt-5.4");
     });
 
     it("uses hardcoded fallback models when ignoreEnvironmentDefaults is true", async () => {
@@ -727,7 +727,7 @@ describe("aiRoutingService", () => {
       expect(result).toEqual({ id: "resp-grok" });
       // First call: OpenAI with hardcoded fallback
       expect(fn.mock.calls[0][0].provider).toBe("openai");
-      expect(fn.mock.calls[0][0].model).toBe("gpt-5.2");
+      expect(fn.mock.calls[0][0].model).toBe("gpt-5.4");
       // Second call: Grok with hardcoded fallback
       expect(fn.mock.calls[1][0].provider).toBe("grok");
       expect(fn.mock.calls[1][0].model).toBe("grok-4-1-fast-non-reasoning");
