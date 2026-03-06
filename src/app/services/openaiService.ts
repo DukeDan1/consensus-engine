@@ -12,7 +12,7 @@ export type AIAnalysisResult = {
 export async function getAIAnalysisForArgument(argumentText: string, topicName: String, userId?: string): Promise<AIAnalysisResult> {
     const routed = await routeResponsesClient({
         text: argumentText,
-        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.4",
         grokModel: process.env.GROK_RESPONSES_MODEL,
         userId,
         ignoreEnvironmentDefaults: false,

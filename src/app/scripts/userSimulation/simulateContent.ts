@@ -226,7 +226,7 @@ function parseFunctionCallArgs<T>(rawArgs: unknown): T {
 async function generateTopics(count: number): Promise<GeneratedTopic[]> {
     const routed = await routeResponsesClient({
         text: "Generate discussion topics for a public deliberation platform",
-        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.4",
         grokModel: process.env.GROK_RESPONSES_MODEL,
         forcedDefaultModelAndProvider: {
             model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
@@ -479,7 +479,7 @@ function evaluateAiSystems(evaluations: AiEvaluation[]): AiSystemReport {
 async function generateAiSummary(report: AiSystemReport, evaluations: AiEvaluation[]): Promise<string> {
     const routed = await routeResponsesClient({
         text: "Evaluate AI system effectiveness",
-        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.4",
         grokModel: process.env.GROK_RESPONSES_MODEL,
         forcedDefaultModelAndProvider: {
             model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
@@ -590,7 +590,7 @@ const MANUAL_TOPICS: GeneratedTopic[] = ((config as any).manualTopics || []).fil
 async function generateEvidenceUrls(topicTitle: string, argumentBody: string, count: number = 2): Promise<Array<{ url: string; kind: "link" }>> {
     const routed = await routeResponsesClient({
         text: `Find evidence URLs for: ${topicTitle}`,
-        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.4",
         grokModel: process.env.GROK_RESPONSES_MODEL,
         forcedDefaultModelAndProvider: {
             model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
@@ -751,7 +751,7 @@ async function generateCategoryArguments(
 
     const routed = await routeResponsesClient({
         text: `Generate ${category} arguments for: ${topicTitle}`,
-        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.4",
         grokModel: process.env.GROK_RESPONSES_MODEL,
         forcedDefaultModelAndProvider: {
             model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",
@@ -836,7 +836,7 @@ async function generateCategoryComments(
 
     const routed = await routeResponsesClient({
         text: `Generate ${category} comments about: ${topicTitle}`,
-        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+        openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.4",
         grokModel: process.env.GROK_RESPONSES_MODEL,
         forcedDefaultModelAndProvider: {
             model: process.env.GROK_RESPONSES_MODEL || "grok-4-1",

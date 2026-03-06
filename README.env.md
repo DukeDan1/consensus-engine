@@ -20,13 +20,13 @@ Each provider has a default model that can be overridden via env var. Per-call o
 
 | Variable | Default | Description |
 |---|---|---|
-| `OPENAI_RESPONSES_MODEL` | `gpt-5.2` | Default text/responses model for OpenAI. Used across all services (moderation, fact-checking, analysis, ontology, simulation scripts). |
-| `OPENAI_MODERATION_MODEL` | Value of `OPENAI_RESPONSES_MODEL` → `gpt-5.2` | Model used specifically for AI content moderation. Falls back to the general OpenAI model. |
+| `OPENAI_RESPONSES_MODEL` | `gpt-5.4` | Default text/responses model for OpenAI. Used across all services (moderation, fact-checking, analysis, ontology, simulation scripts). |
+| `OPENAI_MODERATION_MODEL` | Value of `OPENAI_RESPONSES_MODEL` → `gpt-5.4` | Model used specifically for AI content moderation. Falls back to the general OpenAI model. |
 | `OPENAI_EMBED_MODEL` | — | Model used for generating text embeddings (ontology classification). |
 | `OPENAI_IMAGE_MODEL` | `gpt-image-1.5` | Model used for OpenAI image generation. |
 | `GROK_RESPONSES_MODEL` | `grok-4-1-fast-non-reasoning` | Default text model for Grok responses. |
 | `GROK_IMAGE_MODEL` | — | Model used for Grok image generation. |
-| `OPENROUTER_RESPONSES_MODEL` | `openai/gpt-5.2` | Default text model for OpenRouter responses. |
+| `OPENROUTER_RESPONSES_MODEL` | `openai/gpt-5.4` | Default text model for OpenRouter responses. |
 
 ## 🔀 AI Provider — Routing & Fallback
 
@@ -203,13 +203,13 @@ OPENAI_API_KEY=
 # OPENROUTER_API_KEY=
 
 # ── AI Model Overrides (optional) ──
-# OPENAI_RESPONSES_MODEL=gpt-5.2
+# OPENAI_RESPONSES_MODEL=gpt-5.4
 # GROK_RESPONSES_MODEL=grok-4-1-fast-non-reasoning
-# OPENROUTER_RESPONSES_MODEL=openai/gpt-5.2
+# OPENROUTER_RESPONSES_MODEL=openai/gpt-5.4
 
 # ── Force a specific provider (optional) ──
 # FORCED_AI_PROVIDER=openai
-# FORCED_AI_MODEL=gpt-5.2
+# FORCED_AI_MODEL=gpt-5.4
 
 # ── Email (optional) ──
 # AZURE_COMMUNICATION_CONNECTION_STRING=

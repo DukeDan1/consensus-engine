@@ -133,7 +133,7 @@ export async function moderateUserGeneratedText(params: {
 
   const routed = await routeResponsesClient({
     text: trimmed,
-    openAiModel: process.env.OPENAI_MODERATION_MODEL || process.env.OPENAI_RESPONSES_MODEL || 'gpt-5.2',
+    openAiModel: process.env.OPENAI_MODERATION_MODEL || process.env.OPENAI_RESPONSES_MODEL || 'gpt-5.4',
     grokModel: process.env.GROK_RESPONSES_MODEL,
     userId: userId ? String(userId) : undefined,
   });

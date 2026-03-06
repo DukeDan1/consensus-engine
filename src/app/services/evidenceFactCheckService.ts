@@ -254,7 +254,7 @@ async function requestFactCheck(params: {
   const textForRouting = params.text || params.claimText || params.url;
   const routed = await routeResponsesClient({
     text: textForRouting,
-    openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.2",
+    openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.4",
     grokModel: process.env.GROK_RESPONSES_MODEL,
     userId: params.userId,
     ignoreEnvironmentDefaults: false,
