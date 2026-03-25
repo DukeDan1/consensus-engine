@@ -16,6 +16,7 @@ import { getAuthSession } from "@/app/services/authSessionService";
 import Fact from "@/app/models/facts";
 import FactVote from "@/app/models/factVote";
 import User from "@/app/models/user";
+import mongoose from "mongoose";
 import { reassessFact, factNeedsReassessmentWithComments } from "@/app/services/factReassessmentService";
 
 const FACT_RECHECK_ENABLED =
@@ -42,15 +43,36 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        // Get all active facts (including those without status field for backward compatibility)
-        const facts = await Fact.find({
-            $or: [{ status: "active" }, { status: { $exists: false } }]
-        }).exec();
+        // Optional: limit to specific fact IDs (e.g. from simulation scripts)
+        let factIdFilter: mongoose.Types.ObjectId[] | null = null;
+        try {
+            const body = await req.json().catch(() => ({}));
+            if (Array.isArray(body?.factIds) && body.factIds.length > 0) {
+                factIdFilter = body.factIds
+                    .filter((id: unknown) => typeof id === "string" && mongoose.isValidObjectId(id))
+                    .map((id: string) => new mongoose.Types.ObjectId(id));
+            }
+        } catch {
+            // no body or not JSON — process all facts
+        }
+
+        // Get active facts, optionally scoped to the provided IDs
+        const query: Record<string, unknown> = {
+            $or: [{ status: "active" }, { status: { $exists: false } }],
+        };
+        if (factIdFilter && factIdFilter.length > 0) {
+            query._id = { $in: factIdFilter };
+        }
+        const facts = await Fact.find(query).exec();
 
         const results: Array<{
             factId: string;
             action: string;
             skipped: boolean;
+            previousText?: string;
+            updatedText?: string;
+            rationale?: string;
+            model?: string;
             error?: string;
         }> = [];
 
@@ -77,6 +99,10 @@ export async function POST(req: NextRequest) {
                     factId: fact._id.toString(),
                     action: result.action,
                     skipped: false,
+                    previousText: result.action === "updated" ? fact.reassessmentHistory?.[fact.reassessmentHistory.length - 1]?.previousText : undefined,
+                    updatedText: result.updatedText,
+                    rationale: result.rationale,
+                    model: result.model,
                 });
             } catch (err: any) {
                 console.error(`Failed to reassess fact ${fact._id}`, err);

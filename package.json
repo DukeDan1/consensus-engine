@@ -16,7 +16,8 @@
     "set-admin": "tsx src/app/scripts/setAdmin.ts",
     "user-simulation-create-users": "tsx src/app/scripts/userSimulation/createUsers.ts",
     "user-simulation-content": "tsx src/app/scripts/userSimulation/simulateContent.ts",
-    "user-simulation-scenarios": "tsx src/app/scripts/userSimulation/simulateScenarios.ts"
+    "user-simulation-scenarios": "tsx src/app/scripts/userSimulation/simulateScenarios.ts",
+    "user-simulation-fact-voting": "tsx src/app/scripts/userSimulation/simulateFactVoting.ts"
   },
   "dependencies": {
     "@azure/communication-email": "^1.1.0",
