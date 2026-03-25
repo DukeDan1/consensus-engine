@@ -127,7 +127,7 @@ type FullReport = {
 
 // ────────────────────────── Scenario Definitions ──────────────────────────
 
-const FACT_VOTING_SCENARIOS: FactVotingScenario[] = [
+export const FACT_VOTING_SCENARIOS: FactVotingScenario[] = [
     {
         id: "fv_1_validate_accurate",
         name: "Scenario 1: Community Validates Accurate Facts",
@@ -174,11 +174,11 @@ const FACT_VOTING_SCENARIOS: FactVotingScenario[] = [
 
 // ────────────────────────── Helpers ──────────────────────────
 
-function pick<T>(arr: T[]): T {
+export function pick<T>(arr: T[]): T {
     return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function shuffle<T>(arr: T[]): T[] {
+export function shuffle<T>(arr: T[]): T[] {
     const copy = [...arr];
     for (let i = copy.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -191,7 +191,7 @@ async function sleep(ms: number): Promise<void> {
     return new Promise((r) => setTimeout(r, ms));
 }
 
-function buildAuthHeaders(token: string, extra?: Record<string, string>): Record<string, string> {
+export function buildAuthHeaders(token: string, extra?: Record<string, string>): Record<string, string> {
     return { ...(extra || {}), Authorization: `Bearer ${token}` };
 }
 
@@ -339,7 +339,7 @@ type VoteTask = {
     errorLabel?: string;
 };
 
-async function castVotesBatch(
+export async function castVotesBatch(
     appUrl: string,
     tasks: VoteTask[],
 ): Promise<{ votes: FactVoteCast[]; errors: string[] }> {
@@ -847,7 +847,7 @@ async function fetchAllFactsForTopics(appUrl: string, facts: FactInfo[], token: 
     return allFacts;
 }
 
-function extractReassessmentResults(recheckResponse: any, targetFactIds?: Set<string>): ReassessmentResult[] {
+export function extractReassessmentResults(recheckResponse: any, targetFactIds?: Set<string>): ReassessmentResult[] {
     if (!recheckResponse?.results) return [];
     const all = recheckResponse.results.map((r: any) => ({
         factId: r.factId,
@@ -862,7 +862,7 @@ function extractReassessmentResults(recheckResponse: any, targetFactIds?: Set<st
     return all;
 }
 
-function computeMetrics(
+export function computeMetrics(
     reassessments: ReassessmentResult[],
     votes: FactVoteCast[],
     expectedAction: string,
@@ -902,7 +902,7 @@ function computeMetrics(
 
 // ────────────────────────── CLI & Main ──────────────────────────
 
-function parseArgs(): {
+export function parseArgs(): {
     inputFile: string;
     scenarioFilter: number[] | null;
     waitMs: number;
