@@ -1,5 +1,9 @@
 # Consensus Engine
 
+## Repository Details and Deployed Application
+- Repository: https://github.com/DukeDan1/consensus-engine
+- Deployed app: https://ce.dukedan.uk
+
 ## Overview
 The project builds an online consensus management platform that structures debates, reduces misinformation, and helps users reach agreement through AI-assisted mediation. It uses LLMs for neutral moderation, argument summarisation, conflict detection, and guidance toward compromise. Users can tag evidence from credible sources, browse ongoing discussions, and view final consensus outcomes with supporting references. The system runs on Next.js/React with a MongoDB backend for arguments, evidence, and consensus data.
 
