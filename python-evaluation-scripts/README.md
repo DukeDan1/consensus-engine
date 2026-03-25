@@ -7,7 +7,7 @@ Post-processing and reporting scripts for analysing simulation output from the C
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install openai pymongo python-dotenv numpy pandas nltk
+pip install openai pymongo python-dotenv numpy pandas nltk rouge-score scikit-learn
 ```
 
 A `.env` file (or exported environment variables) is required for scripts that connect to MongoDB or call the OpenAI API:
@@ -23,7 +23,7 @@ OPENAI_API_KEY=sk-...
 
 ### `report_simulation.py`
 
-Analyses `content_simulation_*.json` reports produced by `simulateScenarios.ts`. Prints a per-scenario breakdown of moderation, fact-checking, and trust-scoring performance, then a cross-scenario summary.
+Analyses `scenario_simulation_*.json` reports produced by `simulateScenarios.ts`. Prints a per-scenario breakdown of moderation, fact-checking, and trust-scoring performance, then a cross-scenario summary.
 
 ```bash
 python3 report_simulation.py <file.json>
