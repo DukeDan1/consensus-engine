@@ -63,32 +63,48 @@ export async function POST(req: NextRequest) {
             updateFields.reason = reason;
         }
 
+        let previousValue: 1 | -1 | null = null;
+
         try {
-            await FactVote.findOneAndUpdate(
+            const previous = await FactVote.findOneAndUpdate(
                 { user: user._id, fact: factObjectId },
                 { $set: updateFields },
                 { upsert: true, new: false, setDefaultsOnInsert: true }
             ).exec();
+            // new: false returns the pre-update doc; null means it was a fresh insert
+            previousValue = (previous?.value as 1 | -1) ?? null;
         } catch (err: any) {
             if (err?.code === 11000) {
-                // duplicate key race — continue to recount
-            } else {
-                throw err;
+                // Duplicate key race (two concurrent new votes for same user/fact).
+                // Fall back to a recount for this request only — the winning request
+                // will handle the atomic increment correctly.
+                const upCount = await FactVote.countDocuments({ fact: factObjectId, value: 1 }).exec();
+                const downCount = await FactVote.countDocuments({ fact: factObjectId, value: -1 }).exec();
+                await Fact.findByIdAndUpdate(factObjectId, {
+                    upvoteCount: upCount,
+                    downvoteCount: downCount,
+                    score: upCount - downCount,
+                }).exec();
+                return NextResponse.json({ upvoteCount: upCount, downvoteCount: downCount });
             }
+            throw err;
         }
 
-        // Recount votes
-        const upCount = await FactVote.countDocuments({ fact: factObjectId, value: 1 }).exec();
-        const downCount = await FactVote.countDocuments({ fact: factObjectId, value: -1 }).exec();
+        // Compute per-field deltas and atomically apply them so concurrent
+        // requests don't overwrite each other's counts.
+        const upInc = (value === 1 ? 1 : 0) - (previousValue === 1 ? 1 : 0);
+        const downInc = (value === -1 ? 1 : 0) - (previousValue === -1 ? 1 : 0);
 
-        // Update cached counts on the fact
-        await Fact.findByIdAndUpdate(factObjectId, {
-            upvoteCount: upCount,
-            downvoteCount: downCount,
-            score: upCount - downCount,
-        }).exec();
+        const updatedFact = await Fact.findByIdAndUpdate(
+            factObjectId,
+            { $inc: { upvoteCount: upInc, downvoteCount: downInc, score: upInc - downInc } },
+            { new: true }
+        ).select({ upvoteCount: 1, downvoteCount: 1 }).lean();
 
-        return NextResponse.json({ upvoteCount: upCount, downvoteCount: downCount });
+        return NextResponse.json({
+            upvoteCount: updatedFact?.upvoteCount ?? 0,
+            downvoteCount: updatedFact?.downvoteCount ?? 0,
+        });
     } catch (err: any) {
         console.error("Fact vote error", err);
         return NextResponse.json({ error: "Server error" }, { status: 500 });
