@@ -167,8 +167,7 @@ describe("POST /api/fact-vote", () => {
     mockUserFindOne.mockReturnValue(chainableQuery({ _id: userId, email: "test@test.com" }));
     mockFactFindOne.mockReturnValue(chainableQuery({ _id: factId }));
     mockFactVoteFindOneAndUpdate.mockReturnValue(execResult(null));
-    mockFactVoteCountDocuments.mockReturnValueOnce(execResult(5)).mockReturnValueOnce(execResult(2));
-    mockFactFindByIdAndUpdate.mockReturnValue(execResult(null));
+    mockFactFindByIdAndUpdate.mockReturnValue(chainableQuery({ upvoteCount: 5, downvoteCount: 2 }));
 
     const req = makeRequest({ factId, value: 1 });
     const res = await POST(req);
@@ -184,8 +183,7 @@ describe("POST /api/fact-vote", () => {
     mockUserFindOne.mockReturnValue(chainableQuery({ _id: userId, email: "test@test.com" }));
     mockFactFindOne.mockReturnValue(chainableQuery({ _id: factId }));
     mockFactVoteFindOneAndUpdate.mockReturnValue(execResult(null));
-    mockFactVoteCountDocuments.mockReturnValueOnce(execResult(3)).mockReturnValueOnce(execResult(7));
-    mockFactFindByIdAndUpdate.mockReturnValue(execResult(null));
+    mockFactFindByIdAndUpdate.mockReturnValue(chainableQuery({ upvoteCount: 3, downvoteCount: 7 }));
 
     const req = makeRequest({ factId, value: -1, reason: "This fact is misleading" });
     const res = await POST(req);
