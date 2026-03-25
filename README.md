@@ -1,6 +1,6 @@
 # Consensus Engine
 
-## Repository Details and Deployed Application
+## Repository Details and Deployed Application
 - Repository: https://github.com/DukeDan1/consensus-engine
 - Deployed app: https://ce.dukedan.uk
 
