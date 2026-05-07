@@ -185,7 +185,7 @@ def enrich_file(file_path: str, dry_run: bool = False, use_llm: bool = True) -> 
 
     # Setup LLM client
     llm_client = None
-    llm_model = os.environ.get("OPENAI_RESPONSES_MODEL", "gpt-5.4").strip('"')
+    llm_model = os.environ.get("OPENAI_RESPONSES_MODEL", "gpt-5.5").strip('"')
     if use_llm and OpenAI:
         api_key = os.environ.get("OPENAI_API_KEY")
         if api_key:

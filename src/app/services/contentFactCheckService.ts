@@ -82,7 +82,7 @@ export async function factCheckPostContent(params: {
 
   const routed = await routeResponsesClient({
     text: trimmed,
-    openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.4",
+    openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.5",
     grokModel: process.env.GROK_RESPONSES_MODEL,
     userId: params.userId,
     ignoreEnvironmentDefaults: false,

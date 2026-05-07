@@ -186,7 +186,7 @@ describe("factReassessmentService", () => {
               }),
             },
           },
-          model: "gpt-5.4",
+          model: "gpt-5.5",
           provider: "openai",
         });
       });
@@ -224,7 +224,7 @@ describe("factReassessmentService", () => {
               }),
             },
           },
-          model: "gpt-5.4",
+          model: "gpt-5.5",
           provider: "openai",
         });
       });
@@ -260,7 +260,7 @@ describe("factReassessmentService", () => {
               }),
             },
           },
-          model: "gpt-5.4",
+          model: "gpt-5.5",
           provider: "openai",
         });
       });
@@ -296,7 +296,7 @@ describe("factReassessmentService", () => {
               }),
             },
           },
-          model: "gpt-5.4",
+          model: "gpt-5.5",
           provider: "openai",
         });
       });

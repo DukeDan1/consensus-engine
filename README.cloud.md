@@ -75,7 +75,7 @@ You can supply env directly via `--set-env-vars` and secrets via `--set-secrets`
 - `IMAGE_BLUR_SIGMA` (blur strength; higher is stronger).
 - `IMAGE_THUMB_SIZE` (thumbnail size, defaults to `128`).
 - `NEXTJS_APP_BASE_URL` and `NEXTAUTH_URL` (your Cloud Run HTTPS URL after first deploy; you can redeploy to update).
-- `OPENAI_RESPONSES_MODEL` (optional, defaults to `gpt-5.4`).
+- `OPENAI_RESPONSES_MODEL` (optional, defaults to `gpt-5.5`).
 - `EMAIL_SENDER_ADDRESS` (from ACS setup below).
 - `NODE_OPTIONS=--dns-result-order=ipv4first` (already in workflow).
 

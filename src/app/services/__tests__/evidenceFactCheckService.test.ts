@@ -41,7 +41,7 @@ describe("evidenceFactCheckService", () => {
     // Mock routing to return OpenAI client
     routeResponsesClientMock.mockResolvedValue({
       client: openaiMock,
-      model: "gpt-5.4",
+      model: "gpt-5.5",
       provider: "openai",
     });
   });

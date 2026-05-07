@@ -93,7 +93,7 @@ describe("contentFactCheckService", () => {
       };
       mockRouteResponsesClient.mockResolvedValueOnce({
         client: mockClient,
-        model: "gpt-5.4",
+        model: "gpt-5.5",
         provider: "openai",
       });
       mockResponsesCreate.mockResolvedValueOnce({
@@ -130,7 +130,7 @@ describe("contentFactCheckService", () => {
       expect(result.summary).toBe("This is a factual claim.");
       expect(result.sources).toHaveLength(1);
       expect(result.sources![0].url).toBe("https://en.wikipedia.org/wiki/Example");
-      expect(result.model).toBe("gpt-5.4");
+      expect(result.model).toBe("gpt-5.5");
       expect(result.checkedAt).toBeInstanceOf(Date);
     });
 
@@ -140,7 +140,7 @@ describe("contentFactCheckService", () => {
       };
       mockRouteResponsesClient.mockResolvedValueOnce({
         client: mockClient,
-        model: "gpt-5.4",
+        model: "gpt-5.5",
         provider: "openai",
       });
       mockResponsesCreate.mockResolvedValueOnce({
@@ -177,7 +177,7 @@ describe("contentFactCheckService", () => {
       };
       mockRouteResponsesClient.mockResolvedValueOnce({
         client: mockClient,
-        model: "gpt-5.4",
+        model: "gpt-5.5",
         provider: "openai",
       });
       mockResponsesCreate.mockResolvedValueOnce({
@@ -207,7 +207,7 @@ describe("contentFactCheckService", () => {
       };
       mockRouteResponsesClient.mockResolvedValueOnce({
         client: mockClient,
-        model: "gpt-5.4",
+        model: "gpt-5.5",
         provider: "openai",
       });
       mockResponsesCreate.mockResolvedValueOnce({
@@ -237,7 +237,7 @@ describe("contentFactCheckService", () => {
       };
       mockRouteResponsesClient.mockResolvedValueOnce({
         client: mockClient,
-        model: "gpt-5.4",
+        model: "gpt-5.5",
         provider: "openai",
       });
       mockResponsesCreate.mockResolvedValueOnce({
@@ -267,7 +267,7 @@ describe("contentFactCheckService", () => {
       };
       mockRouteResponsesClient.mockResolvedValueOnce({
         client: mockClient,
-        model: "gpt-5.4",
+        model: "gpt-5.5",
         provider: "openai",
       });
       mockResponsesCreate.mockResolvedValueOnce({
@@ -288,7 +288,7 @@ describe("contentFactCheckService", () => {
       };
       mockRouteResponsesClient.mockResolvedValueOnce({
         client: mockClient,
-        model: "gpt-5.4",
+        model: "gpt-5.5",
         provider: "openai",
       });
       mockResponsesCreate.mockResolvedValueOnce({
@@ -314,7 +314,7 @@ describe("contentFactCheckService", () => {
       };
       mockRouteResponsesClient.mockResolvedValueOnce({
         client: mockClient,
-        model: "gpt-5.4",
+        model: "gpt-5.5",
         provider: "openai",
       });
       mockResponsesCreate.mockRejectedValueOnce(new Error("API Error"));
@@ -325,7 +325,7 @@ describe("contentFactCheckService", () => {
 
       expect(result.verdict).toBe("unverified");
       expect(result.summary).toBe("Fact check failed.");
-      expect(result.model).toBe("gpt-5.4");
+      expect(result.model).toBe("gpt-5.5");
     });
 
     it("filters out sources without URLs", async () => {
@@ -334,7 +334,7 @@ describe("contentFactCheckService", () => {
       };
       mockRouteResponsesClient.mockResolvedValueOnce({
         client: mockClient,
-        model: "gpt-5.4",
+        model: "gpt-5.5",
         provider: "openai",
       });
       mockResponsesCreate.mockResolvedValueOnce({
@@ -371,7 +371,7 @@ describe("contentFactCheckService", () => {
       };
       mockRouteResponsesClient.mockResolvedValueOnce({
         client: mockClient,
-        model: "gpt-5.4",
+        model: "gpt-5.5",
         provider: "openai",
       });
       mockResponsesCreate.mockResolvedValueOnce({
@@ -401,7 +401,7 @@ describe("contentFactCheckService", () => {
       };
       mockRouteResponsesClient.mockResolvedValueOnce({
         client: mockClient,
-        model: "gpt-5.4",
+        model: "gpt-5.5",
         provider: "openai",
       });
       mockResponsesCreate.mockResolvedValueOnce({

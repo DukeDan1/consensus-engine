@@ -25,13 +25,13 @@
  * | Variable                   | Purpose                                          |
  * |----------------------------|--------------------------------------------------|
  * | `OPENAI_API_KEY`           | Enables the OpenAI provider                      |
- * | `OPENAI_RESPONSES_MODEL`   | Default model for OpenAI (fallback: `gpt-5.4`)   |
+ * | `OPENAI_RESPONSES_MODEL`   | Default model for OpenAI (fallback: `gpt-5.5`)   |
  * | `GROK_API_KEY`             | Enables the Grok provider                        |
  * | `GROK_BASE_URL`            | Grok API base URL (default: `https://api.x.ai/v1`) |
- * | `GROK_RESPONSES_MODEL`     | Default model for Grok (fallback: `grok-4-1-fast-non-reasoning`) |
+ * | `GROK_RESPONSES_MODEL`     | Default model for Grok (fallback: `grok-4.3`) |
  * | `OPENROUTER_API_KEY`       | Enables the OpenRouter provider                   |
  * | `OPENROUTER_BASE_URL`      | OpenRouter API base URL (default: `https://openrouter.ai/api/v1`) |
- * | `OPENROUTER_RESPONSES_MODEL` | Default model for OpenRouter (fallback: `openai/gpt-5.4`) |
+ * | `OPENROUTER_RESPONSES_MODEL` | Default model for OpenRouter (fallback: `openai/gpt-5.5`) |
  * | `FORCED_AI_PROVIDER`       | Force a provider globally (`openai`, `grok`, or `openrouter`) |
  * | `FORCED_AI_MODEL`          | Model to use with the forced provider             |
  */
@@ -97,9 +97,9 @@ function getClient(provider: Provider): OpenAI | null {
  * plus a hardcoded fallback if the env var is unset.
  */
 const DEFAULT_MODELS: Record<Provider, { envKey: string; fallback: string }> = {
-  openai: { envKey: "OPENAI_RESPONSES_MODEL", fallback: "gpt-5.4" },
-  grok: { envKey: "GROK_RESPONSES_MODEL", fallback: "grok-4-1-fast-non-reasoning" },
-  openrouter: { envKey: "OPENROUTER_RESPONSES_MODEL", fallback: "openai/gpt-5.4" },
+  openai: { envKey: "OPENAI_RESPONSES_MODEL", fallback: "gpt-5.5" },
+  grok: { envKey: "GROK_RESPONSES_MODEL", fallback: "grok-4.3" },
+  openrouter: { envKey: "OPENROUTER_RESPONSES_MODEL", fallback: "openai/gpt-5.5" },
 };
 
 /**

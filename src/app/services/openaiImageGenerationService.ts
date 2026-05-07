@@ -139,7 +139,7 @@ export async function generateProfileImage(promptArgs: ProfilePromptArgs, userId
     const prompt = buildPhotorealisticProfilePrompt(promptArgs);
     const routed = await routeResponsesClient({
       text: prompt,
-      openAiModel: process.env.OPENAI_IMAGE_MODEL || "gpt-image-1.5",
+      openAiModel: process.env.OPENAI_IMAGE_MODEL || "gpt-image-2",
       grokModel: process.env.GROK_IMAGE_MODEL || "grok-imagine-image",
       userId,
       ignoreEnvironmentDefaults: true,

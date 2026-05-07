@@ -88,8 +88,8 @@ async function callAIReassessment(params: {
     const result = await executeWithFallback(
         {
             text: contextSummary,
-            openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.4",
-            grokModel: process.env.GROK_RESPONSES_MODEL || "grok-4-1-fast-non-reasoning",
+            openAiModel: process.env.OPENAI_RESPONSES_MODEL || "gpt-5.5",
+            grokModel: process.env.GROK_RESPONSES_MODEL || "grok-4.3",
             ignoreEnvironmentDefaults: false,
         },
         async (routed) => {

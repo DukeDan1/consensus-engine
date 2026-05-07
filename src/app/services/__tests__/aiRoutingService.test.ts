@@ -74,7 +74,7 @@ describe("aiRoutingService", () => {
 
       expect(result).not.toBeNull();
       expect(result?.provider).toBe("openai");
-      expect(result?.model).toBe("gpt-5.4");
+      expect(result?.model).toBe("gpt-5.5");
     });
 
     it("returns Grok client when only Grok key is set", async () => {
@@ -85,7 +85,7 @@ describe("aiRoutingService", () => {
       const result = await routeResponsesClient({ text: "Hello world" });
 
       expect(result?.provider).toBe("grok");
-      expect(result?.model).toBe("grok-4-1-fast-non-reasoning");
+      expect(result?.model).toBe("grok-4.3");
     });
 
     it("returns OpenRouter client when only OpenRouter key is set", async () => {
@@ -96,7 +96,7 @@ describe("aiRoutingService", () => {
       const result = await routeResponsesClient({ text: "Hello world" });
 
       expect(result?.provider).toBe("openrouter");
-      expect(result?.model).toBe("openai/gpt-5.4");
+      expect(result?.model).toBe("openai/gpt-5.5");
     });
 
     // ── Model selection ──
@@ -330,7 +330,7 @@ describe("aiRoutingService", () => {
       const result = await routeResponsesClient({ text: "Hello" });
 
       expect(result?.provider).toBe("grok");
-      expect(result?.model).toBe("grok-4-1-fast-non-reasoning");
+      expect(result?.model).toBe("grok-4.3");
     });
 
     it("ignores invalid FORCED_AI_PROVIDER value", async () => {
@@ -377,7 +377,7 @@ describe("aiRoutingService", () => {
 
       expect(result?.provider).toBe("openai");
       // Should use hardcoded fallback, not the env var
-      expect(result?.model).toBe("gpt-5.4");
+      expect(result?.model).toBe("gpt-5.5");
     });
 
     it("ignores FORCED_AI_PROVIDER env var when ignoreEnvironmentDefaults is true", async () => {
@@ -397,7 +397,7 @@ describe("aiRoutingService", () => {
 
       // Should follow default openai→grok→openrouter order, not forced grok
       expect(result?.provider).toBe("openai");
-      expect(result?.model).toBe("gpt-5.4");
+      expect(result?.model).toBe("gpt-5.5");
     });
 
     it("still honours param-level forcedDefaultModelAndProvider when ignoreEnvironmentDefaults is true", async () => {
@@ -464,7 +464,7 @@ describe("aiRoutingService", () => {
 
       expect(result?.provider).toBe("grok");
       // Should use hardcoded fallback, not env var
-      expect(result?.model).toBe("grok-4-1-fast-non-reasoning");
+      expect(result?.model).toBe("grok-4.3");
     });
 
     it("per-call model override still works when ignoreEnvironmentDefaults is true", async () => {
@@ -656,7 +656,7 @@ describe("aiRoutingService", () => {
       // Should route to OpenAI (default order), not env-forced grok
       expect(result).toEqual({ id: "resp-openai" });
       expect(fn.mock.calls[0][0].provider).toBe("openai");
-      expect(fn.mock.calls[0][0].model).toBe("gpt-5.4");
+      expect(fn.mock.calls[0][0].model).toBe("gpt-5.5");
     });
 
     it("uses hardcoded fallback models when ignoreEnvironmentDefaults is true", async () => {
@@ -678,7 +678,7 @@ describe("aiRoutingService", () => {
       expect(result).toEqual({ id: "resp-grok" });
       // Model should be the hardcoded fallback, not env override
       expect(fn.mock.calls[0][0].provider).toBe("grok");
-      expect(fn.mock.calls[0][0].model).toBe("grok-4-1-fast-non-reasoning");
+      expect(fn.mock.calls[0][0].model).toBe("grok-4.3");
     });
 
     it("still honours param-level forced provider when ignoreEnvironmentDefaults is true", async () => {
@@ -727,10 +727,10 @@ describe("aiRoutingService", () => {
       expect(result).toEqual({ id: "resp-grok" });
       // First call: OpenAI with hardcoded fallback
       expect(fn.mock.calls[0][0].provider).toBe("openai");
-      expect(fn.mock.calls[0][0].model).toBe("gpt-5.4");
+      expect(fn.mock.calls[0][0].model).toBe("gpt-5.5");
       // Second call: Grok with hardcoded fallback
       expect(fn.mock.calls[1][0].provider).toBe("grok");
-      expect(fn.mock.calls[1][0].model).toBe("grok-4-1-fast-non-reasoning");
+      expect(fn.mock.calls[1][0].model).toBe("grok-4.3");
     });
   });
 });
